@@ -25,10 +25,6 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _FoamScale: 0.72
-    - _FoamSpeed: 0.22
-    - _FoamStrength: 0.32
-    - _FoamThreshold: 0.72
     - _FresnelPower: 3.6
     - _SunGlintPower: 128
     - _SunGlintStrength: 0.28
@@ -40,7 +36,6 @@ Material:
     - _WaveSpeedB: 1.15
     m_Colors:
     - _DeepColor: {r: 0.025, g: 0.16, b: 0.2, a: 1}
-    - _FoamColor: {r: 0.34, g: 0.64, b: 0.68, a: 1}
     - _HorizonColor: {r: 0.18, g: 0.38, b: 0.42, a: 1}
     - _ShallowColor: {r: 0.06, g: 0.31, b: 0.35, a: 1}
     - _SunGlintColor: {r: 1, g: 0.72, b: 0.42, a: 1}
