@@ -69,7 +69,7 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 
 - [ ] Gemi hızına ve dönüşe bağlı dümen suyu
 - [ ] Pruva köpüğü
-- [~] Görsel gövdede hafif yalpa ve yükselme
+- [x] Görsel gövdede hafif yalpa ve yükselme
 - [x] Gülle su sıçramasının deniz paletine uyarlanması
 - [ ] Rüzgâr yönü için görsel ipucu
 
