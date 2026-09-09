@@ -47,7 +47,7 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 
 - [x] URP uyumlu prototip okyanus shader’ı
 - [x] İki ölçekli dalga hareketi
-- [x] Akan, kırılan prosedürel yüzey köpüğü
+- [ ] İnce, seamless dokulu yüzey köpüğü
 - [x] Derinlik/ufuk renk geçişi
 - [x] Fresnel ve güneş yansıması
 - [ ] Gemilerin çevresinde okunabilir su kontrastı
@@ -59,7 +59,7 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 
 ### Hareket ve çevresel geri bildirim
 
-- [~] Gemi hızına ve dönüşe bağlı dümen suyu
+- [ ] Gemi hızına ve dönüşe bağlı dümen suyu
 - [ ] Pruva köpüğü
 - [ ] Hafif yalpa ve yükselme
 - [x] Gülle su sıçramasının deniz paletine uyarlanması
