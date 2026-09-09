@@ -51,14 +51,28 @@ namespace Seaborn.Combat
             float duration,
             float height)
         {
+            LaunchAt(
+                projectileOwner,
+                transform.position +
+                direction.normalized *
+                Mathf.Max(0f, range),
+                duration,
+                height
+            );
+        }
+
+        public void LaunchAt(
+            Transform projectileOwner,
+            Vector3 targetPosition,
+            float duration,
+            float height)
+        {
             ownerRoot = projectileOwner != null
                 ? projectileOwner.root
                 : null;
 
             startPosition = transform.position;
-            endPosition =
-                startPosition +
-                direction.normalized * Mathf.Max(0f, range);
+            endPosition = targetPosition;
 
             flightDuration = Mathf.Max(
                 0.1f,
