@@ -84,15 +84,30 @@ namespace Seaborn.Combat
                 "Water Splash",
                 position,
                 Vector3.up,
-                new Color(0.72f, 0.9f, 1f, 0.9f),
-                22,
-                0.35f,
-                0.75f,
-                1.2f,
-                3.6f,
+                new Color(0.7f, 0.9f, 0.92f, 0.9f),
+                24,
+                0.32f,
+                0.72f,
+                1.1f,
+                3.4f,
                 0.05f,
-                0.16f,
-                0.8f
+                0.17f,
+                0.75f
+            );
+
+            CreateBurst(
+                "Water Impact Foam",
+                position + Vector3.up * 0.02f,
+                Vector3.up,
+                new Color(0.48f, 0.76f, 0.8f, 0.55f),
+                16,
+                0.45f,
+                0.95f,
+                0.15f,
+                0.8f,
+                0.1f,
+                0.28f,
+                -0.04f
             );
         }
 

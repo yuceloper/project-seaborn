@@ -61,3 +61,17 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 **Karar:** Yeni mühimmat sistemlerinden önce atmosfer dikey dilimi.
 
 **Neden:** Çekirdek savaş döngüsü artık eğlenceli. Bir sonraki en büyük belirsizlik sistem genişliği değil, dünyanın ayırt edilebilir görsel ve işitsel kimliği.
+
+
+## 2026-09-09 — İlk atmosfer sahnesi
+
+**Karar:** İlk atmosfer dikey dilimi “fırtına öncesi altın saat kıyı suları” paletini kullanır. Deniz dalgası ilk aşamada yalnızca görsel shader deformasyonudur; fizik ve nişan düzlemi sabit kalır.
+
+**Neden:** Atmosferi hızlı doğrularken mevcut savaş okunabilirliğini ve deterministik mermi hedeflemesini korumak.
+
+## 2026-09-10 — Gemi-su temas efektlerini erteleme
+
+**Karar:** Prototip kutu gemiler üzerindeki pruva köpüğü ve dümen izi üretimden kaldırıldı; gerçek gemi modeli, gövde ölçüsü ve su çizgisi belirlendikten sonra yeniden ele alınacak. Gülle su sıçraması korunur.
+
+**Neden:** Parçacık ve şerit denemeleri teknik olarak çalışsa da uzak izometrik kamerada doğal görünmedi. Geçici geometriye göre yapılan görsel ayarın tekrar iş üretmesini önlemek.
+
