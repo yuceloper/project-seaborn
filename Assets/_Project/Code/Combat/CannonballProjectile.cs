@@ -110,6 +110,15 @@ namespace Seaborn.Combat
 
             if (progress >= 1f)
             {
+                PrototypeCombatVfx.PlayWaterSplash(
+                    nextPosition
+                );
+
+                PrototypeCameraShake.Request(
+                    0.035f,
+                    0.06f
+                );
+
                 StopAndDestroy();
             }
         }
@@ -164,6 +173,16 @@ namespace Seaborn.Combat
                             ? ownerRoot.gameObject
                             : null
                     )
+                );
+
+                PrototypeCombatVfx.PlayHullImpact(
+                    hit.point,
+                    -displacement.normalized
+                );
+
+                PrototypeCameraShake.Request(
+                    0.12f,
+                    0.12f
                 );
 
                 transform.position = hit.point;
