@@ -53,7 +53,7 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [ ] Gemilerin çevresinde okunabilir su kontrastı
 - [x] Atmosferik sis ve uzaklık solması
 - [x] Altın saat yönlü ışık ayarı
-- [ ] Renk düzenleme ve kontrollü bloom
+- [x] Renk düzenleme ve kontrollü bloom
 - [x] Uzak ada/kaya silüetleri
 - [ ] Gökyüzü ve bulut yönü
 
@@ -84,10 +84,10 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 
 ### Kabul kriterleri
 
-- [ ] Ekran görüntüsü gemi modelleri primitive olsa bile oyunun atmosfer yönünü anlatıyor.
-- [ ] Gemi ve nişangâh tüm ışık koşullarında okunuyor.
+- [x] Ekran görüntüsü gemi modelleri primitive olsa bile oyunun atmosfer yönünü anlatıyor.
+- [x] Gemi ve nişangâh mevcut atmosfer ışığında okunuyor.
 - [ ] Sabit 60 FPS hedefi prototip Windows build’inde korunuyor.
-- [ ] Deniz hareketi nişan noktasının okunmasını bozmuyor.
+- [x] Deniz hareketi nişan noktasının okunmasını bozmuyor.
 - [ ] Efektler ve sesler 15 dakikalık oturumda yorucu hale gelmiyor.
 
 ## Milestone 3 — Savaş sistemleri
