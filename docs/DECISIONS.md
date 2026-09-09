@@ -81,3 +81,9 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 
 **Neden:** Editörde bulunan fakat player build sırasında strip edilen veya farklı fallback kullanan shader’lar, namlu dumanının beyaz ekran lekelerine dönüşmesine ve editör/build görüntüsünün ayrışmasına yol açtı.
 
+## 2026-09-10 — Atmosferden savaş derinliğine geçiş
+
+**Karar:** Okyanus, kıyı silüetleri, gemi blockout’u, görsel yalpa, temel ses ve kontrollü post-processing ile atmosfer dikey diliminin ana yönü doğrulandı. Gökyüzü/bulut, yüzey köpüğü ve ayrıntılı gemi-su teması polish backlog’unda kalır; aktif öncelik mühimmat ve yeniden doldurma sistemidir.
+
+**Neden:** Prototip artık görsel ve işitsel kimliğini anlatıyor. Bir sonraki en büyük ürün riski atmosfer değil, savaş kararlarının standart borda ateşinin ötesine geçip geçememesi.
+
