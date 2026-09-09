@@ -1,4 +1,5 @@
 using System.Collections;
+using Seaborn.Combat;
 using UnityEngine;
 
 namespace Seaborn.Ship
@@ -39,6 +40,39 @@ namespace Seaborn.Ship
 
         private void BeginSinking()
         {
+            ShipMotor shipMotor = GetComponent<ShipMotor>();
+
+            if (shipMotor != null)
+            {
+                shipMotor.enabled = false;
+            }
+
+            BroadsideController broadsideController =
+                GetComponent<BroadsideController>();
+
+            if (broadsideController != null)
+            {
+                broadsideController.enabled = false;
+            }
+
+            EnemyShipController enemyController =
+                GetComponent<EnemyShipController>();
+
+            if (enemyController != null)
+            {
+                enemyController.enabled = false;
+            }
+
+            Rigidbody shipRigidbody =
+                GetComponent<Rigidbody>();
+
+            if (shipRigidbody != null)
+            {
+                shipRigidbody.linearVelocity = Vector3.zero;
+                shipRigidbody.angularVelocity = Vector3.zero;
+                shipRigidbody.isKinematic = true;
+            }
+
             foreach (Collider shipCollider in shipColliders)
             {
                 shipCollider.enabled = false;
