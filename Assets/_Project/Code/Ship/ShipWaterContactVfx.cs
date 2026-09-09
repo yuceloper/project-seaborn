@@ -26,10 +26,10 @@ namespace Seaborn.Ship
 
         [Header("Emission")]
         [SerializeField, Min(0f)]
-        private float maximumBowRate = 34f;
+        private float maximumBowRate = 90f;
 
         [SerializeField, Min(0f)]
-        private float maximumWakeRate = 24f;
+        private float maximumWakeRate = 68f;
 
         [SerializeField, Min(0f)]
         private float turnWakeBoost = 0.55f;
@@ -186,8 +186,7 @@ namespace Seaborn.Ship
 
             Vector3 worldPosition =
                 transform.TransformPoint(localPosition);
-            worldPosition.y =
-                waterHeight + normalizedLocalPosition.y * 0.08f;
+            worldPosition.y = waterHeight + 0.065f;
             effectTransform.position = worldPosition;
         }
 
@@ -196,17 +195,17 @@ namespace Seaborn.Ship
             ParticleSystem system = CreateSystem(
                 "Bow Foam",
                 new Color(0.72f, 0.9f, 0.92f, 0.72f),
-                0.28f,
-                0.75f,
-                0.08f,
-                0.22f,
-                0.45f,
-                1.25f,
-                30f
+                0.34f,
+                0.9f,
+                0.14f,
+                0.38f,
+                0.55f,
+                1.45f,
+                34f
             );
 
             ParticleSystem.ShapeModule shape = system.shape;
-            shape.radius = 0.18f;
+            shape.radius = 0.26f;
             return system;
         }
 
@@ -215,17 +214,17 @@ namespace Seaborn.Ship
             ParticleSystem system = CreateSystem(
                 objectName,
                 new Color(0.62f, 0.84f, 0.86f, 0.55f),
-                0.7f,
-                1.65f,
-                0.1f,
-                0.28f,
+                0.85f,
+                2.1f,
                 0.2f,
-                0.65f,
-                18f
+                0.55f,
+                0.25f,
+                0.8f,
+                22f
             );
 
             ParticleSystem.ShapeModule shape = system.shape;
-            shape.radius = 0.12f;
+            shape.radius = 0.18f;
 
             ParticleSystem.SizeOverLifetimeModule size =
                 system.sizeOverLifetime;
@@ -287,7 +286,7 @@ namespace Seaborn.Ship
                 );
             main.startColor = color;
             main.gravityModifier = -0.025f;
-            main.maxParticles = 160;
+            main.maxParticles = 320;
 
             ParticleSystem.EmissionModule emission =
                 system.emission;
@@ -326,6 +325,7 @@ namespace Seaborn.Ship
             renderer.shadowCastingMode =
                 UnityEngine.Rendering.ShadowCastingMode.Off;
             renderer.receiveShadows = false;
+            renderer.sortingOrder = 2;
 
             if (particleMaterial != null)
             {
