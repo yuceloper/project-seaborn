@@ -37,5 +37,6 @@ Sahne huzurlu bir kartpostal değil; yaklaşan tehlikeden hemen önceki sıcak v
 - Unity lineer sis
 - Düz fizik/nişan düzlemi
 - Deniz paletine bağlı iki katmanlı gülle su sıçraması
+- Collider içermeyen, sis içinde düşük kontrastta kalan kıyı/kaya silüetleri
 
 Bu shader üretim okyanusu değildir. İlk hedef, renk ve hareket yönünü doğrulamaktır.
