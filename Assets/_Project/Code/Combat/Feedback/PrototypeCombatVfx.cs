@@ -136,9 +136,19 @@ namespace Seaborn.Combat
             GameObject effectObject =
                 new GameObject(objectName);
 
+            Vector3 referenceUp =
+                Mathf.Abs(
+                    Vector3.Dot(safeDirection, Vector3.up)
+                ) > 0.99f
+                    ? Vector3.forward
+                    : Vector3.up;
+
             effectObject.transform.SetPositionAndRotation(
                 position,
-                Quaternion.LookRotation(safeDirection)
+                Quaternion.LookRotation(
+                    safeDirection,
+                    referenceUp
+                )
             );
 
             ParticleSystem particleSystem =
@@ -225,8 +235,8 @@ namespace Seaborn.Combat
                 particleRenderer.material = particleMaterial;
             }
 
-            particleSystem.Emit(particleCount);
             particleSystem.Play();
+            particleSystem.Emit(particleCount);
 
             float destroyDelay = maximumLifetime + 0.5f;
             Object.Destroy(effectObject, destroyDelay);
