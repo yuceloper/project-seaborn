@@ -17,7 +17,7 @@ namespace Seaborn.Combat
 
         [Header("References")]
         [SerializeField]
-        private Camera aimCamera;
+        private UnityEngine.Camera aimCamera;
 
         [SerializeField]
         private BroadsideController broadsideController;
@@ -78,7 +78,7 @@ namespace Seaborn.Combat
         {
             broadsideController =
                 GetComponent<BroadsideController>();
-            aimCamera = Camera.main;
+            aimCamera = UnityEngine.Camera.main;
         }
 
         private void Awake()
