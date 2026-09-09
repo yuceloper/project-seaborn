@@ -72,38 +72,61 @@ namespace Seaborn.Combat
 
         private void TryFirePort()
         {
-            if (Time.time < nextPortFireTime)
-            {
-                return;
-            }
-
-            nextPortFireTime =
-                Time.time + broadsideCooldown;
-
-            StartCoroutine(
-                FireBroadside(
-                    portMuzzles,
-                    -transform.right
-                )
-            );
+            TryFire(BroadsideSide.Port);
         }
 
         private void TryFireStarboard()
         {
-            if (Time.time < nextStarboardFireTime)
+            TryFire(BroadsideSide.Starboard);
+        }
+
+        public bool TryFire(BroadsideSide side)
+        {
+            bool isPort = side == BroadsideSide.Port;
+            float nextFireTime =
+                isPort
+                    ? nextPortFireTime
+                    : nextStarboardFireTime;
+
+            if (Time.time < nextFireTime)
             {
-                return;
+                return false;
             }
 
-            nextStarboardFireTime =
+            Transform[] muzzles =
+                isPort
+                    ? portMuzzles
+                    : starboardMuzzles;
+
+            if (cannonballPrefab == null ||
+                muzzles == null ||
+                muzzles.Length == 0)
+            {
+                return false;
+            }
+
+            float updatedFireTime =
                 Time.time + broadsideCooldown;
+
+            if (isPort)
+            {
+                nextPortFireTime = updatedFireTime;
+            }
+            else
+            {
+                nextStarboardFireTime = updatedFireTime;
+            }
 
             StartCoroutine(
                 FireBroadside(
-                    starboardMuzzles,
-                    transform.right
+                    muzzles,
+                    isPort
+                        ? -transform.right
+                        : transform.right
                 )
             );
+
+            return true;
         }
 
         private IEnumerator FireBroadside(
