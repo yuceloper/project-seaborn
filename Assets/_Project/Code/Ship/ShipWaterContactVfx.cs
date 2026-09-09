@@ -8,7 +8,7 @@ namespace Seaborn.Ship
     public sealed class ShipWaterContactVfx : MonoBehaviour
     {
         private const string TrailShaderName =
-            "Universal Render Pipeline/Particles/Unlit";
+            "Seaborn/Wake Trail";
 
         [Header("Waterline")]
         [SerializeField]
@@ -23,10 +23,10 @@ namespace Seaborn.Ship
 
         [Header("Wake")]
         [SerializeField, Min(0.01f)]
-        private float wakeLifetime = 1.55f;
+        private float wakeLifetime = 1.9f;
 
         [SerializeField, Min(0.01f)]
-        private float maximumWakeWidth = 0.32f;
+        private float maximumWakeWidth = 0.44f;
 
         [SerializeField, Min(0f)]
         private float minimumVisibleSpeed = 0.08f;
@@ -172,9 +172,9 @@ namespace Seaborn.Ship
             trail.sortingOrder = 2;
 
             trail.widthCurve = new AnimationCurve(
-                new Keyframe(0f, 0.08f),
-                new Keyframe(0.22f, 1f),
-                new Keyframe(1f, 0.18f)
+                new Keyframe(0f, 0.72f),
+                new Keyframe(0.18f, 1f),
+                new Keyframe(1f, 0.06f)
             );
 
             Gradient color = new Gradient();
@@ -192,9 +192,9 @@ namespace Seaborn.Ship
                 },
                 new[]
                 {
-                    new GradientAlphaKey(0f, 0f),
-                    new GradientAlphaKey(0.62f, 0.12f),
-                    new GradientAlphaKey(0.34f, 0.72f),
+                    new GradientAlphaKey(0.5f, 0f),
+                    new GradientAlphaKey(0.72f, 0.14f),
+                    new GradientAlphaKey(0.32f, 0.68f),
                     new GradientAlphaKey(0f, 1f)
                 }
             );
