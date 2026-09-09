@@ -57,6 +57,14 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Uzak ada/kaya silüetleri
 - [ ] Gökyüzü ve bulut yönü
 
+### Gemi görsel kimliği
+
+- [~] Oyuncu gemisi görsel blockout
+- [~] Düşman gemisi renk ve bayrak ayrımı
+- [~] Gövde, güverte, direk, yelken ve top silüeti
+- [ ] Gerçek gemi modeli/üretim asset’i
+- [ ] Hasar durumuna bağlı görsel değişimler
+
 ### Hareket ve çevresel geri bildirim
 
 - [ ] Gemi hızına ve dönüşe bağlı dümen suyu
