@@ -10,6 +10,8 @@ namespace Seaborn.Ship
     {
         private const string ShaderName =
             "Seaborn/Ship Blockout";
+        private const string MaterialResourceName =
+            "PrototypeShipBlockout";
 
         private readonly List<Material> materials =
             new List<Material>();
@@ -368,19 +370,32 @@ namespace Seaborn.Ship
             Color color,
             float topLight)
         {
-            Shader shader = Shader.Find(ShaderName);
-
-            if (shader == null)
-            {
-                shader = Shader.Find(
-                    "Universal Render Pipeline/Lit"
+            Material template =
+                Resources.Load<Material>(
+                    MaterialResourceName
                 );
+
+            Material material;
+
+            if (template != null)
+            {
+                material = new Material(template);
+            }
+            else
+            {
+                Shader shader = Shader.Find(ShaderName);
+
+                if (shader == null)
+                {
+                    shader = Shader.Find(
+                        "Universal Render Pipeline/Lit"
+                    );
+                }
+
+                material = new Material(shader);
             }
 
-            Material material = new Material(shader)
-            {
-                name = "Runtime Ship Blockout"
-            };
+            material.name = "Runtime Ship Blockout";
 
             if (material.HasProperty("_BaseColor"))
             {
