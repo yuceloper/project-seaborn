@@ -412,7 +412,9 @@ MonoBehaviour:
   firePortAction: {fileID: -5787060660033685037, guid: 2bb2239db2e636d48ada10e4a39746d9, type: 3}
   fireStarboardAction: {fileID: 8999307666061573231, guid: 2bb2239db2e636d48ada10e4a39746d9, type: 3}
   cannonballPrefab: {fileID: 4037737926682072274, guid: b861a62f0d44aa34b9631f32907e367a, type: 3}
-  projectileSpeed: 1
+  projectileRange: 9
+  projectileFlightDuration: 1.25
+  projectileArcHeight: 2
   portMuzzles:
   - {fileID: 1960207430}
   - {fileID: 1543344226}
@@ -421,7 +423,7 @@ MonoBehaviour:
   - {fileID: 102507380}
   - {fileID: 1946101944}
   - {fileID: 426864830}
-  delayBetweenCannons: 0.12
+  delayBetweenCannons: 0.18
   broadsideCooldown: 2.5
 --- !u!1 &410087039
 GameObject:

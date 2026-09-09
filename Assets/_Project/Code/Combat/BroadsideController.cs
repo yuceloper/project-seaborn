@@ -35,40 +35,36 @@ namespace Seaborn.Combat
 
         [Header("Timing")]
         [SerializeField, Min(0f)]
-        private float delayBetweenCannons = 0.12f;
+        private float delayBetweenCannons = 0.18f;
 
         [SerializeField, Min(0f)]
         private float broadsideCooldown = 2.5f;
 
-        private Collider[] ownerColliders;
         private float nextPortFireTime;
         private float nextStarboardFireTime;
 
-        private void Awake()
-        {
-            ownerColliders = GetComponentsInChildren<Collider>();
-        }
-
         private void OnEnable()
         {
-            firePortAction.action.Enable();
-            fireStarboardAction.action.Enable();
+            firePortAction?.action.Enable();
+            fireStarboardAction?.action.Enable();
         }
 
         private void OnDisable()
         {
-            firePortAction.action.Disable();
-            fireStarboardAction.action.Disable();
+            firePortAction?.action.Disable();
+            fireStarboardAction?.action.Disable();
         }
 
         private void Update()
         {
-            if (firePortAction.action.WasPressedThisFrame())
+            if (firePortAction != null &&
+                firePortAction.action.WasPressedThisFrame())
             {
                 TryFirePort();
             }
 
-            if (fireStarboardAction.action.WasPressedThisFrame())
+            if (fireStarboardAction != null &&
+                fireStarboardAction.action.WasPressedThisFrame())
             {
                 TryFireStarboard();
             }
@@ -114,8 +110,18 @@ namespace Seaborn.Combat
             Transform[] muzzles,
             Vector3 direction)
         {
+            if (cannonballPrefab == null || muzzles == null)
+            {
+                yield break;
+            }
+
             foreach (Transform muzzle in muzzles)
             {
+                if (muzzle == null)
+                {
+                    continue;
+                }
+
                 CannonballProjectile projectile =
                     Instantiate(
                         cannonballPrefab,
@@ -124,16 +130,19 @@ namespace Seaborn.Combat
                     );
 
                 projectile.Launch(
-    transform,
-    direction,
-    projectileRange,
-    projectileFlightDuration,
-    projectileArcHeight
-);
-
-                yield return new WaitForSeconds(
-                    delayBetweenCannons
+                    transform,
+                    direction,
+                    projectileRange,
+                    projectileFlightDuration,
+                    projectileArcHeight
                 );
+
+                if (delayBetweenCannons > 0f)
+                {
+                    yield return new WaitForSeconds(
+                        delayBetweenCannons
+                    );
+                }
             }
         }
     }

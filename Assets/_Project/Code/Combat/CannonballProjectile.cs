@@ -20,9 +20,11 @@ namespace Seaborn.Combat
         private void Awake()
         {
             projectileRigidbody = GetComponent<Rigidbody>();
-
             projectileRigidbody.useGravity = false;
             projectileRigidbody.isKinematic = true;
+            projectileRigidbody.interpolation = RigidbodyInterpolation.Interpolate;
+            projectileRigidbody.collisionDetectionMode =
+                CollisionDetectionMode.ContinuousSpeculative;
         }
 
         public void Launch(
@@ -32,12 +34,14 @@ namespace Seaborn.Combat
             float duration,
             float height)
         {
-            ownerRoot = projectileOwner.root;
+            ownerRoot = projectileOwner != null
+                ? projectileOwner.root
+                : null;
 
             startPosition = transform.position;
             endPosition =
                 startPosition +
-                direction.normalized * range;
+                direction.normalized * Mathf.Max(0f, range);
 
             flightDuration = Mathf.Max(0.1f, duration);
             arcHeight = Mathf.Max(0f, height);
@@ -79,6 +83,7 @@ namespace Seaborn.Combat
 
             if (progress >= 1f)
             {
+                isFlying = false;
                 Destroy(gameObject);
             }
         }
@@ -91,6 +96,7 @@ namespace Seaborn.Combat
                 return;
             }
 
+            isFlying = false;
             Destroy(gameObject);
         }
     }
