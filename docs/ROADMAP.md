@@ -75,11 +75,11 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 
 ### Ses
 
-- [ ] Dalga ve açık deniz ambience
-- [ ] Ahşap gıcırtısı
-- [ ] Rüzgâr katmanı
+- [~] Dalga ve açık deniz ambience
+- [~] Ahşap gıcırtısı
+- [~] Rüzgâr katmanı
 - [ ] Uzak gök gürültüsü
-- [ ] Top ateşi, uçuş, isabet ve su sesi
+- [~] Top ateşi, isabet ve su sesi
 - [ ] Ses yoğunluğunun savaş durumuna göre değişmesi
 
 ### Kabul kriterleri
