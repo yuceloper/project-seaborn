@@ -32,13 +32,10 @@ Sahne huzurlu bir kartpostal değil; yaklaşan tehlikeden hemen önceki sıcak v
 - URP özel shader
 - Dünya koordinatında iki sinüs dalga katmanı
 - Shader tabanlı normal yaklaşımı
-- Dünya koordinatında akan, gürültüyle kırılan yüzey köpüğü damarları
 - Fresnel ile ufuk rengi
 - Ana ışığa bağlı sıcak specular parlaması
 - Unity lineer sis
 - Düz fizik/nişan düzlemi
-- Dünya uzayında kalan, gemi hızına göre genişleyen çift şeritli dümen izi
-- Dönüşün dış tarafında güçlenen asimetrik dümen suyu
 - Deniz paletine bağlı iki katmanlı gülle su sıçraması
 
 Bu shader üretim okyanusu değildir. İlk hedef, renk ve hareket yönünü doğrulamaktır.
