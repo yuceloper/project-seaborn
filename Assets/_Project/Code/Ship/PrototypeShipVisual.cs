@@ -38,9 +38,20 @@ namespace Seaborn.Ship
 
         private void Awake()
         {
-            motionPhase =
-                Mathf.Abs(GetInstanceID() * 0.0173f) %
-                (Mathf.PI * 2f);
+            float roleOffset =
+                name.IndexOf(
+                    "Enemy",
+                    StringComparison.OrdinalIgnoreCase
+                ) >= 0
+                    ? 1.7f
+                    : 0.25f;
+
+            motionPhase = Mathf.Repeat(
+                transform.position.x * 0.173f +
+                transform.position.z * 0.319f +
+                roleOffset,
+                Mathf.PI * 2f
+            );
 
             originalRenderer = GetComponent<MeshRenderer>();
 
