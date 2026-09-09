@@ -59,9 +59,9 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 
 ### Gemi görsel kimliği
 
-- [~] Oyuncu gemisi görsel blockout
-- [~] Düşman gemisi renk ve bayrak ayrımı
-- [~] Gövde, güverte, direk, yelken ve top silüeti
+- [x] Oyuncu gemisi görsel blockout
+- [x] Düşman gemisi renk ve bayrak ayrımı
+- [x] Gövde, güverte, direk, yelken ve top silüeti
 - [ ] Gerçek gemi modeli/üretim asset’i
 - [ ] Hasar durumuna bağlı görsel değişimler
 
