@@ -30,7 +30,6 @@ Shader "Seaborn/Coastal Silhouette"
             #pragma multi_compile_fog
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 
             CBUFFER_START(UnityPerMaterial)
                 half4 _BaseColor;
@@ -67,15 +66,6 @@ Shader "Seaborn/Coastal Silhouette"
 
             half4 CoastFragment(Varyings input) : SV_Target
             {
-                Light mainLight = GetMainLight();
-                half lightAmount = 0.48h +
-                    saturate(
-                        dot(
-                            normalize(input.normalWS),
-                            mainLight.direction
-                        )
-                    ) * 0.34h;
-
                 half heightTint = saturate(
                     (input.positionWS.y - 0.7h) * 0.22h
                 );
@@ -84,7 +74,7 @@ Shader "Seaborn/Coastal Silhouette"
                     _BaseColor.rgb,
                     _TopColor.rgb,
                     heightTint
-                ) * lightAmount;
+                );
 
                 color = MixFog(color, input.fogFactor);
                 return half4(color, 1.0h);
