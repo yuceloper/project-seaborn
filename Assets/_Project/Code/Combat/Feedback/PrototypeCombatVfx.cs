@@ -1,3 +1,4 @@
+using Seaborn.Audio;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -14,6 +15,8 @@ namespace Seaborn.Combat
             Vector3 position,
             Vector3 direction)
         {
+            PrototypeAudio.PlayCannon(position);
+
             CreateBurst(
                 "Muzzle Burst",
                 position,
@@ -49,6 +52,8 @@ namespace Seaborn.Combat
             Vector3 position,
             Vector3 surfaceDirection)
         {
+            PrototypeAudio.PlayHullImpact(position);
+
             CreateBurst(
                 "Hull Impact",
                 position,
@@ -82,6 +87,8 @@ namespace Seaborn.Combat
 
         public static void PlayWaterSplash(Vector3 position)
         {
+            PrototypeAudio.PlayWaterSplash(position);
+
             CreateBurst(
                 "Water Splash",
                 position,
@@ -115,6 +122,8 @@ namespace Seaborn.Combat
 
         public static void PlaySinkingSmoke(Vector3 position)
         {
+            PrototypeAudio.PlaySinking(position);
+
             CreateBurst(
                 "Sinking Smoke",
                 position,
