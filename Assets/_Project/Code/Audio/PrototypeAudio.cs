@@ -142,9 +142,9 @@ namespace Seaborn.Audio
             PlaySpatial(
                 cannonClip,
                 position,
-                0.72f,
-                0.94f,
-                1.04f
+                0.78f,
+                0.92f,
+                1.02f
             );
         }
 
@@ -294,24 +294,41 @@ namespace Seaborn.Audio
         {
             return CreateMonoClip(
                 "Cannon Report",
-                1.25f,
+                1.45f,
                 271,
                 (time, noise) =>
                 {
                     float attack =
-                        Mathf.Clamp01(time / 0.012f);
-                    float body = Mathf.Exp(-time * 3.7f);
+                        Mathf.Clamp01(time / 0.008f);
+                    float body = Mathf.Exp(-time * 2.75f);
+                    float frequency = Mathf.Lerp(
+                        61f,
+                        34f,
+                        Mathf.Clamp01(time / 1.25f)
+                    );
+
                     float lowTone = Mathf.Sin(
                         time *
-                        Mathf.Lerp(72f, 39f, time) *
+                        frequency *
                         Mathf.PI *
                         2f
                     );
+                    float lowHarmonic = Mathf.Sin(
+                        time *
+                        frequency *
+                        1.52f *
+                        Mathf.PI *
+                        2f
+                    ) * Mathf.Exp(-time * 4.8f);
+
+                    float transientNoise =
+                        noise *
+                        Mathf.Exp(-time * 15f);
 
                     return attack * body *
-                        (lowTone * 0.72f +
-                         noise * Mathf.Exp(-time * 9f) *
-                         0.58f);
+                        (lowTone * 0.8f +
+                         lowHarmonic * 0.24f +
+                         transientNoise * 0.34f);
                 }
             );
         }
