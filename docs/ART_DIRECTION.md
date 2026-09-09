@@ -23,6 +23,9 @@ Sahne huzurlu bir kartpostal değil; yaklaşan tehlikeden hemen önceki sıcak v
 - Deniz, gemi gövdelerinden daha düşük orta ton kontrastında kalır.
 - Nişangâh rengi hiçbir zaman doğrudan deniz tepe rengiyle birleşmez.
 - Bloom yalnızca güneş parlaması, ateş ve güçlü VFX üzerinde hissedilir.
+- Bloom eşiği normal gemi/yelken renklerini yakalamaz; beyaz silüet taşmasına izin verilmez.
+- Renk düzenleme denizin petrol mavisini korur, doygunluğu hafifçe bastırır.
+- Vignette yalnızca kadrajı toplar; ekran kenarlarında belirgin siyah halka oluşturmaz.
 - Sis yakın savaş alanını kapatmaz; öncelikle uzak silüetleri katmanlar.
 - Dalga yüksekliği top hedef noktasını görsel olarak saklamaz.
 - Fantastik renkler ilk kıyı bölgesinde baskın değildir.
