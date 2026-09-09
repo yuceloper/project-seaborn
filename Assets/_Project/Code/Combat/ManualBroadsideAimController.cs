@@ -91,7 +91,7 @@ namespace Seaborn.Combat
 
             if (aimCamera == null)
             {
-                aimCamera = Camera.main;
+                aimCamera = UnityEngine.Camera.main;
             }
         }
 
