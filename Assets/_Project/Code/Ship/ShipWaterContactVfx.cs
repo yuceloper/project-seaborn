@@ -53,8 +53,8 @@ namespace Seaborn.Ship
 
             particleMaterial = CreateParticleMaterial();
             bowFoam = CreateBowFoam();
-            portWake = CreateWake("Port Wake", -0.32f);
-            starboardWake = CreateWake("Starboard Wake", 0.32f);
+            portWake = CreateWake("Port Wake");
+            starboardWake = CreateWake("Starboard Wake");
         }
 
         private void LateUpdate()
@@ -210,9 +210,7 @@ namespace Seaborn.Ship
             return system;
         }
 
-        private ParticleSystem CreateWake(
-            string objectName,
-            float horizontalOffset)
+        private ParticleSystem CreateWake(string objectName)
         {
             ParticleSystem system = CreateSystem(
                 objectName,
