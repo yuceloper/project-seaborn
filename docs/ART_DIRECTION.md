@@ -27,6 +27,14 @@ Sahne huzurlu bir kartpostal değil; yaklaşan tehlikeden hemen önceki sıcak v
 - Dalga yüksekliği top hedef noktasını görsel olarak saklamaz.
 - Fantastik renkler ilk kıyı bölgesinde baskın değildir.
 
+## Gemi silüeti
+
+- Uzak kamerada önce pruva yönü ve borda genişliği okunmalıdır.
+- Oyuncu ve düşman ayrımı yalnızca isim/UI ile değil yelken ve bayrak rengiyle yapılır.
+- İlk blockout gövde, güverte, kıç kamarası, direk, iki yelken ve altı top içerir.
+- Görsel kök fizik gövdesinden ayrıdır; collider ve namlu noktaları korunur.
+- Nihai model gelene kadar gerçekçi küçük detay yerine güçlü ana şekiller tercih edilir.
+
 ## Teknik yaklaşım
 
 - URP özel shader

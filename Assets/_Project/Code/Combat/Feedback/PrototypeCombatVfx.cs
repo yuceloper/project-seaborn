@@ -5,8 +5,10 @@ namespace Seaborn.Combat
 {
     public static class PrototypeCombatVfx
     {
+        private const string ParticleMaterialResourceName =
+            "PrototypeCombatParticle";
         private const string ParticleShaderName =
-            "Universal Render Pipeline/Particles/Unlit";
+            "Seaborn/Combat Particle";
 
         public static void PlayMuzzleBurst(
             Vector3 position,
@@ -238,21 +240,40 @@ namespace Seaborn.Combat
                 ShadowCastingMode.Off;
             particleRenderer.receiveShadows = false;
 
-            Shader particleShader =
-                Shader.Find(ParticleShaderName);
-
-            if (particleShader == null)
-            {
-                particleShader = Shader.Find("Sprites/Default");
-            }
+            Material materialTemplate =
+                Resources.Load<Material>(
+                    ParticleMaterialResourceName
+                );
 
             Material particleMaterial = null;
 
-            if (particleShader != null)
+            if (materialTemplate != null)
             {
-                particleMaterial = new Material(particleShader);
-                particleMaterial.color = color;
-                particleRenderer.material = particleMaterial;
+                particleMaterial =
+                    new Material(materialTemplate);
+            }
+            else
+            {
+                Shader particleShader =
+                    Shader.Find(ParticleShaderName);
+
+                if (particleShader == null)
+                {
+                    particleShader =
+                        Shader.Find("Sprites/Default");
+                }
+
+                if (particleShader != null)
+                {
+                    particleMaterial =
+                        new Material(particleShader);
+                }
+            }
+
+            if (particleMaterial != null)
+            {
+                particleRenderer.sharedMaterial =
+                    particleMaterial;
             }
 
             particleSystem.Play();

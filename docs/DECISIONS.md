@@ -75,3 +75,9 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 
 **Neden:** Parçacık ve şerit denemeleri teknik olarak çalışsa da uzak izometrik kamerada doğal görünmedi. Geçici geometriye göre yapılan görsel ayarın tekrar iş üretmesini önlemek.
 
+## 2026-09-10 — Build güvenli çalışma zamanı materyalleri
+
+**Karar:** Kodla üretilen gemi ve combat VFX görselleri shader adına yalnızca `Shader.Find` ile bağlanmaz. Kaynak materyaller `Resources` altında asset olarak saklanır ve çalışma anında örneklenir.
+
+**Neden:** Editörde bulunan fakat player build sırasında strip edilen veya farklı fallback kullanan shader’lar, namlu dumanının beyaz ekran lekelerine dönüşmesine ve editör/build görüntüsünün ayrışmasına yol açtı.
+
