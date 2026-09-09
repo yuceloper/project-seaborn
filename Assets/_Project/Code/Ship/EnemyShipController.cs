@@ -38,9 +38,20 @@ namespace Seaborn.Ship
         [SerializeField, Min(0f)]
         private float fireRange = 10f;
 
+        [SerializeField, Min(0f)]
+        private float initialReactionDelay = 2f;
+
+        [SerializeField, Min(0.1f)]
+        private float aimPreparationTime = 1.1f;
+
+        [SerializeField, Range(0f, 1f)]
+        private float movementPrediction = 0.65f;
+
         private Rigidbody shipRigidbody;
         private BroadsideController broadsideController;
         private ShipHealth shipHealth;
+        private float engagementStartTime;
+        private float aimPreparation;
 
         private void Awake()
         {
@@ -48,6 +59,7 @@ namespace Seaborn.Ship
             broadsideController =
                 GetComponent<BroadsideController>();
             shipHealth = GetComponent<ShipHealth>();
+            engagementStartTime = Time.time;
         }
 
         private void FixedUpdate()
@@ -67,6 +79,7 @@ namespace Seaborn.Ship
             if (distance > detectionRange ||
                 distance <= Mathf.Epsilon)
             {
+                aimPreparation = 0f;
                 StopMoving();
                 return;
             }
@@ -74,45 +87,115 @@ namespace Seaborn.Ship
             Vector3 targetDirection =
                 toTarget / distance;
 
+            Navigate(
+                targetDirection,
+                distance
+            );
+            PrepareAndFire(
+                targetDirection,
+                distance
+            );
+        }
+
+        private void Navigate(
+            Vector3 targetDirection,
+            float distance)
+        {
             if (distance < retreatDistance)
             {
                 SteerAndMove(
                     -targetDirection,
                     forwardSpeed
                 );
+                return;
             }
-            else if (distance > preferredRange)
+
+            if (distance > preferredRange)
             {
                 SteerAndMove(
                     targetDirection,
                     forwardSpeed
                 );
-            }
-            else
-            {
-                Vector3 tangent =
-                    Vector3.Cross(
-                        Vector3.up,
-                        targetDirection
-                    );
-
-                if (Vector3.Dot(
-                        tangent,
-                        transform.forward) < 0f)
-                {
-                    tangent = -tangent;
-                }
-
-                SteerAndMove(
-                    tangent,
-                    broadsideSpeed
-                );
+                return;
             }
 
-            TryFire(
-                targetDirection,
-                distance
+            Vector3 tangent = Vector3.Cross(
+                Vector3.up,
+                targetDirection
             );
+
+            if (Vector3.Dot(
+                    tangent,
+                    transform.forward) < 0f)
+            {
+                tangent = -tangent;
+            }
+
+            SteerAndMove(
+                tangent,
+                broadsideSpeed
+            );
+        }
+
+        private void PrepareAndFire(
+            Vector3 targetDirection,
+            float distance)
+        {
+            float sideAlignment = Vector3.Dot(
+                transform.right,
+                targetDirection
+            );
+
+            bool hasFiringSolution =
+                distance <= fireRange &&
+                Mathf.Abs(sideAlignment) >= fireAlignment &&
+                Time.time - engagementStartTime >=
+                initialReactionDelay;
+
+            if (!hasFiringSolution)
+            {
+                aimPreparation = Mathf.Max(
+                    0f,
+                    aimPreparation -
+                    Time.fixedDeltaTime
+                );
+                return;
+            }
+
+            aimPreparation += Time.fixedDeltaTime;
+
+            if (aimPreparation < aimPreparationTime)
+            {
+                return;
+            }
+
+            BroadsideSide side =
+                sideAlignment >= 0f
+                    ? BroadsideSide.Starboard
+                    : BroadsideSide.Port;
+
+            Vector3 predictedTarget =
+                target.position;
+
+            Rigidbody targetRigidbody =
+                target.GetComponent<Rigidbody>();
+
+            if (targetRigidbody != null)
+            {
+                predictedTarget +=
+                    targetRigidbody.linearVelocity *
+                    movementPrediction;
+            }
+
+            predictedTarget.y = transform.position.y + 0.25f;
+
+            if (broadsideController.TryFireAt(
+                    side,
+                    predictedTarget,
+                    0.82f))
+            {
+                aimPreparation = 0f;
+            }
         }
 
         private void SteerAndMove(
@@ -143,34 +226,6 @@ namespace Seaborn.Ship
                 nextRotation *
                 Vector3.forward *
                 speed;
-        }
-
-        private void TryFire(
-            Vector3 targetDirection,
-            float distance)
-        {
-            if (distance > fireRange)
-            {
-                return;
-            }
-
-            float sideAlignment =
-                Vector3.Dot(
-                    transform.right,
-                    targetDirection
-                );
-
-            if (Mathf.Abs(sideAlignment) < fireAlignment)
-            {
-                return;
-            }
-
-            BroadsideSide side =
-                sideAlignment >= 0f
-                    ? BroadsideSide.Starboard
-                    : BroadsideSide.Port;
-
-            broadsideController.TryFire(side);
         }
 
         private void StopMoving()

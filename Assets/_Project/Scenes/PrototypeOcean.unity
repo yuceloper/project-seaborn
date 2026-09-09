@@ -342,6 +342,8 @@ GameObject:
   - component: {fileID: 377095493}
   - component: {fileID: 377095494}
   - component: {fileID: 377095495}
+  - component: {fileID: 377095496}
+  - component: {fileID: 377095497}
   m_Layer: 0
   m_Name: PlayerShip
   m_TagString: Untagged
@@ -425,8 +427,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: acc34da42b15c7345a4e521314cf6dd4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Seaborn.Combat.BroadsideController
-  firePortAction: {fileID: -5787060660033685037, guid: 2bb2239db2e636d48ada10e4a39746d9, type: 3}
-  fireStarboardAction: {fileID: 8999307666061573231, guid: 2bb2239db2e636d48ada10e4a39746d9, type: 3}
   cannonballPrefab: {fileID: 4037737926682072274, guid: b861a62f0d44aa34b9631f32907e367a, type: 3}
   projectileRange: 9
   projectileFlightDuration: 1.25
@@ -484,6 +484,44 @@ MonoBehaviour:
   sinkDepth: 3
   rollAngle: -22
   disableAfterSinking: 1
+--- !u!114 &377095496
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 377095488}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e0db84242c841c9aa737cf56889391b, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::Seaborn.Combat.ManualBroadsideAimController
+  aimAction: {fileID: 8999307666061573231, guid: 2bb2239db2e636d48ada10e4a39746d9, type: 3}
+  fireAction: {fileID: -5787060660033685037, guid: 2bb2239db2e636d48ada10e4a39746d9, type: 3}
+  aimCamera: {fileID: 330585545}
+  broadsideController: {fileID: 377095492}
+  aimPlaneHeight: 0.75
+  minimumRange: 2
+  firingHalfAngle: 48
+  fullPreparationTime: 1
+  aimFollowSpeed: 8
+  maximumTrackingError: 3
+--- !u!114 &377095497
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 377095488}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90983eb0109e4089a24ccb186524b598, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::Seaborn.Combat.PrototypeAimReticle
+  lineWidth: 0.055
+  invalidColor: {r: 1, g: 0.2, b: 0.15, a: 0.95}
+  preparingColor: {r: 1, g: 0.72, b: 0.12, a: 0.95}
+  readyColor: {r: 0.2, g: 1, b: 0.42, a: 0.95}
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
@@ -1320,8 +1358,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: acc34da42b15c7345a4e521314cf6dd4, type: 3}
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::Seaborn.Combat.BroadsideController
-  firePortAction: {fileID: 0}
-  fireStarboardAction: {fileID: 0}
   cannonballPrefab: {fileID: 4037737926682072274, guid: b861a62f0d44aa34b9631f32907e367a, type: 3}
   projectileRange: 9
   projectileFlightDuration: 1.25
@@ -1357,6 +1393,9 @@ MonoBehaviour:
   turnSpeed: 38
   fireAlignment: 0.82
   fireRange: 10
+  initialReactionDelay: 2
+  aimPreparationTime: 1.1
+  movementPrediction: 0.65
 --- !u!1 &2110000000
 GameObject:
   m_ObjectHideFlags: 0

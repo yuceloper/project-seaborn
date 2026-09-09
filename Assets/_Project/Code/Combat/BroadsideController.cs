@@ -1,18 +1,10 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace Seaborn.Combat
 {
     public sealed class BroadsideController : MonoBehaviour
     {
-        [Header("Input")]
-        [SerializeField]
-        private InputActionReference firePortAction;
-
-        [SerializeField]
-        private InputActionReference fireStarboardAction;
-
         [Header("Projectile")]
         [SerializeField]
         private CannonballProjectile cannonballPrefab;
@@ -43,60 +35,37 @@ namespace Seaborn.Combat
         private float nextPortFireTime;
         private float nextStarboardFireTime;
 
-        private void OnEnable()
-        {
-            firePortAction?.action.Enable();
-            fireStarboardAction?.action.Enable();
-        }
-
-        private void OnDisable()
-        {
-            firePortAction?.action.Disable();
-            fireStarboardAction?.action.Disable();
-        }
-
-        private void Update()
-        {
-            if (firePortAction != null &&
-                firePortAction.action.WasPressedThisFrame())
-            {
-                TryFirePort();
-            }
-
-            if (fireStarboardAction != null &&
-                fireStarboardAction.action.WasPressedThisFrame())
-            {
-                TryFireStarboard();
-            }
-        }
-
-        private void TryFirePort()
-        {
-            TryFire(BroadsideSide.Port);
-        }
-
-        private void TryFireStarboard()
-        {
-            TryFire(BroadsideSide.Starboard);
-        }
+        public float MaximumRange => projectileRange;
 
         public bool TryFire(BroadsideSide side)
         {
-            bool isPort = side == BroadsideSide.Port;
-            float nextFireTime =
-                isPort
-                    ? nextPortFireTime
-                    : nextStarboardFireTime;
+            Vector3 direction =
+                side == BroadsideSide.Port
+                    ? -transform.right
+                    : transform.right;
 
-            if (Time.time < nextFireTime)
+            Vector3 targetPoint =
+                transform.position +
+                direction * projectileRange;
+
+            return TryFireAt(
+                side,
+                targetPoint,
+                1f
+            );
+        }
+
+        public bool TryFireAt(
+            BroadsideSide side,
+            Vector3 targetPoint,
+            float accuracy)
+        {
+            if (!CanFire(side))
             {
                 return false;
             }
 
-            Transform[] muzzles =
-                isPort
-                    ? portMuzzles
-                    : starboardMuzzles;
+            Transform[] muzzles = GetMuzzles(side);
 
             if (cannonballPrefab == null ||
                 muzzles == null ||
@@ -105,38 +74,71 @@ namespace Seaborn.Combat
                 return false;
             }
 
-            float updatedFireTime =
-                Time.time + broadsideCooldown;
-
-            if (isPort)
-            {
-                nextPortFireTime = updatedFireTime;
-            }
-            else
-            {
-                nextStarboardFireTime = updatedFireTime;
-            }
+            SetCooldown(side);
 
             StartCoroutine(
-                FireBroadside(
+                FireBroadsideAt(
                     muzzles,
-                    isPort
-                        ? -transform.right
-                        : transform.right
+                    targetPoint,
+                    Mathf.Clamp01(accuracy)
                 )
             );
 
             return true;
         }
 
-        private IEnumerator FireBroadside(
-            Transform[] muzzles,
-            Vector3 direction)
+        public float GetCooldownRemaining(
+            BroadsideSide side)
         {
-            if (cannonballPrefab == null || muzzles == null)
+            float nextFireTime =
+                side == BroadsideSide.Port
+                    ? nextPortFireTime
+                    : nextStarboardFireTime;
+
+            return Mathf.Max(
+                0f,
+                nextFireTime - Time.time
+            );
+        }
+
+        private bool CanFire(BroadsideSide side)
+        {
+            return GetCooldownRemaining(side) <= 0f;
+        }
+
+        private Transform[] GetMuzzles(
+            BroadsideSide side)
+        {
+            return side == BroadsideSide.Port
+                ? portMuzzles
+                : starboardMuzzles;
+        }
+
+        private void SetCooldown(BroadsideSide side)
+        {
+            float nextFireTime =
+                Time.time + broadsideCooldown;
+
+            if (side == BroadsideSide.Port)
             {
-                yield break;
+                nextPortFireTime = nextFireTime;
             }
+            else
+            {
+                nextStarboardFireTime = nextFireTime;
+            }
+        }
+
+        private IEnumerator FireBroadsideAt(
+            Transform[] muzzles,
+            Vector3 targetPoint,
+            float accuracy)
+        {
+            float spreadRadius = Mathf.Lerp(
+                1.8f,
+                0.12f,
+                accuracy
+            );
 
             foreach (Transform muzzle in muzzles)
             {
@@ -145,16 +147,64 @@ namespace Seaborn.Combat
                     continue;
                 }
 
+                Vector2 randomOffset =
+                    Random.insideUnitCircle *
+                    spreadRadius;
+
+                Vector3 scatteredTarget =
+                    targetPoint +
+                    new Vector3(
+                        randomOffset.x,
+                        0f,
+                        randomOffset.y
+                    );
+
+                Vector3 toTarget =
+                    scatteredTarget - muzzle.position;
+                toTarget.y = 0f;
+
+                float distance = Mathf.Clamp(
+                    toTarget.magnitude,
+                    0.1f,
+                    projectileRange
+                );
+
+                Vector3 clampedTarget =
+                    muzzle.position +
+                    toTarget.normalized * distance;
+                clampedTarget.y = targetPoint.y;
+
+                float distanceRatio = Mathf.Clamp01(
+                    distance / projectileRange
+                );
+                float duration =
+                    projectileFlightDuration *
+                    Mathf.Lerp(
+                        0.4f,
+                        1f,
+                        distanceRatio
+                    );
+                float height =
+                    projectileArcHeight *
+                    Mathf.Lerp(
+                        0.35f,
+                        1f,
+                        distanceRatio
+                    );
+
                 CannonballProjectile projectile =
                     Instantiate(
                         cannonballPrefab,
                         muzzle.position,
-                        Quaternion.LookRotation(direction)
+                        Quaternion.LookRotation(
+                            toTarget.normalized,
+                            Vector3.up
+                        )
                     );
 
                 PrototypeCombatVfx.PlayMuzzleBurst(
                     muzzle.position,
-                    direction
+                    toTarget.normalized
                 );
 
                 PrototypeCameraShake.Request(
@@ -162,12 +212,11 @@ namespace Seaborn.Combat
                     0.08f
                 );
 
-                projectile.Launch(
+                projectile.LaunchAt(
                     transform,
-                    direction,
-                    projectileRange,
-                    projectileFlightDuration,
-                    projectileArcHeight
+                    clampedTarget,
+                    duration,
+                    height
                 );
 
                 if (delayBetweenCannons > 0f)
