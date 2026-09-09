@@ -63,13 +63,37 @@ namespace Seaborn.Combat
 
         public bool IsInsideFiringArc { get; private set; }
 
+        public float CooldownRemaining =>
+            broadsideController != null
+                ? broadsideController.GetCooldownRemaining(
+                    SelectedBroadside)
+                : 0f;
+
+        public bool IsCoolingDown =>
+            CooldownRemaining > 0f;
+
+        public float CooldownProgress
+        {
+            get
+            {
+                if (broadsideController == null ||
+                    broadsideController.CooldownDuration <= 0f)
+                {
+                    return 1f;
+                }
+
+                return 1f - Mathf.Clamp01(
+                    CooldownRemaining /
+                    broadsideController.CooldownDuration
+                );
+            }
+        }
+
         public bool CanFire =>
             IsAiming &&
             IsInRange &&
             IsInsideFiringArc &&
-            broadsideController != null &&
-            broadsideController.GetCooldownRemaining(
-                SelectedBroadside) <= 0f;
+            !IsCoolingDown;
 
         private float preparation;
         private bool hasCurrentAimPoint;

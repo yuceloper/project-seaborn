@@ -37,6 +37,8 @@ namespace Seaborn.Combat
 
         public float MaximumRange => projectileRange;
 
+        public float CooldownDuration => broadsideCooldown;
+
         public bool TryFire(BroadsideSide side)
         {
             Vector3 direction =

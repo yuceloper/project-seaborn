@@ -1,3 +1,4 @@
+using Seaborn.Combat;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -13,6 +14,16 @@ namespace Seaborn.Camera
         [SerializeField, Range(25f, 80f)] private float pitch = 55f;
         [SerializeField, Range(-180f, 180f)] private float yaw = 45f;
         [SerializeField] private float targetHeight = 1f;
+
+        [Header("Aim Focus")]
+        [SerializeField]
+        private ManualBroadsideAimController aimController;
+
+        [SerializeField, Range(0f, 1f)]
+        private float aimFocusWeight = 0.35f;
+
+        [SerializeField, Min(0f)]
+        private float maximumAimFocusOffset = 4f;
 
         [Header("Distance")]
         [SerializeField] private InputActionReference zoomAction;
@@ -126,22 +137,39 @@ namespace Seaborn.Camera
                 target.position +
                 Vector3.up * targetHeight;
 
-            if (targetRigidbody == null)
+            if (targetRigidbody != null)
+            {
+                Vector3 lookAhead =
+                    targetRigidbody.linearVelocity *
+                    lookAheadTime;
+
+                lookAhead.y = 0f;
+                lookAhead = Vector3.ClampMagnitude(
+                    lookAhead,
+                    maximumLookAhead
+                );
+
+                focusPoint += lookAhead;
+            }
+
+            if (aimController == null ||
+                !aimController.IsAiming)
             {
                 return focusPoint;
             }
 
-            Vector3 lookAhead =
-                targetRigidbody.linearVelocity *
-                lookAheadTime;
-
-            lookAhead.y = 0f;
-            lookAhead = Vector3.ClampMagnitude(
-                lookAhead,
-                maximumLookAhead
+            Vector3 aimOffset =
+                aimController.CurrentAimPoint -
+                target.position;
+            aimOffset.y = 0f;
+            aimOffset = Vector3.ClampMagnitude(
+                aimOffset,
+                maximumAimFocusOffset /
+                Mathf.Max(0.01f, aimFocusWeight)
             );
 
-            return focusPoint + lookAhead;
+            return focusPoint +
+                aimOffset * aimFocusWeight;
         }
 
         private Vector3 CalculateCameraPosition(

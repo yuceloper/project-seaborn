@@ -47,6 +47,21 @@ namespace Seaborn.Ship
         [SerializeField, Range(0f, 1f)]
         private float movementPrediction = 0.65f;
 
+        public float AimPreparation =>
+            Mathf.Clamp01(
+                aimPreparation /
+                Mathf.Max(0.1f, aimPreparationTime)
+            );
+
+        public bool IsPreparingShot =>
+            aimPreparation > 0f;
+
+        public Vector3 PredictedAimPoint
+        {
+            get;
+            private set;
+        }
+
         private Rigidbody shipRigidbody;
         private BroadsideController broadsideController;
         private ShipHealth shipHealth;
@@ -162,6 +177,25 @@ namespace Seaborn.Ship
                 return;
             }
 
+            PredictedAimPoint = target.position;
+
+            Rigidbody trackedTargetRigidbody =
+                target.GetComponent<Rigidbody>();
+
+            if (trackedTargetRigidbody != null)
+            {
+                PredictedAimPoint +=
+                    trackedTargetRigidbody.linearVelocity *
+                    movementPrediction;
+            }
+
+            PredictedAimPoint =
+                new Vector3(
+                    PredictedAimPoint.x,
+                    transform.position.y + 0.25f,
+                    PredictedAimPoint.z
+                );
+
             aimPreparation += Time.fixedDeltaTime;
 
             if (aimPreparation < aimPreparationTime)
@@ -187,7 +221,9 @@ namespace Seaborn.Ship
                     movementPrediction;
             }
 
-            predictedTarget.y = transform.position.y + 0.25f;
+            predictedTarget.y =
+                transform.position.y + 0.25f;
+            PredictedAimPoint = predictedTarget;
 
             if (broadsideController.TryFireAt(
                     side,

@@ -306,6 +306,9 @@ MonoBehaviour:
   pitch: 55
   yaw: 45
   targetHeight: 1
+  aimController: {fileID: 377095496}
+  aimFocusWeight: 0.35
+  maximumAimFocusOffset: 4
   zoomAction: {fileID: -3407050166304887344, guid: 2bb2239db2e636d48ada10e4a39746d9, type: 3}
   defaultDistance: 20
   minimumDistance: 11
@@ -522,6 +525,7 @@ MonoBehaviour:
   invalidColor: {r: 1, g: 0.2, b: 0.15, a: 0.95}
   preparingColor: {r: 1, g: 0.72, b: 0.12, a: 0.95}
   readyColor: {r: 0.2, g: 1, b: 0.42, a: 0.95}
+  cooldownColor: {r: 0.2, g: 0.65, b: 1, a: 0.95}
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
@@ -1164,6 +1168,7 @@ GameObject:
   - component: {fileID: 2100000008}
   - component: {fileID: 2100000009}
   - component: {fileID: 2100000010}
+  - component: {fileID: 2100000011}
   m_Layer: 0
   m_Name: EnemyShip
   m_TagString: Untagged
@@ -1396,6 +1401,22 @@ MonoBehaviour:
   initialReactionDelay: 2
   aimPreparationTime: 1.1
   movementPrediction: 0.65
+--- !u!114 &2100000011
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2100000000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82b2e61b23f7494e887b74b936b56bd2, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::Seaborn.Ship.EnemyAimTelegraph
+  preparingColor: {r: 1, g: 0.65, b: 0.1, a: 0.35}
+  readyColor: {r: 1, g: 0.12, b: 0.08, a: 0.9}
+  minimumWidth: 0.035
+  maximumWidth: 0.11
 --- !u!1 &2110000000
 GameObject:
   m_ObjectHideFlags: 0
