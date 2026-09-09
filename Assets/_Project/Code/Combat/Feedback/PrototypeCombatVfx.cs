@@ -154,6 +154,11 @@ namespace Seaborn.Combat
             ParticleSystem particleSystem =
                 effectObject.AddComponent<ParticleSystem>();
 
+            particleSystem.Stop(
+                true,
+                ParticleSystemStopBehavior.StopEmittingAndClear
+            );
+
             ParticleSystem.MainModule main =
                 particleSystem.main;
             main.playOnAwake = false;
