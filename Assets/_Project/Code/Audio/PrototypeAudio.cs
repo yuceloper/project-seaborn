@@ -280,7 +280,7 @@ namespace Seaborn.Audio
                     edgeFade;
                 samples[index * 2 + 1] =
                     (rightNoise * 0.62f + swell * 0.09f) *
-                    edgeilhoFade;
+                    edgeFade;
             }
 
             return CreateClip(
