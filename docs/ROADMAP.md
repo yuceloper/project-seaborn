@@ -59,8 +59,8 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 
 ### Hareket ve çevresel geri bildirim
 
-- [x] Gemi hızına ve dönüşe bağlı dümen suyu
-- [x] Pruva köpüğü
+- [~] Gemi hızına ve dönüşe bağlı dümen suyu
+- [ ] Pruva köpüğü
 - [ ] Hafif yalpa ve yükselme
 - [x] Gülle su sıçramasının deniz paletine uyarlanması
 - [ ] Rüzgâr yönü için görsel ipucu
