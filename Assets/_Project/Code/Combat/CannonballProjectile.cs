@@ -48,7 +48,7 @@ namespace Seaborn.Combat
             Transform projectileOwner,
             Vector3 direction,
             float range,
-            float durationbDuration,
+            float duration,
             float height)
         {
             ownerRoot = projectileOwner != null
@@ -62,7 +62,7 @@ namespace Seaborn.Combat
 
             flightDuration = Mathf.Max(
                 0.1f,
-                flightDuration
+                duration
             );
             arcHeight = Mathf.Max(0f, height);
 

@@ -17,7 +17,7 @@ namespace Seaborn.Ship
 
         public float MaximumHealth => maximumHealth;
 
-        public bool Is IsSunk { get; private set; }
+        public bool IsSunk { get; private set; }
 
         private void Awake()
         {
