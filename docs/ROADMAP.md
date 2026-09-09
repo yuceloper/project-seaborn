@@ -54,7 +54,7 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Atmosferik sis ve uzaklık solması
 - [x] Altın saat yönlü ışık ayarı
 - [ ] Renk düzenleme ve kontrollü bloom
-- [ ] Uzak ada/kaya silüetleri
+- [~] Uzak ada/kaya silüetleri
 - [ ] Gökyüzü ve bulut yönü
 
 ### Hareket ve çevresel geri bildirim
