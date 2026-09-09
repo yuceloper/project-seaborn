@@ -45,13 +45,13 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 
 ### Deniz ve görüntü
 
-- [ ] URP uyumlu prototip okyanus shader’ı
-- [ ] İki ölçekli dalga hareketi
-- [ ] Derinlik/ufuk renk geçişi
-- [ ] Fresnel ve güneş yansıması
+- [x] URP uyumlu prototip okyanus shader’ı
+- [x] İki ölçekli dalga hareketi
+- [x] Derinlik/ufuk renk geçişi
+- [x] Fresnel ve güneş yansıması
 - [ ] Gemilerin çevresinde okunabilir su kontrastı
-- [ ] Atmosferik sis ve uzaklık solması
-- [ ] Altın saat yönlü ışık ayarı
+- [x] Atmosferik sis ve uzaklık solması
+- [x] Altın saat yönlü ışık ayarı
 - [ ] Renk düzenleme ve kontrollü bloom
 - [ ] Uzak ada/kaya silüetleri
 - [ ] Gökyüzü ve bulut yönü
