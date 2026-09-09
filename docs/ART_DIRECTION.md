@@ -37,7 +37,7 @@ Sahne huzurlu bir kartpostal değil; yaklaşan tehlikeden hemen önceki sıcak v
 - Ana ışığa bağlı sıcak specular parlaması
 - Unity lineer sis
 - Düz fizik/nişan düzlemi
-- Dünya uzayında kalan, gemi hızına göre yoğunlaşan pruva köpüğü ve çift dümen izi
+- Dünya uzayında kalan, gemi hızına göre genişleyen çift şeritli dümen izi
 - Dönüşün dış tarafında güçlenen asimetrik dümen suyu
 - Deniz paletine bağlı iki katmanlı gülle su sıçraması
 
