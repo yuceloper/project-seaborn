@@ -18,11 +18,41 @@ namespace Seaborn.Ship
         private readonly List<Mesh> meshes =
             new List<Mesh>();
 
+        [Header("Visual Buoyancy")]
+        [SerializeField, Min(0f)]
+        private float heaveAmplitude = 0.055f;
+
+        [SerializeField, Min(0.01f)]
+        private float heaveFrequency = 0.18f;
+
+        [SerializeField, Min(0f)]
+        private float rollAmplitude = 1.35f;
+
+        [SerializeField, Min(0f)]
+        private float pitchAmplitude = 0.7f;
+
         private Transform visualRoot;
+        private Transform motionRoot;
         private MeshRenderer originalRenderer;
+        private float motionPhase;
 
         private void Awake()
         {
+            float roleOffset =
+                name.IndexOf(
+                    "Enemy",
+                    StringComparison.OrdinalIgnoreCase
+                ) >= 0
+                    ? 1.7f
+                    : 0.25f;
+
+            motionPhase = Mathf.Repeat(
+                transform.position.x * 0.173f +
+                transform.position.z * 0.319f +
+                roleOffset,
+                Mathf.PI * 2f
+            );
+
             originalRenderer = GetComponent<MeshRenderer>();
 
             if (originalRenderer != null)
@@ -39,6 +69,40 @@ namespace Seaborn.Ship
             BuildVisual(isEnemy);
         }
 
+        private void LateUpdate()
+        {
+            if (motionRoot == null)
+            {
+                return;
+            }
+
+            float cycle =
+                Time.time *
+                heaveFrequency *
+                Mathf.PI *
+                2f +
+                motionPhase;
+
+            float heave =
+                Mathf.Sin(cycle) * heaveAmplitude +
+                Mathf.Sin(cycle * 1.73f + 0.8f) *
+                heaveAmplitude *
+                0.28f;
+
+            float roll =
+                Mathf.Sin(cycle * 0.82f + 1.25f) *
+                rollAmplitude;
+
+            float pitch =
+                Mathf.Sin(cycle * 1.21f - 0.45f) *
+                pitchAmplitude;
+
+            motionRoot.localPosition =
+                Vector3.up * heave;
+            motionRoot.localRotation =
+                Quaternion.Euler(pitch, 0f, roll);
+        }
+
         private void BuildVisual(bool isEnemy)
         {
             GameObject rootObject =
@@ -52,6 +116,11 @@ namespace Seaborn.Ship
                 SafeInverse(scale.y),
                 SafeInverse(scale.z)
             );
+
+            GameObject motionObject =
+                new GameObject("Visual Buoyancy");
+            motionRoot = motionObject.transform;
+            motionRoot.SetParent(visualRoot, false);
 
             Material hullMaterial = CreateMaterial(
                 isEnemy
@@ -153,7 +222,7 @@ namespace Seaborn.Ship
             meshes.Add(mesh);
 
             GameObject hull = new GameObject("Hull");
-            hull.transform.SetParent(visualRoot, false);
+            hull.transform.SetParent(motionRoot, false);
 
             MeshFilter filter =
                 hull.AddComponent<MeshFilter>();
@@ -321,7 +390,7 @@ namespace Seaborn.Ship
             meshes.Add(mesh);
 
             GameObject sail = new GameObject(sailName);
-            sail.transform.SetParent(visualRoot, false);
+            sail.transform.SetParent(motionRoot, false);
 
             MeshFilter filter =
                 sail.AddComponent<MeshFilter>();
@@ -345,7 +414,7 @@ namespace Seaborn.Ship
             GameObject part =
                 GameObject.CreatePrimitive(primitiveType);
             part.name = partName;
-            part.transform.SetParent(visualRoot, false);
+            part.transform.SetParent(motionRoot, false);
             part.transform.localPosition = localPosition;
             part.transform.localRotation = localRotation;
             part.transform.localScale = localScale;
