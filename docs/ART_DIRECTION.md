@@ -33,6 +33,8 @@ Sahne huzurlu bir kartpostal değil; yaklaşan tehlikeden hemen önceki sıcak v
 - Oyuncu ve düşman ayrımı yalnızca isim/UI ile değil yelken ve bayrak rengiyle yapılır.
 - İlk blockout gövde, güverte, kıç kamarası, direk, iki yelken ve altı top içerir.
 - Görsel kök fizik gövdesinden ayrıdır; collider ve namlu noktaları korunur.
+- Hafif yükselme, pitch ve roll yalnızca görsel köke uygulanır; savaş simülasyonu düzlemde kalır.
+- Gemilerin salınım fazları farklıdır; filo aynı ritimde mekanik olarak sallanmaz.
 - Nihai model gelene kadar gerçekçi küçük detay yerine güçlü ana şekiller tercih edilir.
 
 ## Teknik yaklaşım
