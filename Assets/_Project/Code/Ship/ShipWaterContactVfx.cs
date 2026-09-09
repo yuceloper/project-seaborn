@@ -76,7 +76,7 @@ namespace Seaborn.Ship
                 Vector3.ProjectOnPlane(
                     velocity,
                     Vector3.up
-f);
+                );
             float targetSpeed = Mathf.Clamp01(
                 planarVelocity.magnitude /
                 Mathf.Max(0.1f, referenceSpeed)
@@ -89,7 +89,6 @@ f);
             ) / deltaTime;
 
             float targetTurn = Mathf.Clamp01(
-(
                 Mathf.Abs(signedTurn) / 70f
             );
 
