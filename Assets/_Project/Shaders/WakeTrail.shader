@@ -41,13 +41,15 @@ Shader "Seaborn/Wake Trail"
             {
                 float4 positionOS : POSITION;
                 half4 color : COLOR;
+                float2 uv : TEXCOORD0;
             };
 
             struct Varyings
             {
                 float4 positionCS : SV_POSITION;
                 half4 color : COLOR;
-                half fogFactor : TEXCOORD0;
+                float2 uv : TEXCOORD0;
+                half fogFactor : TEXCOORD1;
             };
 
             Varyings WakeVertex(Attributes input)
@@ -56,6 +58,7 @@ Shader "Seaborn/Wake Trail"
                 output.positionCS =
                     TransformObjectToHClip(input.positionOS.xyz);
                 output.color = input.color * _BaseColor;
+                output.uv = input.uv;
                 output.fogFactor =
                     ComputeFogFactor(output.positionCS.z);
                 return output;
@@ -67,7 +70,17 @@ Shader "Seaborn/Wake Trail"
                     input.color.rgb,
                     input.fogFactor
                 );
-                return half4(color, input.color.a);
+                half edgeDistance =
+                    1.0h - abs(input.uv.y * 2.0h - 1.0h);
+                half edgeFade = smoothstep(
+                    0.0h,
+                    0.42h,
+                    edgeDistance
+                );
+                return half4(
+                    color,
+                    input.color.a * edgeFade
+                );
             }
 
             ENDHLSL
