@@ -129,6 +129,16 @@ namespace Seaborn.Combat
                         Quaternion.LookRotation(direction)
                     );
 
+                PrototypeCombatVfx.PlayMuzzleBurst(
+                    muzzle.position,
+                    direction
+                );
+
+                PrototypeCameraShake.Request(
+                    0.06f,
+                    0.08f
+                );
+
                 projectile.Launch(
                     transform,
                     direction,
