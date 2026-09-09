@@ -32,6 +32,7 @@ Sahne huzurlu bir kartpostal değil; yaklaşan tehlikeden hemen önceki sıcak v
 - URP özel shader
 - Dünya koordinatında iki sinüs dalga katmanı
 - Shader tabanlı normal yaklaşımı
+- Dünya koordinatında akan, gürültüyle kırılan yüzey köpüğü damarları
 - Fresnel ile ufuk rengi
 - Ana ışığa bağlı sıcak specular parlaması
 - Unity lineer sis
