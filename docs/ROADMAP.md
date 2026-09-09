@@ -47,6 +47,7 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 
 - [x] URP uyumlu prototip okyanus shader’ı
 - [x] İki ölçekli dalga hareketi
+- [x] Akan, kırılan prosedürel yüzey köpüğü
 - [x] Derinlik/ufuk renk geçişi
 - [x] Fresnel ve güneş yansıması
 - [ ] Gemilerin çevresinde okunabilir su kontrastı
