@@ -39,30 +39,30 @@ namespace Seaborn.Atmosphere
 
             CreateIsland(
                 "Northwest Coast",
-                new Vector3(-27f, 0.72f, 24f),
-                new Vector2(10.5f, 6.2f),
-                4.8f,
+                new Vector3(-43f, 0.72f, 34f),
+                new Vector2(8.2f, 4.8f),
+                2.1f,
                 104
             );
             CreateIsland(
                 "Northeast Rocks",
-                new Vector3(30f, 0.72f, 20f),
-                new Vector2(8.2f, 5.4f),
-                3.9f,
+                new Vector3(44f, 0.72f, 32f),
+                new Vector2(6.5f, 4.2f),
+                1.7f,
                 211
             );
             CreateIsland(
                 "Southwest Shelf",
-                new Vector3(-32f, 0.72f, -25f),
-                new Vector2(12.5f, 5.8f),
-                3.4f,
+                new Vector3(-46f, 0.72f, -37f),
+                new Vector2(9.5f, 4.6f),
+                1.5f,
                 307
             );
             CreateIsland(
                 "Southeast Coast",
-                new Vector3(27f, 0.72f, -30f),
-                new Vector2(11f, 7.5f),
-                5.2f,
+                new Vector3(43f, 0.72f, -43f),
+                new Vector2(8.8f, 5.8f),
+                2.25f,
                 419
             );
         }
