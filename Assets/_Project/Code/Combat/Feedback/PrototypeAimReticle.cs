@@ -23,11 +23,18 @@ namespace Seaborn.Combat
         private Color readyColor =
             new Color(0.2f, 1f, 0.42f, 0.95f);
 
+        [SerializeField]
+        private Color cooldownColor =
+            new Color(0.2f, 0.65f, 1f, 0.95f);
+
         private ManualBroadsideAimController aimController;
         private LineRenderer desiredRing;
         private LineRenderer currentRing;
+        private LineRenderer sideIndicator;
+
         private Material desiredMaterial;
         private Material currentMaterial;
+        private Material sideMaterial;
 
         private void Awake()
         {
@@ -42,13 +49,19 @@ namespace Seaborn.Combat
                 "Current Aim",
                 out currentMaterial
             );
+            sideIndicator = CreateRing(
+                "Selected Broadside",
+                out sideMaterial
+            );
         }
 
         private void LateUpdate()
         {
             bool visible = aimController.IsAiming;
+
             desiredRing.enabled = visible;
             currentRing.enabled = visible;
+            sideIndicator.enabled = visible;
 
             if (!visible)
             {
@@ -59,22 +72,50 @@ namespace Seaborn.Combat
                 aimController.IsInRange &&
                 aimController.IsInsideFiringArc;
 
-            Color stateColor = !valid
-                ? invalidColor
-                : Color.Lerp(
+            Color stateColor;
+
+            if (!valid)
+            {
+                stateColor = invalidColor;
+            }
+            else if (aimController.IsCoolingDown)
+            {
+                stateColor = cooldownColor;
+            }
+            else
+            {
+                stateColor = Color.Lerp(
                     preparingColor,
                     readyColor,
                     aimController.AimReadiness
                 );
+            }
 
-            desiredMaterial.color = stateColor;
-            currentMaterial.color = stateColor;
+            SetMaterialColor(
+                desiredMaterial,
+                stateColor
+            );
+            SetMaterialColor(
+                currentMaterial,
+                stateColor
+            );
+            SetMaterialColor(
+                sideMaterial,
+                stateColor
+            );
 
             float spreadRadius = Mathf.Lerp(
                 1.8f,
                 0.3f,
                 aimController.AimReadiness
             );
+
+            if (aimController.IsCoolingDown)
+            {
+                spreadRadius +=
+                    0.08f *
+                    Mathf.Sin(Time.time * 10f);
+            }
 
             DrawRing(
                 desiredRing,
@@ -85,6 +126,33 @@ namespace Seaborn.Combat
                 currentRing,
                 aimController.CurrentAimPoint,
                 0.22f
+            );
+
+            Vector3 sideDirection =
+                aimController.SelectedBroadside ==
+                BroadsideSide.Starboard
+                    ? transform.right
+                    : -transform.right;
+
+            Vector3 sidePosition =
+                transform.position +
+                sideDirection * 1.55f;
+            sidePosition.y =
+                aimController.CurrentAimPoint.y;
+
+            float sideRadius =
+                aimController.IsCoolingDown
+                    ? Mathf.Lerp(
+                        0.12f,
+                        0.34f,
+                        aimController.CooldownProgress
+                    )
+                    : 0.34f;
+
+            DrawRing(
+                sideIndicator,
+                sidePosition,
+                sideRadius
             );
         }
 
@@ -124,6 +192,21 @@ namespace Seaborn.Combat
             return lineRenderer;
         }
 
+        private static void SetMaterialColor(
+            Material material,
+            Color color)
+        {
+            if (material.HasProperty("_BaseColor"))
+            {
+                material.SetColor("_BaseColor", color);
+            }
+
+            if (material.HasProperty("_Color"))
+            {
+                material.SetColor("_Color", color);
+            }
+        }
+
         private static void DrawRing(
             LineRenderer lineRenderer,
             Vector3 center,
@@ -156,14 +239,17 @@ namespace Seaborn.Combat
 
         private void OnDestroy()
         {
-            if (desiredMaterial != null)
-            {
-                Destroy(desiredMaterial);
-            }
+            DestroyMaterial(desiredMaterial);
+            DestroyMaterial(currentMaterial);
+            DestroyMaterial(sideMaterial);
+        }
 
-            if (currentMaterial != null)
+        private static void DestroyMaterial(
+            Material material)
+        {
+            if (material != null)
             {
-                Destroy(currentMaterial);
+                Destroy(material);
             }
         }
     }
