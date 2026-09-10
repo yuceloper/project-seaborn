@@ -97,3 +97,9 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 **Karar:** İlk zıpkın sistemi gemi bağlayan PvP silahı değil, deniz canlılarını avlayan PvE ekipmanıdır. Avdan silver ve malzeme elde edilir; yük limana ulaşmadan güvenceye alınmaz. Gerçekçi kıyı canlılarından kontrollü fantastik leviathan karşılaşmalarına yükselen bölgesel bir av hattı kurulacaktır.
 
 **Neden:** Savaşa alternatif fakat aynı risk ekonomisini besleyen bir sefer etkinliği yaratmak; avcı gemilerine, zıpkın ekipmanına ve PvP’de değerli yük taşıyan doğal hedeflere anlam kazandırmak.
+
+## 2026-09-10 — İlk deniz avı kontrolü
+
+**Karar:** Prototip av zıpkını top nişanından ayrı olarak Sol Shift basılıyken mouse ile hedeflenir ve sol tıkla atılır. İlk av canlısı Tideback gezinir, zıpkın isabetinden sonra avcıdan kaçar ve av tamamlandığında prototip silver kazandırır.
+
+**Neden:** Mevcut sağ tuş borda nişanını bozmadan aynı fare kas hafızasını kullanmak ve av döngüsünü sahne/prefab kurulumu gerektirmeden hızlıca doğrulamak. Üretim kontrol şeması UI ve gamepad çalışmasıyla yeniden ele alınacaktır.
