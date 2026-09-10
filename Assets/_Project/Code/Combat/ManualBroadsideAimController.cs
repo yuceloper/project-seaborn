@@ -5,118 +5,74 @@ using UnityEngine.InputSystem;
 namespace Seaborn.Combat
 {
     [RequireComponent(typeof(BroadsideController))]
-    public sealed class ManualBroadsideAimController :
-        MonoBehaviour
+    public sealed class ManualBroadsideAimController : MonoBehaviour
     {
         [Header("Input")]
-        [SerializeField]
-        private InputActionReference aimAction;
-
-        [SerializeField]
-        private InputActionReference fireAction;
+        [SerializeField] private InputActionReference aimAction;
+        [SerializeField] private InputActionReference fireAction;
 
         [Header("References")]
-        [SerializeField]
-        private UnityEngine.Camera aimCamera;
-
-        [SerializeField]
-        private BroadsideController broadsideController;
+        [SerializeField] private UnityEngine.Camera aimCamera;
+        [SerializeField] private BroadsideController broadsideController;
 
         [Header("Aim Geometry")]
-        [SerializeField]
-        private float aimPlaneHeight = 0.75f;
-
-        [SerializeField, Min(0f)]
-        private float minimumRange = 2f;
-
-        [SerializeField, Range(1f, 89f)]
-        private float firingHalfAngle = 48f;
+        [SerializeField] private float aimPlaneHeight = 0.75f;
+        [SerializeField, Min(0f)] private float minimumRange = 2f;
+        [SerializeField, Range(1f, 89f)] private float firingHalfAngle = 48f;
 
         [Header("Preparation")]
-        [SerializeField, Min(0.1f)]
-        private float fullPreparationTime = 1f;
-
-        [SerializeField, Min(0.1f)]
-        private float aimFollowSpeed = 8f;
-
-        [SerializeField, Min(0.1f)]
-        private float maximumTrackingError = 3f;
+        [SerializeField, Min(0.1f)] private float fullPreparationTime = 1f;
+        [SerializeField, Min(0.1f)] private float aimFollowSpeed = 8f;
+        [SerializeField, Min(0.1f)] private float maximumTrackingError = 3f;
 
         public event Action AimStateChanged;
         public event Action AimUpdated;
 
         public bool IsAiming { get; private set; }
-
         public Vector3 DesiredAimPoint { get; private set; }
-
         public Vector3 CurrentAimPoint { get; private set; }
-
         public float AimReadiness { get; private set; }
-
-        public BroadsideSide SelectedBroadside
-        {
-            get;
-            private set;
-        }
-
+        public BroadsideSide SelectedBroadside { get; private set; }
         public bool IsInRange { get; private set; }
-
         public bool IsInsideFiringArc { get; private set; }
 
         public float CooldownRemaining =>
             broadsideController != null
-                ? broadsideController.GetCooldownRemaining(
-                    SelectedBroadside)
+                ? broadsideController.GetCooldownRemaining(SelectedBroadside)
                 : 0f;
 
-        public bool IsCoolingDown =>
-            CooldownRemaining > 0f;
+        public bool IsCoolingDown => CooldownRemaining > 0f;
 
-        public float CooldownProgress
-        {
-            get
-            {
-                if (broadsideController == null ||
-                    broadsideController.CooldownDuration <= 0f)
-                {
-                    return 1f;
-                }
-
-                return 1f - Mathf.Clamp01(
-                    CooldownRemaining /
-                    broadsideController.CooldownDuration
-                );
-            }
-        }
+        public float CooldownProgress =>
+            broadsideController != null
+                ? broadsideController.GetReloadProgress(SelectedBroadside)
+                : 1f;
 
         public bool CanFire =>
             IsAiming &&
             IsInRange &&
             IsInsideFiringArc &&
-            !IsCoolingDown;
+            !IsCoolingDown &&
+            broadsideController != null &&
+            broadsideController.GetAmmunitionStock(
+                broadsideController.SelectedAmmunition
+            ) > 0;
 
         private float preparation;
         private bool hasCurrentAimPoint;
 
         private void Reset()
         {
-            broadsideController =
-                GetComponent<BroadsideController>();
+            broadsideController = GetComponent<BroadsideController>();
             aimCamera = UnityEngine.Camera.main;
         }
 
         private void Awake()
         {
             if (broadsideController == null)
-            {
-                broadsideController =
-                    GetComponent<BroadsideController>();
-            }
-
+                broadsideController = GetComponent<BroadsideController>();
             if (aimCamera == null)
-            {
                 aimCamera = UnityEngine.Camera.main;
-            }
         }
 
         private void OnEnable()
@@ -134,32 +90,32 @@ namespace Seaborn.Combat
 
         private void Update()
         {
-            bool wantsToAim =
-                aimAction != null &&
-                aimAction.action.IsPressed();
+            UpdatePrototypeAmmunitionSelection();
 
+            bool wantsToAim = aimAction != null && aimAction.action.IsPressed();
             SetAiming(wantsToAim);
-
-            if (!IsAiming)
-            {
-                return;
-            }
+            if (!IsAiming) return;
 
             UpdateAim();
-
-            if (fireAction != null &&
-                fireAction.action.WasPressedThisFrame())
-            {
+            if (fireAction != null && fireAction.action.WasPressedThisFrame())
                 Fire();
-            }
+        }
+
+        private void UpdatePrototypeAmmunitionSelection()
+        {
+            if (broadsideController == null || Keyboard.current == null) return;
+
+            if (Keyboard.current.digit1Key.wasPressedThisFrame)
+                broadsideController.TrySelectAmmunition(AmmunitionType.Standard);
+            else if (Keyboard.current.digit2Key.wasPressedThisFrame)
+                broadsideController.TrySelectAmmunition(AmmunitionType.Chain);
+            else if (Keyboard.current.digit3Key.wasPressedThisFrame)
+                broadsideController.TrySelectAmmunition(AmmunitionType.Grapeshot);
         }
 
         private void SetAiming(bool value)
         {
-            if (IsAiming == value)
-            {
-                return;
-            }
+            if (IsAiming == value) return;
 
             IsAiming = value;
             preparation = 0f;
@@ -186,73 +142,36 @@ namespace Seaborn.Combat
                 return;
             }
 
-            Vector3 fromShip =
-                pointerPoint - transform.position;
+            Vector3 fromShip = pointerPoint - transform.position;
             fromShip.y = 0f;
-
             float rawDistance = fromShip.magnitude;
-
-            if (rawDistance <= Mathf.Epsilon)
-            {
-                return;
-            }
+            if (rawDistance <= Mathf.Epsilon) return;
 
             Vector3 direction = fromShip / rawDistance;
-            SelectedBroadside =
-                Vector3.Dot(transform.right, direction) >= 0f
-                    ? BroadsideSide.Starboard
-                    : BroadsideSide.Port;
+            SelectedBroadside = Vector3.Dot(transform.right, direction) >= 0f
+                ? BroadsideSide.Starboard
+                : BroadsideSide.Port;
 
-            float maximumRange =
-                broadsideController.MaximumRange;
+            float maximumRange = broadsideController.MaximumRange;
+            IsInRange = rawDistance >= minimumRange && rawDistance <= maximumRange;
+            float clampedDistance = Mathf.Clamp(rawDistance, minimumRange, maximumRange);
 
-            IsInRange =
-                rawDistance >= minimumRange &&
-                rawDistance <= maximumRange;
+            DesiredAimPoint = transform.position + direction * clampedDistance;
+            DesiredAimPoint = new Vector3(DesiredAimPoint.x, aimPlaneHeight, DesiredAimPoint.z);
 
-            float clampedDistance = Mathf.Clamp(
-                rawDistance,
-                minimumRange,
-                maximumRange
-            );
-
-            DesiredAimPoint =
-                transform.position +
-                direction * clampedDistance;
-            DesiredAimPoint =
-                new Vector3(
-                    DesiredAimPoint.x,
-                    aimPlaneHeight,
-                    DesiredAimPoint.z
-                );
-
-            Vector3 broadsideDirection =
-                SelectedBroadside ==
-                BroadsideSide.Starboard
-                    ? transform.right
-                    : -transform.right;
-
-            float minimumAlignment =
-                Mathf.Cos(
-                    firingHalfAngle *
-                    Mathf.Deg2Rad
-                );
-
-            IsInsideFiringArc =
-                Vector3.Dot(
-                    broadsideDirection,
-                    direction
-                ) >= minimumAlignment;
+            Vector3 broadsideDirection = SelectedBroadside == BroadsideSide.Starboard
+                ? transform.right
+                : -transform.right;
+            float minimumAlignment = Mathf.Cos(firingHalfAngle * Mathf.Deg2Rad);
+            IsInsideFiringArc = Vector3.Dot(broadsideDirection, direction) >= minimumAlignment;
 
             if (!hasCurrentAimPoint)
             {
-                CurrentAimPoint = transform.position;
-                CurrentAimPoint =
-                    new Vector3(
-                        CurrentAimPoint.x,
-                        aimPlaneHeight,
-                        CurrentAimPoint.z
-                    );
+                CurrentAimPoint = new Vector3(
+                    transform.position.x,
+                    aimPlaneHeight,
+                    transform.position.z
+                );
                 hasCurrentAimPoint = true;
             }
 
@@ -263,79 +182,40 @@ namespace Seaborn.Combat
             );
 
             if (IsInRange && IsInsideFiringArc)
-            {
-                preparation = Mathf.Clamp01(
-                    preparation +
-                    Time.deltaTime /
-                    fullPreparationTime
-                );
-            }
+                preparation = Mathf.Clamp01(preparation + Time.deltaTime / fullPreparationTime);
             else
-            {
                 preparation = 0f;
-            }
 
-            float trackingError = Vector3.Distance(
-                CurrentAimPoint,
-                DesiredAimPoint
-            );
-            float trackingQuality = 1f - Mathf.Clamp01(
-                trackingError / maximumTrackingError
-            );
-
-            AimReadiness =
-                preparation * trackingQuality;
-
+            float trackingError = Vector3.Distance(CurrentAimPoint, DesiredAimPoint);
+            float trackingQuality = 1f - Mathf.Clamp01(trackingError / maximumTrackingError);
+            AimReadiness = preparation * trackingQuality;
             AimUpdated?.Invoke();
         }
 
-        private bool TryGetPointerPoint(
-            out Vector3 pointerPoint)
+        private bool TryGetPointerPoint(out Vector3 pointerPoint)
         {
             pointerPoint = default;
+            if (aimCamera == null || Mouse.current == null) return false;
 
-            if (aimCamera == null ||
-                Mouse.current == null)
-            {
-                return false;
-            }
-
-            Vector2 screenPosition =
-                Mouse.current.position.ReadValue();
-            Ray pointerRay =
-                aimCamera.ScreenPointToRay(screenPosition);
-
+            Ray pointerRay = aimCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
             Plane aimPlane = new Plane(
                 Vector3.up,
-                new Vector3(
-                    0f,
-                    aimPlaneHeight,
-                    0f
-                )
+                new Vector3(0f, aimPlaneHeight, 0f)
             );
 
-            if (!aimPlane.Raycast(
-                    pointerRay,
-                    out float enter))
-            {
-                return false;
-            }
-
+            if (!aimPlane.Raycast(pointerRay, out float enter)) return false;
             pointerPoint = pointerRay.GetPoint(enter);
             return true;
         }
 
         private void Fire()
         {
-            if (!CanFire)
-            {
-                return;
-            }
+            if (!CanFire) return;
 
             if (broadsideController.TryFireAt(
-                    SelectedBroadside,
-                    CurrentAimPoint,
-                    AimReadiness))
+                SelectedBroadside,
+                CurrentAimPoint,
+                AimReadiness))
             {
                 preparation = 0f;
                 AimReadiness = 0f;

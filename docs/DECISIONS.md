@@ -62,7 +62,6 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 
 **Neden:** Çekirdek savaş döngüsü artık eğlenceli. Bir sonraki en büyük belirsizlik sistem genişliği değil, dünyanın ayırt edilebilir görsel ve işitsel kimliği.
 
-
 ## 2026-09-09 — İlk atmosfer sahnesi
 
 **Karar:** İlk atmosfer dikey dilimi “fırtına öncesi altın saat kıyı suları” paletini kullanır. Deniz dalgası ilk aşamada yalnızca görsel shader deformasyonudur; fizik ve nişan düzlemi sabit kalır.
@@ -87,3 +86,14 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 
 **Neden:** Prototip artık görsel ve işitsel kimliğini anlatıyor. Bir sonraki en büyük ürün riski atmosfer değil, savaş kararlarının standart borda ateşinin ötesine geçip geçememesi.
 
+## 2026-09-10 — Mühimmat ve yeniden doldurma temeli
+
+**Karar:** Standart, zincirli ve saçma mühimmatı ortak bir veri profili üzerinden çalışır. Her tür hasar, menzil, saçılma, yeniden doldurma, salvo sayısı ve mermi ölçeğiyle ayrışır. İskele ve sancak bataryaları bağımsız yeniden dolar; her ateşlenen top taşınan stoktan bir mühimmat tüketir.
+
+**Neden:** Donanım gücünü korurken hedef mesafesi, düşman yönü ve salvo zamanlaması üzerinden taktik karar üretmek. Stok ve durum olayları UI ile ağ katmanını combat koduna bağlamadan ilerletir.
+
+## 2026-09-10 — Av zıpkını ve deniz avı döngüsü
+
+**Karar:** İlk zıpkın sistemi gemi bağlayan PvP silahı değil, deniz canlılarını avlayan PvE ekipmanıdır. Avdan silver ve malzeme elde edilir; yük limana ulaşmadan güvenceye alınmaz. Gerçekçi kıyı canlılarından kontrollü fantastik leviathan karşılaşmalarına yükselen bölgesel bir av hattı kurulacaktır.
+
+**Neden:** Savaşa alternatif fakat aynı risk ekonomisini besleyen bir sefer etkinliği yaratmak; avcı gemilerine, zıpkın ekipmanına ve PvP’de değerli yük taşıyan doğal hedeflere anlam kazandırmak.
