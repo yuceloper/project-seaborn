@@ -13,6 +13,9 @@ namespace Seaborn.Hunting
         private int catchCount;
 
         public event Action CargoChanged;
+        public event Action<string, int> CatchAdded;
+        public event Action<int> CargoSecured;
+        public event Action<int> CargoLost;
 
         public int UnsecuredSilverValue =>
             unsecuredSilverValue;
@@ -32,6 +35,10 @@ namespace Seaborn.Hunting
             catchCount++;
             unsecuredSilverValue += silverValue;
             CargoChanged?.Invoke();
+            CatchAdded?.Invoke(
+                creatureName,
+                silverValue
+            );
 
             Debug.Log(
                 $"Av yükü alındı: {creatureName}, " +
@@ -55,6 +62,7 @@ namespace Seaborn.Hunting
             catchCount = 0;
             wallet.AddSilver(securedValue);
             CargoChanged?.Invoke();
+            CargoSecured?.Invoke(securedValue);
             return securedValue;
         }
 
@@ -64,6 +72,12 @@ namespace Seaborn.Hunting
             unsecuredSilverValue = 0;
             catchCount = 0;
             CargoChanged?.Invoke();
+
+            if (lostValue > 0)
+            {
+                CargoLost?.Invoke(lostValue);
+            }
+
             return lostValue;
         }
     }

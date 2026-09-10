@@ -127,3 +127,9 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 **Karar:** İlk nadir av Stormjaw Leviathan’dır. Normal Tideback’ten büyük, dayanıklı ve yüksek değerli olur; ilk zıpkın isabetinden sonra kaçmak yerine avcı gemisine yönelip aralıklı koçbaşı hasarı verir.
 
 **Neden:** Nadir avı yalnızca daha uzun bir can çubuğuna çevirmemek; oyuncunun kaçış, yön verme ve riskli yük kararını savaş tehdidiyle birleştirmek.
+
+## 2026-09-10 — Hızlandırılmış sefer prototipi
+
+**Karar:** İlk sefer durum makinesi limandan ayrılınca otomatik başlar. Oyuncu istediği anda yükle dönebilir; 90 güvencesiz silver yalnızca “dönüş tavsiye edilir” eşiğidir. Limanda güvenceye alınan herhangi bir pozitif yük başarılı sefer, batış başarısız sefer sayılır. Prototipte baskı 3,5 dakikada başlar ve 6 dakikada tepeye çıkar; üretim hedefi sert süre sonu olmadan 15–25 dakikadır.
+
+**Neden:** Hazırlık, av/savaş, risk büyütme ve dönüş ritmini kısa testlerde doğrulamak; oyuncunun erken çıkış özgürlüğünü korurken ileride hava, görünürlük ve çıkış baskısını aynı durum modeline bağlamak.
