@@ -285,6 +285,9 @@ namespace Seaborn.Hunting
             PrototypeExpeditionDirector.EnsureCreated(
                 player.transform
             );
+            PrototypeContractBoard.EnsureCreated(
+                player.transform
+            );
         }
     }
 }

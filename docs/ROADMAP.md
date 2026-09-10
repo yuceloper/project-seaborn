@@ -132,10 +132,10 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 
 ### Kontratlar ve liman
 
-- [ ] Sefer öncesi kontrat seçimi
-- [ ] Kıyı Avı, Tehlikeli Av ve Serbest Sefer
-- [ ] İsteğe bağlı günlük kontrat havuzu
-- [ ] Aylık kaptan seyir defteri
+- [x] Sefer öncesi kontrat seçimi
+- [x] Kıyı Avı, Tehlikeli Av ve Serbest Sefer
+- [x] İsteğe bağlı günlük kontrat havuzu
+- [x] Aylık kaptan seyir defteri
 - [ ] Sunucu otoriteli günlük/aylık yenileme
 - [ ] Ayrı güvenli liman hub sahnesi
 - [ ] Limanda gemi temelli sosyal görünürlük
