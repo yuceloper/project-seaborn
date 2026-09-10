@@ -103,3 +103,9 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 **Karar:** Prototip av zıpkını top nişanından ayrı olarak Sol Shift basılıyken mouse ile hedeflenir ve sol tıkla atılır. İlk av canlısı Tideback gezinir, zıpkın isabetinden sonra avcıdan kaçar ve av tamamlandığında prototip silver kazandırır.
 
 **Neden:** Mevcut sağ tuş borda nişanını bozmadan aynı fare kas hafızasını kullanmak ve av döngüsünü sahne/prefab kurulumu gerektirmeden hızlıca doğrulamak. Üretim kontrol şeması UI ve gamepad çalışmasıyla yeniden ele alınacaktır.
+
+## 2026-09-10 — Av ödülünün riskli yük olması
+
+**Karar:** Deniz canlısı avı silver'ı doğrudan cüzdana eklemez. Değer, geminin güvencesiz av yükünde birikir; yalnızca ileride liman teslimiyle kalıcı silver'a çevrilir. Yük bileşeni teslim ve tüm yükü kaybetme işlemlerini ayrı API olarak sunar.
+
+**Neden:** Av faaliyetini risksiz para üretiminden çıkarıp limana dönüş, kargo kapasitesi ve PvP tehdidiyle bağlamak. Böylece başarılı av, seferin sonuna kadar korunması gereken bir değere dönüşür.

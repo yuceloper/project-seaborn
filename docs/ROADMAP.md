@@ -109,8 +109,8 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] İlk avlanabilir deniz canlısı
 - [x] Canlı davranışı: gezinme, kaçış ve tehdit tepkisi
 - [~] Silver ödülü; av malzemesi planlandı
-- [ ] Av yükünü gemiye alma
-- [ ] Limana dönmeden güvenceye alınmayan av yükü
+- [x] Av yükünü gemiye alma
+- [x] Limana dönmeden güvenceye alınmayan av yükü
 - [ ] Nadir fantastik leviathan karşılaşması
 - [ ] PvP bağlama zıpkını — sonraki genişleme
 

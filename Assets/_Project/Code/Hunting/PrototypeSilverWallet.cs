@@ -13,6 +13,14 @@ namespace Seaborn.Hunting
 
         public int Silver => silver;
 
+        private void Awake()
+        {
+            if (GetComponent<PrototypeHuntCargo>() == null)
+            {
+                gameObject.AddComponent<PrototypeHuntCargo>();
+            }
+        }
+
         public void AddSilver(int amount)
         {
             if (amount <= 0)

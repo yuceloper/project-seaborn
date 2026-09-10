@@ -1,3 +1,4 @@
+using Seaborn.Combat;
 using UnityEngine;
 
 namespace Seaborn.Hunting
@@ -5,6 +6,7 @@ namespace Seaborn.Hunting
     public sealed class HarpoonProjectile : MonoBehaviour
     {
         private const int MaximumHits = 8;
+
         private readonly RaycastHit[] hits =
             new RaycastHit[MaximumHits];
 
@@ -16,6 +18,7 @@ namespace Seaborn.Hunting
         private float damage;
         private float elapsed;
         private bool isFlying;
+        private LineRenderer rope;
 
         public void Launch(
             Transform owner,
@@ -24,15 +27,22 @@ namespace Seaborn.Hunting
             float flightArc,
             float hitDamage)
         {
-            ownerRoot = owner != null ? owner.root : null;
+            ownerRoot =
+                owner != null ? owner.root : null;
             startPosition = transform.position;
             targetPosition = target;
-            duration = Mathf.Max(0.1f, flightDuration);
+            duration = Mathf.Max(
+                0.1f,
+                flightDuration
+            );
             arcHeight = Mathf.Max(0f, flightArc);
             damage = Mathf.Max(0f, hitDamage);
             elapsed = 0f;
             isFlying = true;
+
             BuildVisual();
+            CreateRope();
+            UpdateRope();
         }
 
         private void FixedUpdate()
@@ -43,7 +53,9 @@ namespace Seaborn.Hunting
             }
 
             elapsed += Time.fixedDeltaTime;
-            float progress = Mathf.Clamp01(elapsed / duration);
+            float progress = Mathf.Clamp01(
+                elapsed / duration
+            );
             Vector3 flatPosition = Vector3.Lerp(
                 startPosition,
                 targetPosition,
@@ -52,7 +64,10 @@ namespace Seaborn.Hunting
             Vector3 nextPosition =
                 flatPosition +
                 Vector3.up *
-                (4f * arcHeight * progress * (1f - progress));
+                (4f *
+                 arcHeight *
+                 progress *
+                 (1f - progress));
 
             Vector3 displacement =
                 nextPosition - transform.position;
@@ -69,18 +84,27 @@ namespace Seaborn.Hunting
 
             if (distance > Mathf.Epsilon)
             {
-                transform.rotation = Quaternion.LookRotation(
-                    displacement.normalized,
-                    Vector3.up
-                );
+                transform.rotation =
+                    Quaternion.LookRotation(
+                        displacement.normalized,
+                        Vector3.up
+                    );
             }
 
             transform.position = nextPosition;
 
             if (progress >= 1f)
             {
+                PrototypeCombatVfx.PlayWaterSplash(
+                    nextPosition
+                );
                 Destroy(gameObject);
             }
+        }
+
+        private void LateUpdate()
+        {
+            UpdateRope();
         }
 
         private bool TryHit(
@@ -98,12 +122,16 @@ namespace Seaborn.Hunting
                 QueryTriggerInteraction.Collide
             );
 
-            for (int index = 0; index < hitCount; index++)
+            for (
+                int index = 0;
+                index < hitCount;
+                index++)
             {
                 RaycastHit hit = hits[index];
 
                 if (ownerRoot != null &&
-                    hit.collider.transform.root == ownerRoot)
+                    hit.collider.transform.root ==
+                    ownerRoot)
                 {
                     continue;
                 }
@@ -112,7 +140,8 @@ namespace Seaborn.Hunting
                     hit.collider.GetComponentInParent<
                         IHarpoonTarget>();
 
-                if (target == null || target.IsHarvested)
+                if (target == null ||
+                    target.IsHarvested)
                 {
                     continue;
                 }
@@ -126,6 +155,13 @@ namespace Seaborn.Hunting
                 );
 
                 transform.position = hit.point;
+                PrototypeCombatVfx.PlayWaterSplash(
+                    hit.point
+                );
+                PrototypeCameraShake.Request(
+                    0.055f,
+                    0.08f
+                );
                 Destroy(gameObject);
                 return true;
             }
@@ -140,13 +176,20 @@ namespace Seaborn.Hunting
                     PrimitiveType.Cylinder
                 );
             shaft.name = "Harpoon Shaft";
-            shaft.transform.SetParent(transform, false);
+            shaft.transform.SetParent(
+                transform,
+                false
+            );
             shaft.transform.localPosition =
                 new Vector3(0f, 0f, 0.34f);
             shaft.transform.localRotation =
                 Quaternion.Euler(90f, 0f, 0f);
             shaft.transform.localScale =
-                new Vector3(0.045f, 0.38f, 0.045f);
+                new Vector3(
+                    0.045f,
+                    0.38f,
+                    0.045f
+                );
 
             Collider shaftCollider =
                 shaft.GetComponent<Collider>();
@@ -166,6 +209,56 @@ namespace Seaborn.Hunting
             {
                 renderer.sharedMaterial = template;
             }
+        }
+
+        private void CreateRope()
+        {
+            rope = gameObject.AddComponent<
+                LineRenderer>();
+            rope.positionCount = 2;
+            rope.useWorldSpace = true;
+            rope.widthMultiplier = 0.028f;
+            rope.numCapVertices = 2;
+            rope.startColor =
+                new Color(
+                    0.32f,
+                    0.22f,
+                    0.12f,
+                    0.9f
+                );
+            rope.endColor =
+                new Color(
+                    0.48f,
+                    0.36f,
+                    0.2f,
+                    0.8f
+                );
+
+            Material material =
+                Resources.Load<Material>(
+                    "PrototypeCombatParticle"
+                );
+            if (material != null)
+            {
+                rope.sharedMaterial = material;
+            }
+        }
+
+        private void UpdateRope()
+        {
+            if (rope == null)
+            {
+                return;
+            }
+
+            Vector3 ropeOrigin =
+                ownerRoot != null
+                    ? ownerRoot.position +
+                      Vector3.up * 0.75f
+                    : startPosition;
+
+            rope.SetPosition(0, ropeOrigin);
+            rope.SetPosition(1, transform.position);
         }
     }
 }

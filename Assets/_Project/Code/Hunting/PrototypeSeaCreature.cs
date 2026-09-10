@@ -56,9 +56,16 @@ namespace Seaborn.Hunting
                 return;
             }
 
+            float woundedIntensity =
+                1f - HealthNormalized;
             float speed =
                 Time.time < fleeUntil
-                    ? fleeSpeed
+                    ? fleeSpeed *
+                      Mathf.Lerp(
+                          1f,
+                          1.45f,
+                          woundedIntensity
+                      )
                     : cruiseSpeed;
 
             float turn =
@@ -150,13 +157,16 @@ namespace Seaborn.Hunting
 
             if (hunter != null)
             {
-                PrototypeSilverWallet wallet =
+                PrototypeHuntCargo cargo =
                     hunter.GetComponentInChildren<
-                        PrototypeSilverWallet>();
+                        PrototypeHuntCargo>();
 
-                if (wallet != null)
+                if (cargo != null)
                 {
-                    wallet.AddSilver(silverReward);
+                    cargo.AddCatch(
+                        name,
+                        silverReward
+                    );
                 }
             }
 
