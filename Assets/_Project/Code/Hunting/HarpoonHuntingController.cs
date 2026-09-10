@@ -268,6 +268,13 @@ namespace Seaborn.Hunting
                     PrototypeSilverWallet>();
             }
 
+            if (player.GetComponent<
+                    HuntCargoLossOnSinking>() == null)
+            {
+                player.gameObject.AddComponent<
+                    HuntCargoLossOnSinking>();
+            }
+
             PrototypeSeaCreatureSpawner.EnsureSpawned(
                 player.transform.position
             );

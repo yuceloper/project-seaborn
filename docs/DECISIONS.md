@@ -115,3 +115,9 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 **Karar:** Oyuncunun başlangıç konumu ilk geçici liman teslim alanıdır. Av yüküyle işaretli halkaya dönüldüğünde güvencesiz değer sıfırlanır ve aynı miktar kalıcı prototip silver cüzdanına aktarılır.
 
 **Neden:** Ayrı bir liman sahnesi üretmeden seferin çıkış, risk alma, dönüş ve kazancı güvenceye alma ritmini uçtan uca test etmek.
+
+## 2026-09-10 — Batışta av yükü kaybı
+
+**Karar:** Oyuncu gemisinin batış olayı güvencesiz av yükünü tamamen siler. Limanda güvenceye alınmış silver etkilenmez.
+
+**Neden:** Oyuncuya risk miktarını anlaşılır tutmak ve ilk prototipte kısmi kayıp hesabı yerine net bir “dön veya riske et” kararı üretmek.

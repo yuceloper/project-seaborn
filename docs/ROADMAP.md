@@ -112,6 +112,7 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Av yükünü gemiye alma
 - [x] Limana dönmeden güvenceye alınmayan av yükü
 - [x] Prototip liman teslim alanı ve silver güvenceye alma
+- [x] Oyuncu batışında güvencesiz av yükü kaybı
 - [ ] Nadir fantastik leviathan karşılaşması
 - [ ] PvP bağlama zıpkını — sonraki genişleme
 
