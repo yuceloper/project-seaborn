@@ -195,7 +195,8 @@ namespace Seaborn.Hunting
             HealthChanged?.Invoke(health);
             Harpooned?.Invoke(hunter);
 
-            if (hunter != null)
+            if (!IsMovementExternallyControlled &&
+                hunter != null)
             {
                 Vector3 away =
                     transform.position -
@@ -210,9 +211,10 @@ namespace Seaborn.Hunting
                             Vector3.up
                         );
                 }
-            }
 
-            fleeUntil = Time.time + fleeDuration;
+                fleeUntil =
+                    Time.time + fleeDuration;
+            }
 
             if (health <= 0f)
             {

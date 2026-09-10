@@ -9,10 +9,10 @@ namespace Seaborn.Hunting
         MonoBehaviour
     {
         [SerializeField, Min(0f)]
-        private float chargeSpeed = 2.65f;
+        private float chargeSpeed = 3.15f;
 
         [SerializeField, Min(0f)]
-        private float turnSpeed = 95f;
+        private float turnSpeed = 135f;
 
         [SerializeField, Min(0f)]
         private float ramDamage = 22f;
@@ -21,7 +21,7 @@ namespace Seaborn.Hunting
         private float ramCooldown = 2.4f;
 
         [SerializeField, Min(0.1f)]
-        private float ramRange = 2.4f;
+        private float ramRange = 4.25f;
 
         public bool IsAggressive =>
             hunter != null &&
