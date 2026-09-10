@@ -130,6 +130,16 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [ ] Batış sonrası yedek gemi ve kurtarma görevi
 - [ ] Basit kalıcılık
 
+### Kontratlar ve liman
+
+- [ ] Sefer öncesi kontrat seçimi
+- [ ] Kıyı Avı, Tehlikeli Av ve Serbest Sefer
+- [ ] İsteğe bağlı günlük kontrat havuzu
+- [ ] Aylık kaptan seyir defteri
+- [ ] Sunucu otoriteli günlük/aylık yenileme
+- [ ] Ayrı güvenli liman hub sahnesi
+- [ ] Limanda gemi temelli sosyal görünürlük
+
 ## Milestone 5 — Çevrim içi temel
 
 - [ ] Sunucu otoriteli hareket ve savaş spike’ı
