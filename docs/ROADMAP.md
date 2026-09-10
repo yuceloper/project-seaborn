@@ -104,13 +104,15 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 
 ## Milestone 3.5 — Deniz avcılığı dikey dilimi
 
-- [ ] Av zıpkını ve nişan sistemi
-- [ ] Zıpkın stoğu, menzil ve yeniden doldurma
-- [ ] İlk avlanabilir deniz canlısı
-- [ ] Canlı davranışı: gezinme, kaçış ve tehdit tepkisi
-- [ ] Av malzemesi ve silver ödülü
-- [ ] Av yükünü gemiye alma
-- [ ] Limana dönmeden güvenceye alınmayan av yükü
+- [x] Av zıpkını ve nişan sistemi
+- [x] Zıpkın stoğu, menzil ve yeniden doldurma
+- [x] İlk avlanabilir deniz canlısı
+- [x] Canlı davranışı: gezinme, kaçış ve tehdit tepkisi
+- [~] Silver ödülü; av malzemesi planlandı
+- [x] Av yükünü gemiye alma
+- [x] Limana dönmeden güvenceye alınmayan av yükü
+- [x] Prototip liman teslim alanı ve silver güvenceye alma
+- [x] Oyuncu batışında güvencesiz av yükü kaybı
 - [ ] Nadir fantastik leviathan karşılaşması
 - [ ] PvP bağlama zıpkını — sonraki genişleme
 

@@ -97,3 +97,27 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 **Karar:** İlk zıpkın sistemi gemi bağlayan PvP silahı değil, deniz canlılarını avlayan PvE ekipmanıdır. Avdan silver ve malzeme elde edilir; yük limana ulaşmadan güvenceye alınmaz. Gerçekçi kıyı canlılarından kontrollü fantastik leviathan karşılaşmalarına yükselen bölgesel bir av hattı kurulacaktır.
 
 **Neden:** Savaşa alternatif fakat aynı risk ekonomisini besleyen bir sefer etkinliği yaratmak; avcı gemilerine, zıpkın ekipmanına ve PvP’de değerli yük taşıyan doğal hedeflere anlam kazandırmak.
+
+## 2026-09-10 — İlk deniz avı kontrolü
+
+**Karar:** Prototip av zıpkını top nişanından ayrı olarak Sol Shift basılıyken mouse ile hedeflenir ve sol tıkla atılır. İlk av canlısı Tideback gezinir, zıpkın isabetinden sonra avcıdan kaçar ve av tamamlandığında prototip silver kazandırır.
+
+**Neden:** Mevcut sağ tuş borda nişanını bozmadan aynı fare kas hafızasını kullanmak ve av döngüsünü sahne/prefab kurulumu gerektirmeden hızlıca doğrulamak. Üretim kontrol şeması UI ve gamepad çalışmasıyla yeniden ele alınacaktır.
+
+## 2026-09-10 — Av ödülünün riskli yük olması
+
+**Karar:** Deniz canlısı avı silver'ı doğrudan cüzdana eklemez. Değer, geminin güvencesiz av yükünde birikir; yalnızca ileride liman teslimiyle kalıcı silver'a çevrilir. Yük bileşeni teslim ve tüm yükü kaybetme işlemlerini ayrı API olarak sunar.
+
+**Neden:** Av faaliyetini risksiz para üretiminden çıkarıp limana dönüş, kargo kapasitesi ve PvP tehdidiyle bağlamak. Böylece başarılı av, seferin sonuna kadar korunması gereken bir değere dönüşür.
+
+## 2026-09-10 — Prototip liman teslimi
+
+**Karar:** Oyuncunun başlangıç konumu ilk geçici liman teslim alanıdır. Av yüküyle işaretli halkaya dönüldüğünde güvencesiz değer sıfırlanır ve aynı miktar kalıcı prototip silver cüzdanına aktarılır.
+
+**Neden:** Ayrı bir liman sahnesi üretmeden seferin çıkış, risk alma, dönüş ve kazancı güvenceye alma ritmini uçtan uca test etmek.
+
+## 2026-09-10 — Batışta av yükü kaybı
+
+**Karar:** Oyuncu gemisinin batış olayı güvencesiz av yükünü tamamen siler. Limanda güvenceye alınmış silver etkilenmez.
+
+**Neden:** Oyuncuya risk miktarını anlaşılır tutmak ve ilk prototipte kısmi kayıp hesabı yerine net bir “dön veya riske et” kararı üretmek.
