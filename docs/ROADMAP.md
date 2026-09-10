@@ -113,7 +113,8 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Limana dönmeden güvenceye alınmayan av yükü
 - [x] Prototip liman teslim alanı ve silver güvenceye alma
 - [x] Oyuncu batışında güvencesiz av yükü kaybı
-- [ ] Nadir fantastik leviathan karşılaşması
+- [x] Nadir fantastik leviathan karşılaşması
+- [x] Yaralanınca gemiye saldıran Stormjaw davranışı
 - [ ] PvP bağlama zıpkını — sonraki genişleme
 
 ## Milestone 4 — Sefer prototipi

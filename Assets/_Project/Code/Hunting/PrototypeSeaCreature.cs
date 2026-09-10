@@ -25,14 +25,82 @@ namespace Seaborn.Hunting
         private int silverReward = 45;
 
         public event Action<float> HealthChanged;
+        public event Action<GameObject> Harpooned;
         public event Action Harvested;
 
         public bool IsHarvested { get; private set; }
+        public bool IsMovementExternallyControlled
+        {
+            get;
+            set;
+        }
         public float Health => health;
         public float HealthNormalized =>
             maximumHealth <= 0f
                 ? 0f
                 : health / maximumHealth;
+
+        public void Configure(
+            float newMaximumHealth,
+            float newCruiseSpeed,
+            float newFleeSpeed,
+            float newFleeDuration,
+            int newSilverReward,
+            float visualScale,
+            Color color)
+        {
+            maximumHealth = Mathf.Max(
+                1f,
+                newMaximumHealth
+            );
+            health = maximumHealth;
+            cruiseSpeed = Mathf.Max(
+                0f,
+                newCruiseSpeed
+            );
+            fleeSpeed = Mathf.Max(
+                0f,
+                newFleeSpeed
+            );
+            fleeDuration = Mathf.Max(
+                0f,
+                newFleeDuration
+            );
+            silverReward = Mathf.Max(
+                0,
+                newSilverReward
+            );
+            transform.localScale =
+                Vector3.one *
+                Mathf.Max(0.1f, visualScale);
+
+            if (material != null &&
+                material.HasProperty("_BaseColor"))
+            {
+                material.SetColor(
+                    "_BaseColor",
+                    color
+                );
+            }
+
+            if (visualScale >= 1.5f)
+            {
+                CreatePart(
+                    "Leviathan Crown",
+                    PrimitiveType.Cube,
+                    new Vector3(0f, 0.82f, 0.82f),
+                    new Vector3(0.28f, 0.68f, 0.5f),
+                    Quaternion.Euler(22f, 0f, 0f)
+                );
+                CreatePart(
+                    "Leviathan Ridge",
+                    PrimitiveType.Cube,
+                    new Vector3(0f, 0.76f, -0.62f),
+                    new Vector3(0.22f, 0.56f, 0.58f),
+                    Quaternion.Euler(18f, 0f, 0f)
+                );
+            }
+        }
 
         private float health;
         private float fleeUntil;
@@ -51,7 +119,8 @@ namespace Seaborn.Hunting
 
         private void Update()
         {
-            if (IsHarvested)
+            if (IsHarvested ||
+                IsMovementExternallyControlled)
             {
                 return;
             }
@@ -124,6 +193,7 @@ namespace Seaborn.Hunting
 
             health = Mathf.Max(0f, health - damage);
             HealthChanged?.Invoke(health);
+            Harpooned?.Invoke(hunter);
 
             if (hunter != null)
             {
@@ -371,6 +441,42 @@ namespace Seaborn.Hunting
                 new Vector3(-9f, 0.74f, 2f),
                 75f
             );
+            SpawnLeviathan(
+                playerPosition +
+                new Vector3(-19f, 0.74f, 17f)
+            );
+        }
+
+        private static void SpawnLeviathan(
+            Vector3 position)
+        {
+            GameObject creature =
+                new GameObject(
+                    "Stormjaw Leviathan"
+                );
+            creature.transform.position = position;
+            creature.transform.rotation =
+                Quaternion.Euler(0f, 135f, 0f);
+
+            PrototypeSeaCreature seaCreature =
+                creature.AddComponent<
+                    PrototypeSeaCreature>();
+            seaCreature.Configure(
+                340f,
+                0.48f,
+                1.35f,
+                5f,
+                240,
+                1.7f,
+                new Color(
+                    0.12f,
+                    0.16f,
+                    0.27f,
+                    1f
+                )
+            );
+            creature.AddComponent<
+                PrototypeLeviathanBehavior>();
         }
 
         private static void Spawn(
