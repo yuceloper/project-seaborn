@@ -14,6 +14,12 @@ namespace Seaborn.Hunting
         {
             shipHealth =
                 GetComponentInParent<ShipHealth>();
+
+            if (shipHealth == null)
+            {
+                shipHealth =
+                    GetComponentInChildren<ShipHealth>();
+            }
             cargo =
                 GetComponentInChildren<
                     PrototypeHuntCargo>();

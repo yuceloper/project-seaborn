@@ -121,3 +121,9 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 **Karar:** Oyuncu gemisinin batış olayı güvencesiz av yükünü tamamen siler. Limanda güvenceye alınmış silver etkilenmez.
 
 **Neden:** Oyuncuya risk miktarını anlaşılır tutmak ve ilk prototipte kısmi kayıp hesabı yerine net bir “dön veya riske et” kararı üretmek.
+
+## 2026-09-10 — İlk leviathan karşılaşması
+
+**Karar:** İlk nadir av Stormjaw Leviathan’dır. Normal Tideback’ten büyük, dayanıklı ve yüksek değerli olur; ilk zıpkın isabetinden sonra kaçmak yerine avcı gemisine yönelip aralıklı koçbaşı hasarı verir.
+
+**Neden:** Nadir avı yalnızca daha uzun bir can çubuğuna çevirmemek; oyuncunun kaçış, yön verme ve riskli yük kararını savaş tehdidiyle birleştirmek.

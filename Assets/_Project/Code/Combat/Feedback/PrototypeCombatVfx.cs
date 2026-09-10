@@ -140,6 +140,98 @@ namespace Seaborn.Combat
             );
         }
 
+        public static void PlayLeviathanWarning(
+            Vector3 position)
+        {
+            CreateBurst(
+                "Leviathan Warning",
+                position + Vector3.up * 0.15f,
+                Vector3.up,
+                new Color(0.48f, 0.72f, 0.82f, 0.82f),
+                26,
+                0.42f,
+                0.82f,
+                0.45f,
+                1.7f,
+                0.12f,
+                0.32f,
+                -0.08f
+            );
+
+            CreateBurst(
+                "Leviathan Omen",
+                position + Vector3.up * 0.08f,
+                Vector3.up,
+                new Color(0.24f, 0.16f, 0.42f, 0.72f),
+                14,
+                0.5f,
+                0.95f,
+                0.2f,
+                0.85f,
+                0.18f,
+                0.42f,
+                -0.12f
+            );
+        }
+
+        public static void PlayLeviathanWake(
+            Vector3 position,
+            Vector3 direction)
+        {
+            CreateBurst(
+                "Leviathan Wake",
+                position + Vector3.up * 0.04f,
+                direction + Vector3.up * 0.32f,
+                new Color(0.62f, 0.86f, 0.9f, 0.62f),
+                7,
+                0.28f,
+                0.55f,
+                0.45f,
+                1.45f,
+                0.1f,
+                0.26f,
+                -0.08f
+            );
+        }
+
+        public static void PlayLeviathanRam(
+            Vector3 position,
+            Vector3 direction)
+        {
+            PrototypeAudio.PlayHullImpact(position);
+            PrototypeAudio.PlayWaterSplash(position);
+
+            CreateBurst(
+                "Leviathan Ram Spray",
+                position,
+                direction + Vector3.up * 0.8f,
+                new Color(0.72f, 0.92f, 0.95f, 0.92f),
+                34,
+                0.36f,
+                0.82f,
+                1.2f,
+                4.5f,
+                0.08f,
+                0.24f,
+                0.6f
+            );
+
+            CreateBurst(
+                "Leviathan Ram Foam",
+                position + Vector3.up * 0.03f,
+                Vector3.up,
+                new Color(0.42f, 0.72f, 0.78f, 0.68f),
+                22,
+                0.5f,
+                1.05f,
+                0.25f,
+                1.1f,
+                0.16f,
+                0.4f,
+                -0.06f
+            );
+        }
+
         private static void CreateBurst(
             string objectName,
             Vector3 position,
