@@ -6,29 +6,17 @@ namespace Seaborn.Hunting
 {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(PrototypeSeaCreature))]
-    public sealed class PrototypeLeviathanBehavior :
-        MonoBehaviour
+    public sealed class PrototypeLeviathanBehavior : MonoBehaviour
     {
-        [SerializeField, Min(0f)]
-        private float chargeSpeed = 3.15f;
-
-        [SerializeField, Min(0f)]
-        private float turnSpeed = 135f;
-
-        [SerializeField, Min(0f)]
-        private float chargeWindup = 0.7f;
-
-        [SerializeField, Min(0f)]
-        private float ramDamage = 22f;
-
-        [SerializeField, Min(0.1f)]
-        private float ramCooldown = 2.4f;
-
-        [SerializeField, Min(0.1f)]
-        private float ramRange = 4.25f;
-
-        [SerializeField, Min(0.05f)]
-        private float wakeInterval = 0.2f;
+        [SerializeField, Min(0f)] private float chargeSpeed = 3.15f;
+        [SerializeField, Min(0f)] private float turnSpeed = 135f;
+        [SerializeField, Min(0f)] private float chargeWindup = 0.7f;
+        [SerializeField, Min(0f)] private float ramDamage = 22f;
+        [SerializeField, Min(0.1f)] private float ramCooldown = 2.4f;
+        [SerializeField, Min(0.1f)] private float ramRange = 6.4f;
+        [SerializeField, Min(0f)] private float retreatSpeed = 2.45f;
+        [SerializeField, Min(0f)] private float retreatDuration = 1.2f;
+        [SerializeField, Min(0.05f)] private float wakeInterval = 0.2f;
 
         public bool IsAggressive =>
             hunter != null &&
@@ -40,20 +28,20 @@ namespace Seaborn.Hunting
         private float chargeBeginsAt;
         private float nextRamTime;
         private float nextWakeTime;
+        private float retreatUntil;
+        private bool needsChargeWarning;
         private bool hasAwakened;
 
         private void Awake()
         {
-            creature =
-                GetComponent<PrototypeSeaCreature>();
+            creature = GetComponent<PrototypeSeaCreature>();
         }
 
         private void OnEnable()
         {
             if (creature == null)
             {
-                creature =
-                    GetComponent<PrototypeSeaCreature>();
+                creature = GetComponent<PrototypeSeaCreature>();
             }
 
             creature.Harpooned += HandleHarpooned;
@@ -67,8 +55,7 @@ namespace Seaborn.Hunting
             }
 
             creature.Harpooned -= HandleHarpooned;
-            creature.IsMovementExternallyControlled =
-                false;
+            creature.IsMovementExternallyControlled = false;
         }
 
         private void Update()
@@ -78,9 +65,19 @@ namespace Seaborn.Hunting
                 return;
             }
 
+            if (Time.time < retreatUntil)
+            {
+                RetreatFromHunter();
+                return;
+            }
+
+            if (needsChargeWarning)
+            {
+                BeginCharge();
+            }
+
             Vector3 toHunter =
-                hunter.transform.position -
-                transform.position;
+                hunter.transform.position - transform.position;
             toHunter.y = 0f;
 
             if (toHunter.sqrMagnitude < 0.0001f)
@@ -89,17 +86,7 @@ namespace Seaborn.Hunting
             }
 
             float distance = toHunter.magnitude;
-            Quaternion targetRotation =
-                Quaternion.LookRotation(
-                    toHunter / distance,
-                    Vector3.up
-                );
-            transform.rotation =
-                Quaternion.RotateTowards(
-                    transform.rotation,
-                    targetRotation,
-                    turnSpeed * Time.deltaTime
-                );
+            RotateTowards(toHunter / distance);
 
             if (Time.time < chargeBeginsAt)
             {
@@ -120,18 +107,15 @@ namespace Seaborn.Hunting
             TryRam(toHunter / distance);
         }
 
-        private void HandleHarpooned(
-            GameObject newHunter)
+        private void HandleHarpooned(GameObject newHunter)
         {
-            if (newHunter == null ||
-                creature.IsHarvested)
+            if (newHunter == null || creature.IsHarvested)
             {
                 return;
             }
 
             hunter = newHunter;
-            creature.IsMovementExternallyControlled =
-                true;
+            creature.IsMovementExternallyControlled = true;
 
             if (hasAwakened)
             {
@@ -139,18 +123,55 @@ namespace Seaborn.Hunting
             }
 
             hasAwakened = true;
-            chargeBeginsAt =
-                Time.time + chargeWindup;
-            nextRamTime = chargeBeginsAt;
-
-            PrototypeCombatVfx.PlayLeviathanWarning(
-                transform.position
-            );
+            BeginCharge();
 
             Debug.Log(
                 "Stormjaw öfkelendi ve hücuma hazırlanıyor.",
                 this
             );
+        }
+
+        private void BeginCharge()
+        {
+            needsChargeWarning = false;
+            chargeBeginsAt = Time.time + chargeWindup;
+            nextRamTime = Mathf.Max(nextRamTime, chargeBeginsAt);
+
+            PrototypeCombatVfx.PlayLeviathanWarning(
+                transform.position
+            );
+        }
+
+        private void RetreatFromHunter()
+        {
+            Vector3 away =
+                transform.position - hunter.transform.position;
+            away.y = 0f;
+
+            if (away.sqrMagnitude < 0.0001f)
+            {
+                away = -transform.forward;
+            }
+
+            RotateTowards(away.normalized);
+            transform.position +=
+                transform.forward *
+                retreatSpeed *
+                Time.deltaTime;
+            KeepAtWaterline();
+            PlayWake();
+        }
+
+        private void RotateTowards(Vector3 direction)
+        {
+            Quaternion targetRotation =
+                Quaternion.LookRotation(direction, Vector3.up);
+            transform.rotation =
+                Quaternion.RotateTowards(
+                    transform.rotation,
+                    targetRotation,
+                    turnSpeed * Time.deltaTime
+                );
         }
 
         private void PlayWake()
@@ -160,8 +181,7 @@ namespace Seaborn.Hunting
                 return;
             }
 
-            nextWakeTime =
-                Time.time + wakeInterval;
+            nextWakeTime = Time.time + wakeInterval;
 
             PrototypeCombatVfx.PlayLeviathanWake(
                 transform.position -
@@ -178,11 +198,9 @@ namespace Seaborn.Hunting
             }
 
             IDamageable damageable =
-                hunter.GetComponentInChildren<
-                    IDamageable>();
+                hunter.GetComponentInChildren<IDamageable>();
 
-            if (damageable == null ||
-                damageable.IsSunk)
+            if (damageable == null || damageable.IsSunk)
             {
                 return;
             }
@@ -191,7 +209,7 @@ namespace Seaborn.Hunting
                 Vector3.Lerp(
                     transform.position,
                     hunter.transform.position,
-                    0.58f
+                    0.62f
                 );
 
             damageable.ApplyDamage(
@@ -202,17 +220,16 @@ namespace Seaborn.Hunting
                     gameObject
                 )
             );
-            nextRamTime =
-                Time.time + ramCooldown;
+
+            nextRamTime = Time.time + ramCooldown;
+            retreatUntil = Time.time + retreatDuration;
+            needsChargeWarning = true;
 
             PrototypeCombatVfx.PlayLeviathanRam(
                 impactPoint,
                 direction
             );
-            PrototypeCameraShake.Request(
-                0.18f,
-                0.22f
-            );
+            PrototypeCameraShake.Request(0.18f, 0.22f);
 
             Debug.Log(
                 $"Stormjaw koçbaşı: {ramDamage:0} hasar.",
