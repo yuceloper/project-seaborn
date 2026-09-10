@@ -73,7 +73,7 @@ namespace Seaborn.Hunting
                 nextPosition - transform.position;
             float distance = displacement.magnitude;
 
-            if (distance > Mathf.Epsilon &&
+            if (distance > 0.0001f &&
                 TryHit(
                     transform.position,
                     displacement / distance,
@@ -82,7 +82,7 @@ namespace Seaborn.Hunting
                 return;
             }
 
-            if (distance > Mathf.Epsilon)
+            if (distance > 0.0001f)
             {
                 transform.rotation =
                     Quaternion.LookRotation(
@@ -95,6 +95,7 @@ namespace Seaborn.Hunting
 
             if (progress >= 1f)
             {
+                isFlying = false;
                 PrototypeCombatVfx.PlayWaterSplash(
                     nextPosition
                 );
@@ -155,6 +156,7 @@ namespace Seaborn.Hunting
                 );
 
                 transform.position = hit.point;
+                isFlying = false;
                 PrototypeCombatVfx.PlayWaterSplash(
                     hit.point
                 );
