@@ -111,6 +111,7 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [~] Silver ödülü; av malzemesi planlandı
 - [x] Av yükünü gemiye alma
 - [x] Limana dönmeden güvenceye alınmayan av yükü
+- [x] Prototip liman teslim alanı ve silver güvenceye alma
 - [ ] Nadir fantastik leviathan karşılaşması
 - [ ] PvP bağlama zıpkını — sonraki genişleme
 

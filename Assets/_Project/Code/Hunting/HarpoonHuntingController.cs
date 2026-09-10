@@ -271,6 +271,9 @@ namespace Seaborn.Hunting
             PrototypeSeaCreatureSpawner.EnsureSpawned(
                 player.transform.position
             );
+            PrototypeHarborDeliveryZone.EnsureCreated(
+                player.transform
+            );
         }
     }
 }
