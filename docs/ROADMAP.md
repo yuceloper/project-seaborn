@@ -39,7 +39,7 @@ Bu dosya yaşayan backlog’dur. Tamamlanan her feature merge’ünde güncellen
 - [x] Cooldown ve borda dünya göstergesi
 - [x] Düşman ateş hazırlığı telegraph’ı
 
-## Milestone 2 — Atmosfer dikey dilimi (şimdiki öncelik)
+## Milestone 2 — Atmosfer dikey dilimi
 
 Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 
@@ -92,14 +92,27 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 
 ## Milestone 3 — Savaş sistemleri
 
-- [ ] Standart gülle
-- [ ] Zincirli gülle
-- [ ] Saçma mühimmatı
+- [x] Standart gülle
+- [x] Zincirli gülle temel profili
+- [x] Saçma mühimmatı temel profili
 - [ ] Gövde/yelken/mürettebat alt sistemleri
-- [ ] Yeniden doldurma ve mühimmat stoğu
+- [x] İskele/sancak bağımsız yeniden doldurma
+- [x] Sonlu mühimmat stoğu ve UI olayları
 - [ ] Ekipman istatistikleri
 - [ ] AI zorluk profilleri
 - [ ] Batırma ödülü ve enkaz
+
+## Milestone 3.5 — Deniz avcılığı dikey dilimi
+
+- [ ] Av zıpkını ve nişan sistemi
+- [ ] Zıpkın stoğu, menzil ve yeniden doldurma
+- [ ] İlk avlanabilir deniz canlısı
+- [ ] Canlı davranışı: gezinme, kaçış ve tehdit tepkisi
+- [ ] Av malzemesi ve silver ödülü
+- [ ] Av yükünü gemiye alma
+- [ ] Limana dönmeden güvenceye alınmayan av yükü
+- [ ] Nadir fantastik leviathan karşılaşması
+- [ ] PvP bağlama zıpkını — sonraki genişleme
 
 ## Milestone 4 — Sefer prototipi
 
