@@ -1,3 +1,4 @@
+using Seaborn.Combat;
 using Seaborn.Combat.Damage;
 using UnityEngine;
 
@@ -15,6 +16,9 @@ namespace Seaborn.Hunting
         private float turnSpeed = 135f;
 
         [SerializeField, Min(0f)]
+        private float chargeWindup = 0.7f;
+
+        [SerializeField, Min(0f)]
         private float ramDamage = 22f;
 
         [SerializeField, Min(0.1f)]
@@ -23,6 +27,9 @@ namespace Seaborn.Hunting
         [SerializeField, Min(0.1f)]
         private float ramRange = 4.25f;
 
+        [SerializeField, Min(0.05f)]
+        private float wakeInterval = 0.2f;
+
         public bool IsAggressive =>
             hunter != null &&
             creature != null &&
@@ -30,7 +37,9 @@ namespace Seaborn.Hunting
 
         private PrototypeSeaCreature creature;
         private GameObject hunter;
+        private float chargeBeginsAt;
         private float nextRamTime;
+        private float nextWakeTime;
         private bool hasAwakened;
 
         private void Awake()
@@ -92,6 +101,11 @@ namespace Seaborn.Hunting
                     turnSpeed * Time.deltaTime
                 );
 
+            if (Time.time < chargeBeginsAt)
+            {
+                return;
+            }
+
             if (distance > ramRange)
             {
                 transform.position +=
@@ -99,6 +113,7 @@ namespace Seaborn.Hunting
                     chargeSpeed *
                     Time.deltaTime;
                 KeepAtWaterline();
+                PlayWake();
                 return;
             }
 
@@ -124,9 +139,34 @@ namespace Seaborn.Hunting
             }
 
             hasAwakened = true;
+            chargeBeginsAt =
+                Time.time + chargeWindup;
+            nextRamTime = chargeBeginsAt;
+
+            PrototypeCombatVfx.PlayLeviathanWarning(
+                transform.position
+            );
+
             Debug.Log(
-                "Stormjaw öfkelendi ve avcı gemisine yöneldi.",
+                "Stormjaw öfkelendi ve hücuma hazırlanıyor.",
                 this
+            );
+        }
+
+        private void PlayWake()
+        {
+            if (Time.time < nextWakeTime)
+            {
+                return;
+            }
+
+            nextWakeTime =
+                Time.time + wakeInterval;
+
+            PrototypeCombatVfx.PlayLeviathanWake(
+                transform.position -
+                transform.forward * 1.35f,
+                -transform.forward
             );
         }
 
@@ -147,16 +187,32 @@ namespace Seaborn.Hunting
                 return;
             }
 
+            Vector3 impactPoint =
+                Vector3.Lerp(
+                    transform.position,
+                    hunter.transform.position,
+                    0.58f
+                );
+
             damageable.ApplyDamage(
                 new DamageInfo(
                     ramDamage,
-                    hunter.transform.position,
+                    impactPoint,
                     direction,
                     gameObject
                 )
             );
             nextRamTime =
                 Time.time + ramCooldown;
+
+            PrototypeCombatVfx.PlayLeviathanRam(
+                impactPoint,
+                direction
+            );
+            PrototypeCameraShake.Request(
+                0.18f,
+                0.22f
+            );
 
             Debug.Log(
                 $"Stormjaw koçbaşı: {ramDamage:0} hasar.",

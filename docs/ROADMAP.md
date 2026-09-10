@@ -115,6 +115,7 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Oyuncu batışında güvencesiz av yükü kaybı
 - [x] Nadir fantastik leviathan karşılaşması
 - [x] Yaralanınca gemiye saldıran Stormjaw davranışı
+- [x] Stormjaw hücum hazırlığı, su izi ve koçbaşı geri bildirimi
 - [ ] PvP bağlama zıpkını — sonraki genişleme
 
 ## Milestone 4 — Sefer prototipi
