@@ -157,3 +157,9 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 **Karar:** Onarım ile standart, zincirli, saçma ve zıpkın ikmali yalnızca güvenli limandayken kullanılabilir. Servisler kalıcı silver harcar; fiyat ve paket miktarları prototipte serileştirilebilir değerlerdir. UI doğrudan sistemleri değiştirmek yerine liman servisi API’sini çağırır.
 
 **Neden:** Av ve kontrat kazançlarının karşısına anlamlı bir silver gideri koymak, sefere hazırlığı limanın temel işlevine dönüştürmek ve ileride sunucu otoritesine taşınabilecek tek bir işlem sınırı oluşturmak.
+
+## 2026-09-11 — Liman hazırlık paneli
+
+**Karar:** Prototip liman arayüzü tek bir kaptan hazırlık panelinde silver, sefer kontratı seçimi, gemi onarımı, mühimmat/zıpkın ikmali ve sefere hazır olma özetini birleştirir. Panel yalnızca güvenli limanda görünür ve oyun sistemlerinin public API’lerini kullanır.
+
+**Neden:** Oyuncunun limandaki karar sırasını tek bakışta anlaşılır kılmak ve ayrı hub sahnesi üretilmeden önce hazırlık döngüsünün kullanılabilirliğini doğrulamak.

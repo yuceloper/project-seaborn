@@ -142,6 +142,7 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Silver karşılığı gemi onarımı
 - [x] Top mühimmatı ve zıpkın ikmali
 - [x] Liman servisleri için UI-bağımsız API ve olaylar
+- [x] Kontrat, onarım ve ikmali birleştiren liman hazırlık paneli
 - [ ] Ayrı güvenli liman hub sahnesi
 - [ ] Limanda gemi temelli sosyal görünürlük
 
