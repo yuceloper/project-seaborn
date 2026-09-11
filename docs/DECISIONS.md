@@ -163,3 +163,9 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 **Karar:** Prototip liman arayüzü tek bir kaptan hazırlık panelinde silver, sefer kontratı seçimi, gemi onarımı, mühimmat/zıpkın ikmali ve sefere hazır olma özetini birleştirir. Panel yalnızca güvenli limanda görünür ve oyun sistemlerinin public API’lerini kullanır.
 
 **Neden:** Oyuncunun limandaki karar sırasını tek bakışta anlaşılır kılmak ve ayrı hub sahnesi üretilmeden önce hazırlık döngüsünün kullanılabilirliğini doğrulamak.
+
+## 2026-09-11 — Batış sonrası kurtarma döngüsü
+
+**Karar:** Ana gemi battığında oyuncu kısa gecikmeyle güvenli limanda yedek gemiye geçer. Ana geminin enkazı batış konumunda görev hedefi olarak kalır; yedek gemiyle bölgeye dönülüp yakın mesafede etkileşim tamamlandıktan sonra ana gemi limanda silver karşılığı yeniden hizmete alınır. Yedek geminin batması mevcut enkaz hedefini silmez.
+
+**Neden:** Batışı yalnızca yeniden doğma ekranı olmaktan çıkarıp kayıp, geri dönüş ve toparlanma üzerine özgün bir sefer üretmek; kalıcı ekipmanı silmeden yenilgiye anlamlı bedel ve hikâye kazandırmak.
