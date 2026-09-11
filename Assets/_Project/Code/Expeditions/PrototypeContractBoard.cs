@@ -332,6 +332,17 @@ namespace Seaborn.Expeditions
             {
                 SelectedExpeditionContract?.Reset();
                 ContractsChanged?.Invoke();
+
+                if (SelectedExpeditionContract != null)
+                {
+                    Debug.Log(
+                        $"Aktif sefer kontratı: " +
+                        $"{SelectedExpeditionContract.Definition.Title} " +
+                        $"({SelectedExpeditionContract.Definition.Description})",
+                        this
+                    );
+                }
+
                 return;
             }
 
@@ -360,7 +371,9 @@ namespace Seaborn.Expeditions
             }
 
             if (director != null &&
-                director.IsActive &&
+                (director.IsActive ||
+                 director.State ==
+                    PrototypeExpeditionState.Completed) &&
                 SelectedExpeditionContract != null &&
                 SelectedExpeditionContract.Definition
                     .Objective == objective)
