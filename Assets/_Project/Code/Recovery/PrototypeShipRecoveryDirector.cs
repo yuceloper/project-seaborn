@@ -54,6 +54,8 @@ namespace Seaborn.Recovery
         private ShipHealth health;
         private ShipSinkController sinkController;
         private PrototypeSilverWallet wallet;
+        private PrototypeHuntCargo cargo;
+        private ShipMotor motor;
         private PrototypeExpeditionDirector expedition;
         private Vector3 harborPosition;
         private Quaternion harborRotation;
@@ -136,6 +138,11 @@ namespace Seaborn.Recovery
             wallet =
                 player.GetComponentInChildren<
                     PrototypeSilverWallet>();
+            cargo =
+                player.GetComponentInChildren<
+                    PrototypeHuntCargo>();
+            motor =
+                player.GetComponentInChildren<ShipMotor>();
             expedition =
                 PrototypeExpeditionDirector.Instance;
             harborPosition = expedition != null
@@ -201,6 +208,7 @@ namespace Seaborn.Recovery
                 harborPosition,
                 harborRotation
             );
+            ApplyReserveProfile();
 
             State =
                 createdRecovery || wreckMarker != null
@@ -284,6 +292,8 @@ namespace Seaborn.Recovery
                 return;
             }
 
+            RestoreMainShipProfile();
+
             State =
                 PrototypeShipRecoveryState.MainShipActive;
             salvageProgress = 0f;
@@ -293,6 +303,33 @@ namespace Seaborn.Recovery
                 "Ana gemi onarıldı ve yeniden hizmette.",
                 this
             );
+        }
+
+        private void ApplyReserveProfile()
+        {
+            motor?.SetRuntimePerformance(
+                1.18f,
+                1.25f,
+                1.3f
+            );
+            health?.SetRuntimeMaximumHealthMultiplier(
+                0.6f,
+                true
+            );
+            cargo?.SetRuntimeCapacity(90);
+
+            Debug.Log(
+                "Yedek gemi profili: +%18 hız, " +
+                "+%30 dönüş, 60 can, 90 yük.",
+                this
+            );
+        }
+
+        private void RestoreMainShipProfile()
+        {
+            motor?.ResetRuntimePerformance();
+            health?.ResetRuntimeMaximumHealth(true);
+            cargo?.ResetRuntimeCapacity();
         }
 
         private bool IsPlayerAtHarbor()
@@ -523,7 +560,8 @@ namespace Seaborn.Recovery
                     );
                     return distance <= salvageRadius
                         ? "Ana gemiyi çıkarmak için E basılı tut."
-                        : $"Enkaza uzaklık: {distance:0.0}";
+                        : $"Enkaza uzaklık: {distance:0.0}\n" +
+                            "Yedek: hızlı/çevik • 60 can • 90 yük";
                 case PrototypeShipRecoveryState
                     .MainShipRecovered:
                     return IsPlayerAtHarbor()

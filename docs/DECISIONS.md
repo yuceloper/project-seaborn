@@ -169,3 +169,9 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 **Karar:** Ana gemi battığında oyuncu kısa gecikmeyle güvenli limanda yedek gemiye geçer. Ana geminin enkazı batış konumunda görev hedefi olarak kalır; yedek gemiyle bölgeye dönülüp yakın mesafede etkileşim tamamlandıktan sonra ana gemi limanda silver karşılığı yeniden hizmete alınır. Yedek geminin batması mevcut enkaz hedefini silmez.
 
 **Neden:** Batışı yalnızca yeniden doğma ekranı olmaktan çıkarıp kayıp, geri dönüş ve toparlanma üzerine özgün bir sefer üretmek; kalıcı ekipmanı silmeden yenilgiye anlamlı bedel ve hikâye kazandırmak.
+
+## 2026-09-11 — Yedek geminin oynanış kimliği
+
+**Karar:** Prototip yedek gemi ana gemiye göre yüzde 18 daha hızlı, yüzde 30 daha çevik, 60 cana ve 90 silver av yükü kapasitesine sahiptir. Ana gemi yeniden hizmete alındığında hareket, can ve yük değerleri eksiksiz biçimde ana gemi profiline döner.
+
+**Neden:** Kurtarma seferini normal kazanç seferinden farklılaştırmak; oyuncuya enkaza ulaşmak için güçlü kaçış araçları verirken yedek geminin düşük dayanıklılık ve ambar sınırıyla ana geminin yerine kalıcı olarak geçmesini engellemek.

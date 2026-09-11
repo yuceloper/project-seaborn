@@ -22,6 +22,31 @@ namespace Seaborn.Hunting
         public int CatchCount => catchCount;
         public bool HasCargo =>
             unsecuredSilverValue > 0;
+        public int MaximumSilverValue =>
+            runtimeCapacity;
+        public int RemainingCapacity =>
+            runtimeCapacity == int.MaxValue
+                ? int.MaxValue
+                : Mathf.Max(
+                    0,
+                    runtimeCapacity -
+                    unsecuredSilverValue
+                );
+        public bool IsFull => RemainingCapacity == 0;
+
+        private int runtimeCapacity = int.MaxValue;
+
+        public void SetRuntimeCapacity(int capacity)
+        {
+            runtimeCapacity = Mathf.Max(1, capacity);
+            CargoChanged?.Invoke();
+        }
+
+        public void ResetRuntimeCapacity()
+        {
+            runtimeCapacity = int.MaxValue;
+            CargoChanged?.Invoke();
+        }
 
         public void AddCatch(
             string creatureName,
@@ -32,17 +57,34 @@ namespace Seaborn.Hunting
                 return;
             }
 
+            int acceptedValue =
+                runtimeCapacity == int.MaxValue
+                    ? silverValue
+                    : Mathf.Min(
+                        silverValue,
+                        RemainingCapacity
+                    );
+
+            if (acceptedValue <= 0)
+            {
+                Debug.Log(
+                    "Av ambarı dolu; yük alınamadı.",
+                    this
+                );
+                return;
+            }
+
             catchCount++;
-            unsecuredSilverValue += silverValue;
+            unsecuredSilverValue += acceptedValue;
             CargoChanged?.Invoke();
             CatchAdded?.Invoke(
                 creatureName,
-                silverValue
+                acceptedValue
             );
 
             Debug.Log(
                 $"Av yükü alındı: {creatureName}, " +
-                $"+{silverValue} güvencesiz silver " +
+                $"+{acceptedValue} güvencesiz silver " +
                 $"(Yük: {unsecuredSilverValue})",
                 this
             );

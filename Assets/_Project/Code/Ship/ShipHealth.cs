@@ -16,13 +16,19 @@ namespace Seaborn.Ship
 
         public float CurrentHealth { get; private set; }
 
-        public float MaximumHealth => maximumHealth;
+        public float MaximumHealth =>
+            maximumHealth * maximumHealthMultiplier;
+
+        public float MaximumHealthMultiplier =>
+            maximumHealthMultiplier;
+
+        private float maximumHealthMultiplier = 1f;
 
         public bool IsSunk { get; private set; }
 
         private void Awake()
         {
-            CurrentHealth = maximumHealth;
+            CurrentHealth = MaximumHealth;
         }
 
         public void ApplyDamage(DamageInfo damageInfo)
@@ -44,7 +50,7 @@ namespace Seaborn.Ship
             Damaged?.Invoke(damageInfo);
             HealthChanged?.Invoke(
                 CurrentHealth,
-                maximumHealth
+                MaximumHealth
             );
 
             if (CurrentHealth > 0f)
@@ -56,15 +62,40 @@ namespace Seaborn.Ship
             Sunk?.Invoke();
         }
 
+        public void SetRuntimeMaximumHealthMultiplier(
+            float multiplier,
+            bool restoreToFull)
+        {
+            maximumHealthMultiplier =
+                Mathf.Max(0.1f, multiplier);
+            CurrentHealth = restoreToFull
+                ? MaximumHealth
+                : Mathf.Min(CurrentHealth, MaximumHealth);
+            IsSunk = CurrentHealth <= 0f;
+            HealthChanged?.Invoke(
+                CurrentHealth,
+                MaximumHealth
+            );
+        }
+
+        public void ResetRuntimeMaximumHealth(
+            bool restoreToFull)
+        {
+            SetRuntimeMaximumHealthMultiplier(
+                1f,
+                restoreToFull
+            );
+        }
+
         [ContextMenu("Reset Health")]
         public void RestoreToFullHealth()
         {
-            CurrentHealth = maximumHealth;
+            CurrentHealth = MaximumHealth;
             IsSunk = false;
 
             HealthChanged?.Invoke(
                 CurrentHealth,
-                maximumHealth
+                MaximumHealth
             );
         }
 

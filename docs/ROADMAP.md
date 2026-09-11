@@ -130,6 +130,7 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Batış sonrası yedek gemi ve kurtarma görevi prototipi
 - [x] Batış konumunda kalıcı enkaz hedefi
 - [x] Ana gemiyi limanda tekrar hizmete alma
+- [x] Yedek gemi hız, dönüş, can ve yük profili
 - [ ] Basit kalıcılık
 
 ### Kontratlar ve liman
