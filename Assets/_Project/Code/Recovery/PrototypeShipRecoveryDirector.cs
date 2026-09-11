@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using Seaborn.Combat;
 using Seaborn.Expeditions;
 using Seaborn.Hunting;
 using Seaborn.Ship;
@@ -56,6 +57,11 @@ namespace Seaborn.Recovery
         private PrototypeSilverWallet wallet;
         private PrototypeHuntCargo cargo;
         private ShipMotor motor;
+        private BroadsideController broadside;
+        private HarpoonHuntingController harpoons;
+        private EnemyShipController wreckRaider;
+        private ShipHealth wreckRaiderHealth;
+        private bool raiderRewardGranted;
         private PrototypeExpeditionDirector expedition;
         private Vector3 harborPosition;
         private Quaternion harborRotation;
@@ -143,6 +149,12 @@ namespace Seaborn.Recovery
                     PrototypeHuntCargo>();
             motor =
                 player.GetComponentInChildren<ShipMotor>();
+            broadside =
+                player.GetComponentInChildren<
+                    BroadsideController>();
+            harpoons =
+                player.GetComponentInChildren<
+                    HarpoonHuntingController>();
             expedition =
                 PrototypeExpeditionDirector.Instance;
             harborPosition = expedition != null
@@ -171,6 +183,7 @@ namespace Seaborn.Recovery
             {
                 wreckPosition = player.position;
                 CreateWreckMarker();
+                ActivateWreckRaider();
             }
 
             State =
@@ -293,6 +306,7 @@ namespace Seaborn.Recovery
             }
 
             RestoreMainShipProfile();
+            ClearWreckRaider();
 
             State =
                 PrototypeShipRecoveryState.MainShipActive;
@@ -340,6 +354,131 @@ namespace Seaborn.Recovery
                     player.position,
                     harborPosition
                 ) <= 4.8f;
+        }
+
+        private void ActivateWreckRaider()
+        {
+            ClearWreckRaider();
+
+            EnemyShipController candidate =
+                FindFirstObjectByType<EnemyShipController>();
+
+            if (candidate == null)
+            {
+                Debug.Log(
+                    "Enkaz yağmacısı için aktif düşman gemisi bulunamadı.",
+                    this
+                );
+                return;
+            }
+
+            wreckRaider = candidate;
+            wreckRaider.name = "Wreck Raider";
+
+            Vector3 offset =
+                new Vector3(7.5f, 0f, 4.5f);
+            Vector3 raiderPosition =
+                wreckPosition + offset;
+            raiderPosition.y = player.position.y;
+
+            ShipSinkController raiderSink =
+                wreckRaider.GetComponent<
+                    ShipSinkController>();
+            if (!wreckRaider.gameObject.activeSelf &&
+                raiderSink != null)
+            {
+                raiderSink.RestoreAfterSinking(
+                    raiderPosition,
+                    Quaternion.LookRotation(
+                        -offset.normalized,
+                        Vector3.up
+                    )
+                );
+            }
+            else
+            {
+                wreckRaider.transform.SetPositionAndRotation(
+                    raiderPosition,
+                    Quaternion.LookRotation(
+                        -offset.normalized,
+                        Vector3.up
+                    )
+                );
+
+                Rigidbody body =
+                    wreckRaider.GetComponent<Rigidbody>();
+                if (body != null)
+                {
+                    body.linearVelocity = Vector3.zero;
+                    body.angularVelocity = Vector3.zero;
+                }
+            }
+
+            wreckRaiderHealth =
+                wreckRaider.GetComponent<ShipHealth>();
+            if (wreckRaiderHealth != null)
+            {
+                wreckRaiderHealth
+                    .SetRuntimeMaximumHealthMultiplier(
+                        0.55f,
+                        true
+                    );
+                wreckRaiderHealth.Sunk +=
+                    HandleWreckRaiderSunk;
+            }
+
+            raiderRewardGranted = false;
+
+            Debug.Log(
+                "Enkaz Yağmacısı ana geminin çevresinde. " +
+                "Savaş isteğe bağlı; ek ganimet taşır.",
+                this
+            );
+        }
+
+        private void HandleWreckRaiderSunk()
+        {
+            if (raiderRewardGranted)
+            {
+                return;
+            }
+
+            raiderRewardGranted = true;
+            cargo?.AddCatch(
+                "Enkaz Yağmacısı ganimeti",
+                30
+            );
+            broadside?.AddAmmunition(
+                AmmunitionType.Standard,
+                12
+            );
+            harpoons?.AddHarpoons(3);
+            RecoveryChanged?.Invoke();
+
+            Debug.Log(
+                "Enkaz Yağmacısı batırıldı: " +
+                "+30 güvencesiz silver, " +
+                "+12 standart gülle, +3 zıpkın.",
+                this
+            );
+        }
+
+        private void ClearWreckRaider()
+        {
+            if (wreckRaiderHealth != null)
+            {
+                wreckRaiderHealth.Sunk -=
+                    HandleWreckRaiderSunk;
+            }
+
+            if (wreckRaider != null &&
+                wreckRaider.gameObject.activeSelf)
+            {
+                wreckRaider.gameObject.SetActive(false);
+            }
+
+            wreckRaider = null;
+            wreckRaiderHealth = null;
         }
 
         private void CreateWreckMarker()
@@ -561,7 +700,7 @@ namespace Seaborn.Recovery
                     return distance <= salvageRadius
                         ? "Ana gemiyi çıkarmak için E basılı tut."
                         : $"Enkaza uzaklık: {distance:0.0}\n" +
-                            "Yedek: hızlı/çevik • 60 can • 90 yük";
+                            "Yağmacı ödülü: 30 yük • 12 gülle • 3 zıpkın";
                 case PrototypeShipRecoveryState
                     .MainShipRecovered:
                     return IsPlayerAtHarbor()
@@ -598,6 +737,8 @@ namespace Seaborn.Recovery
             {
                 Destroy(wreckMarker);
             }
+
+            ClearWreckRaider();
 
             if (Instance == this)
             {
