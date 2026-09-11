@@ -23,6 +23,30 @@ namespace Seaborn.Ship
 
         private Rigidbody shipRigidbody;
         private Vector2 moveInput;
+        private float speedMultiplier = 1f;
+        private float accelerationMultiplier = 1f;
+        private float turnMultiplier = 1f;
+
+        public float SpeedMultiplier => speedMultiplier;
+        public float TurnMultiplier => turnMultiplier;
+
+        public void SetRuntimePerformance(
+            float speed,
+            float accelerationRate,
+            float turning)
+        {
+            speedMultiplier = Mathf.Max(0.1f, speed);
+            accelerationMultiplier =
+                Mathf.Max(0.1f, accelerationRate);
+            turnMultiplier = Mathf.Max(0.1f, turning);
+        }
+
+        public void ResetRuntimePerformance()
+        {
+            speedMultiplier = 1f;
+            accelerationMultiplier = 1f;
+            turnMultiplier = 1f;
+        }
 
         private void Awake()
         {
@@ -54,8 +78,8 @@ namespace Seaborn.Ship
         private void ApplyForwardMovement()
         {
             float requestedSpeed = moveInput.y >= 0f
-                ? moveInput.y * maxForwardSpeed
-                : moveInput.y * maxReverseSpeed;
+                ? moveInput.y * maxForwardSpeed * speedMultiplier
+                : moveInput.y * maxReverseSpeed * speedMultiplier;
 
             float currentForwardSpeed = Vector3.Dot(
                 shipRigidbody.linearVelocity,
@@ -64,7 +88,8 @@ namespace Seaborn.Ship
             float speedDifference = requestedSpeed - currentForwardSpeed;
 
             shipRigidbody.AddForce(
-                transform.forward * speedDifference * acceleration,
+                transform.forward * speedDifference *
+                acceleration * accelerationMultiplier,
                 ForceMode.Acceleration);
         }
 
@@ -77,11 +102,14 @@ namespace Seaborn.Ship
             float steeringAuthority = Mathf.Lerp(
                 stationarySteering,
                 1f,
-                Mathf.Clamp01(forwardSpeed / maxForwardSpeed));
+                Mathf.Clamp01(
+                    forwardSpeed /
+                    (maxForwardSpeed * speedMultiplier)));
 
             float rotationAmount =
                 moveInput.x *
                 turnSpeed *
+                turnMultiplier *
                 steeringAuthority *
                 Time.fixedDeltaTime;
 
