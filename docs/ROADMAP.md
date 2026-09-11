@@ -20,6 +20,7 @@ Bu dosya yaşayan backlog’dur. Tamamlanan her feature merge’ünde güncellen
 - [x] Kamera yakınlaştırma
 - [x] Başlangıç GDD
 - [x] Repo içi yaşayan dokümantasyon
+- [x] Gemi, sefer, ekonomi ve savaş için bütünleşik oynanış HUD'ı
 
 ## Milestone 1 — Savaş hissi
 
