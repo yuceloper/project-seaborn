@@ -361,7 +361,7 @@ namespace Seaborn.Harbor
 
                 contractBackgrounds[
                     contract.Definition.Id
-                ] = button.targetGraphic;
+                ] = buttonObject.GetComponent<Image>();
                 index++;
             }
         }
