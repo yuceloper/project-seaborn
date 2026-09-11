@@ -137,6 +137,8 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] İsteğe bağlı günlük kontrat havuzu
 - [x] Aylık kaptan seyir defteri
 - [ ] Sunucu otoriteli günlük/aylık yenileme
+- [x] Prototip liman halkasında silah kilidi ve hasar koruması
+- [x] Stormjaw’ın güvenli liman sınırında takibi bırakması
 - [ ] Ayrı güvenli liman hub sahnesi
 - [ ] Limanda gemi temelli sosyal görünürlük
 

@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using Seaborn.Expeditions;
 using UnityEngine;
 
 namespace Seaborn.Combat
@@ -37,6 +38,8 @@ namespace Seaborn.Combat
         public AmmunitionType SelectedAmmunition => selectedAmmunition;
         public float MaximumRange => projectileRange * AmmunitionProfile.Get(selectedAmmunition).RangeMultiplier;
         public float CooldownDuration => broadsideCooldown * AmmunitionProfile.Get(selectedAmmunition).ReloadMultiplier;
+        public bool IsBlockedBySafeHarbor =>
+            !PrototypeSafeHarborProtection.AllowsWeapons(gameObject);
 
         public bool TrySelectAmmunition(AmmunitionType ammunitionType)
         {
@@ -118,7 +121,8 @@ namespace Seaborn.Combat
 
         private bool CanFire(BroadsideSide side)
         {
-            return GetCooldownRemaining(side) <= 0f &&
+            return !IsBlockedBySafeHarbor &&
+                   GetCooldownRemaining(side) <= 0f &&
                    GetAmmunitionStock(selectedAmmunition) > 0;
         }
 
