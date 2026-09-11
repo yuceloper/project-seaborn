@@ -21,6 +21,25 @@ namespace Seaborn.Hunting
             }
         }
 
+        public bool TrySpendSilver(
+            int amount,
+            string reason)
+        {
+            if (amount <= 0 || silver < amount)
+            {
+                return false;
+            }
+
+            silver -= amount;
+            SilverChanged?.Invoke(silver);
+            Debug.Log(
+                $"{reason}: -{amount} silver " +
+                $"(Toplam: {silver})",
+                this
+            );
+            return true;
+        }
+
         public void AddSilver(int amount)
         {
             AddSilver(amount, "Av tamamlandı");

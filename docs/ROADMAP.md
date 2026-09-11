@@ -139,6 +139,9 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [ ] Sunucu otoriteli günlük/aylık yenileme
 - [x] Prototip liman halkasında silah kilidi ve hasar koruması
 - [x] Stormjaw’ın güvenli liman sınırında takibi bırakması
+- [x] Silver karşılığı gemi onarımı
+- [x] Top mühimmatı ve zıpkın ikmali
+- [x] Liman servisleri için UI-bağımsız API ve olaylar
 - [ ] Ayrı güvenli liman hub sahnesi
 - [ ] Limanda gemi temelli sosyal görünürlük
 

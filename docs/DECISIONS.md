@@ -151,3 +151,9 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 **Karar:** Prototip liman halkası içindeyken oyuncunun top ve zıpkınları kilitlenir, oyuncu gemisi hasar almaz ve Stormjaw liman sınırında takibi bırakır. Bu durum tek bir güvenli liman koruma bileşeninden okunur ve UI için olay yayınlar.
 
 **Neden:** Güvenli alanı yalnızca görsel bir halka olmaktan çıkarıp oynanış sözleşmesine dönüştürmek; ileride ayrı hub sahnesine geçerken savaş, av, AI ve UI kodlarının aynı otoriteyi kullanmasını sağlamak.
+
+## 2026-09-11 — Liman servisleri ve silver gideri
+
+**Karar:** Onarım ile standart, zincirli, saçma ve zıpkın ikmali yalnızca güvenli limandayken kullanılabilir. Servisler kalıcı silver harcar; fiyat ve paket miktarları prototipte serileştirilebilir değerlerdir. UI doğrudan sistemleri değiştirmek yerine liman servisi API’sini çağırır.
+
+**Neden:** Av ve kontrat kazançlarının karşısına anlamlı bir silver gideri koymak, sefere hazırlığı limanın temel işlevine dönüştürmek ve ileride sunucu otoritesine taşınabilecek tek bir işlem sınırı oluşturmak.
