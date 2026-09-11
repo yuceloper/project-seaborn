@@ -298,6 +298,9 @@ namespace Seaborn.Hunting
             PrototypeContractBoard.EnsureCreated(
                 player.transform
             );
+            PrototypeHarborPreparationPanel.EnsureCreated(
+                player.transform
+            );
         }
     }
 }
