@@ -21,6 +21,7 @@ Bu dosya yaşayan backlog’dur. Tamamlanan her feature merge’ünde güncellen
 - [x] Başlangıç GDD
 - [x] Repo içi yaşayan dokümantasyon
 - [x] Gemi, sefer, ekonomi ve savaş için bütünleşik oynanış HUD'ı
+- [x] Ganimet, teslim, kayıp ve kritik hasar bildirimleri
 
 ## Milestone 1 — Savaş hissi
 

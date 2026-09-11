@@ -193,3 +193,9 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 **Karar:** Sürekli oynanış arayüzü gemi ve gövde durumunu sol üstte, sefer ritmini üst merkezde, güvenli ve güvencesiz ekonomiyi sağ üstte, borda mühimmatı, yeniden doldurma ve zıpkını alt merkezde gösterir. Liman hazırlık paneli bu HUD'ın üzerinde açılır; HUD sahne kurulumu gerektirmeden çalışma anında oluşturulur.
 
 **Neden:** Aksiyon sırasında göz hareketini azaltmak, batışta kaybedilecek değeri sürekli görünür tutmak ve prototip sistemlerini geçici debug yazılarından ortak bir görsel dile taşımak.
+
+## 2026-09-11 — Oynanış bildirimlerinin kapsamı
+
+**Karar:** Anlık bildirim katmanı yalnızca oyuncu kararını etkileyen sonuçları gösterir: av/ganimet kazanımı, yükün güvenceye alınması veya kaybı, kritik gövde hasarı ve batış. Sürekli hasar sayıları ve her mühimmat değişimi bildirim akışına eklenmez.
+
+**Neden:** Konsol loglarına ihtiyaç duymadan önemli sonuçları görünür kılmak; uzak izometrik savaşta ekranı tekrar eden mesajlarla kaplamamak.
