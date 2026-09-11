@@ -187,3 +187,9 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 **Karar:** Normal düşman gemileri batırıldığında iki dakika boyunca suda kalan bir enkaz sandığı bırakır. Oyuncu yaklaşıp etkileşime geçtiğinde 35 güvencesiz silver ve 6 standart gülle alır. Enkaz Yağmacısı bu genel tablonun dışında kalır ve özel kurtarma ödülünü kullanır.
 
 **Neden:** Deniz savaşını yalnızca tehdit temizlemeye değil sefer ekonomisine bağlamak; zaferden sonra oyuncuya ganimeti toplama ve limana sağ salim taşıma sorumluluğu vermek.
+
+## 2026-09-11 — Oynanış HUD bilgi hiyerarşisi
+
+**Karar:** Sürekli oynanış arayüzü gemi ve gövde durumunu sol üstte, sefer ritmini üst merkezde, güvenli ve güvencesiz ekonomiyi sağ üstte, borda mühimmatı, yeniden doldurma ve zıpkını alt merkezde gösterir. Liman hazırlık paneli bu HUD'ın üzerinde açılır; HUD sahne kurulumu gerektirmeden çalışma anında oluşturulur.
+
+**Neden:** Aksiyon sırasında göz hareketini azaltmak, batışta kaybedilecek değeri sürekli görünür tutmak ve prototip sistemlerini geçici debug yazılarından ortak bir görsel dile taşımak.
