@@ -199,3 +199,9 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 **Karar:** Anlık bildirim katmanı yalnızca oyuncu kararını etkileyen sonuçları gösterir: av/ganimet kazanımı, yükün güvenceye alınması veya kaybı, kritik gövde hasarı ve batış. Sürekli hasar sayıları ve her mühimmat değişimi bildirim akışına eklenmez.
 
 **Neden:** Konsol loglarına ihtiyaç duymadan önemli sonuçları görünür kılmak; uzak izometrik savaşta ekranı tekrar eden mesajlarla kaplamamak.
+
+## 2026-09-12 — Prototip ilerleme kalıcılığı
+
+**Karar:** Yerel prototip kaydı yalnızca güvenceye alınmış silver, top mühimmatı, seçili mühimmat ve zıpkın stoğunu saklar. Güvencesiz yük, aktif sefer, gemi hasarı ve batış/kurtarma durumu kaydedilmez. Kayıt JSON olarak uygulamanın kalıcı veri dizinine yazılır; çevrim içi sürümde sunucu otoritesi bunun yerini alacaktır.
+
+**Neden:** Oyuncuya oturumlar arasında ilerleme hissi verirken oyunu kapatmanın riskli yükü güvenceye alma yoluna dönüşmesini engellemek ve geçici istemci kaydını nihai backend mimarisiyle karıştırmamak.
