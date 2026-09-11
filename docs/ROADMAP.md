@@ -100,7 +100,7 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Sonlu mühimmat stoğu ve UI olayları
 - [ ] Ekipman istatistikleri
 - [ ] AI zorluk profilleri
-- [ ] Batırma ödülü ve enkaz
+- [x] Batırma ödülü ve süreli enkaz sandığı
 
 ## Milestone 3.5 — Deniz avcılığı dikey dilimi
 

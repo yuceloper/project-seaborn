@@ -181,3 +181,9 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 **Karar:** Ana gemi enkazının çevresinde mevcut düşman borda AI’sını kullanan bir Enkaz Yağmacısı bulunur. Yağmacıyı batırmak ana gemiyi kurtarmak için zorunlu değildir; zafer 30 güvencesiz silver, 12 standart gülle ve 3 zıpkın verir.
 
 **Neden:** Yedek geminin çeviklik avantajını savaşmak veya kaçınmak için anlamlı hale getirmek; kurtarma görevini tek bir etkileşim çubuğundan çıkarıp oyuncunun mevcut riskini büyütmeyi seçebildiği kısa bir karşılaşmaya dönüştürmek.
+
+## 2026-09-11 — Düşman gemisi enkaz ganimeti
+
+**Karar:** Normal düşman gemileri batırıldığında iki dakika boyunca suda kalan bir enkaz sandığı bırakır. Oyuncu yaklaşıp etkileşime geçtiğinde 35 güvencesiz silver ve 6 standart gülle alır. Enkaz Yağmacısı bu genel tablonun dışında kalır ve özel kurtarma ödülünü kullanır.
+
+**Neden:** Deniz savaşını yalnızca tehdit temizlemeye değil sefer ekonomisine bağlamak; zaferden sonra oyuncuya ganimeti toplama ve limana sağ salim taşıma sorumluluğu vermek.
