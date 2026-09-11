@@ -127,7 +127,9 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] PvE hedefleri ve mini boss
 - [x] Kargo toplama
 - [x] Çıkış/ganimeti güvenceye alma
-- [ ] Batış sonrası yedek gemi ve kurtarma görevi
+- [x] Batış sonrası yedek gemi ve kurtarma görevi prototipi
+- [x] Batış konumunda kalıcı enkaz hedefi
+- [x] Ana gemiyi limanda tekrar hizmete alma
 - [ ] Basit kalıcılık
 
 ### Kontratlar ve liman

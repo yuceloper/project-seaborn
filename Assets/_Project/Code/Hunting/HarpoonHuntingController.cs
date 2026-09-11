@@ -2,6 +2,7 @@ using System;
 using Seaborn.Combat;
 using Seaborn.Expeditions;
 using Seaborn.Harbor;
+using Seaborn.Recovery;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -299,6 +300,9 @@ namespace Seaborn.Hunting
                 player.transform
             );
             PrototypeHarborPreparationPanel.EnsureCreated(
+                player.transform
+            );
+            PrototypeShipRecoveryDirector.EnsureCreated(
                 player.transform
             );
         }

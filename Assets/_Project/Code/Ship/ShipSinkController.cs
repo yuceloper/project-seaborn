@@ -21,11 +21,17 @@ namespace Seaborn.Ship
 
         private ShipHealth shipHealth;
         private Collider[] shipColliders;
+        private bool originalIsKinematic;
 
         private void Awake()
         {
             shipHealth = GetComponent<ShipHealth>();
             shipColliders = GetComponentsInChildren<Collider>();
+
+            Rigidbody shipRigidbody = GetComponent<Rigidbody>();
+            originalIsKinematic =
+                shipRigidbody != null &&
+                shipRigidbody.isKinematic;
         }
 
         private void OnEnable()
@@ -79,6 +85,52 @@ namespace Seaborn.Ship
             }
 
             StartCoroutine(Sink());
+        }
+
+        public void RestoreAfterSinking(
+            Vector3 position,
+            Quaternion rotation)
+        {
+            StopAllCoroutines();
+
+            gameObject.SetActive(true);
+            transform.SetPositionAndRotation(
+                position,
+                rotation
+            );
+
+            ShipMotor shipMotor = GetComponent<ShipMotor>();
+            if (shipMotor != null)
+            {
+                shipMotor.enabled = true;
+            }
+
+            BroadsideController broadsideController =
+                GetComponent<BroadsideController>();
+            if (broadsideController != null)
+            {
+                broadsideController.enabled = true;
+            }
+
+            Rigidbody shipRigidbody =
+                GetComponent<Rigidbody>();
+            if (shipRigidbody != null)
+            {
+                shipRigidbody.isKinematic =
+                    originalIsKinematic;
+                shipRigidbody.linearVelocity = Vector3.zero;
+                shipRigidbody.angularVelocity = Vector3.zero;
+            }
+
+            foreach (Collider shipCollider in shipColliders)
+            {
+                if (shipCollider != null)
+                {
+                    shipCollider.enabled = true;
+                }
+            }
+
+            shipHealth.RestoreToFullHealth();
         }
 
         private IEnumerator Sink()
