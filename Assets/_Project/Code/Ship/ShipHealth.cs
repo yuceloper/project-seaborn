@@ -1,5 +1,6 @@
 using System;
 using Seaborn.Combat.Damage;
+using Seaborn.Expeditions;
 using UnityEngine;
 
 namespace Seaborn.Ship
@@ -26,7 +27,11 @@ namespace Seaborn.Ship
 
         public void ApplyDamage(DamageInfo damageInfo)
         {
-            if (IsSunk || damageInfo.Amount <= 0f)
+            if (IsSunk ||
+                damageInfo.Amount <= 0f ||
+                PrototypeSafeHarborProtection.IsDamageProtected(
+                    this
+                ))
             {
                 return;
             }

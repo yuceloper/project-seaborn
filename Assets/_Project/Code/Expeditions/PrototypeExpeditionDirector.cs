@@ -73,6 +73,17 @@ namespace Seaborn.Expeditions
             State ==
                 PrototypeExpeditionState.ReturnRecommended;
 
+        public Vector3 HarborPosition => harborPosition;
+
+        public float HarborRadius => harborRadius;
+
+        public bool IsPlayerAtHarbor =>
+            player != null &&
+            HorizontalDistance(
+                player.position,
+                harborPosition
+            ) <= harborRadius;
+
         private Transform player;
         private PrototypeHuntCargo cargo;
         private ShipHealth shipHealth;
@@ -127,13 +138,7 @@ namespace Seaborn.Expeditions
                 return;
             }
 
-            float distanceFromHarbor =
-                HorizontalDistance(
-                    player.position,
-                    harborPosition
-                );
-            bool isAtHarbor =
-                distanceFromHarbor <= harborRadius;
+            bool isAtHarbor = IsPlayerAtHarbor;
 
             if ((State ==
                     PrototypeExpeditionState.AtHarbor ||
@@ -193,6 +198,11 @@ namespace Seaborn.Expeditions
             shipHealth =
                 player.GetComponentInChildren<ShipHealth>();
             harborPosition = player.position;
+
+            PrototypeSafeHarborProtection.EnsureAttached(
+                player,
+                this
+            );
 
             if (cargo != null)
             {

@@ -145,3 +145,9 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 **Karar:** Ürün sürümünde güvenli liman, sefer haritalarından ayrı bir sosyal şehir/hub instance’ıdır. Oyuncu limanda da gemisiyle temsil edilir; yürüyen kaptan ve kara savaşı yapılmaz. İlk prototipte mevcut başlangıç halkası liman yerine geçmeye devam eder.
 
 **Neden:** PvP’siz hazırlık, ticaret ve sosyalleşme alanını riskli seferlerden net ayırmak; sunucu instance yaşam döngüsünü sadeleştirirken kara karakteri kapsamını açmamak.
+
+## 2026-09-11 — Güvenli limanın merkezi kuralı
+
+**Karar:** Prototip liman halkası içindeyken oyuncunun top ve zıpkınları kilitlenir, oyuncu gemisi hasar almaz ve Stormjaw liman sınırında takibi bırakır. Bu durum tek bir güvenli liman koruma bileşeninden okunur ve UI için olay yayınlar.
+
+**Neden:** Güvenli alanı yalnızca görsel bir halka olmaktan çıkarıp oynanış sözleşmesine dönüştürmek; ileride ayrı hub sahnesine geçerken savaş, av, AI ve UI kodlarının aynı otoriteyi kullanmasını sağlamak.

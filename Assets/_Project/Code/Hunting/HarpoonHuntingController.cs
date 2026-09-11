@@ -44,7 +44,12 @@ namespace Seaborn.Hunting
                 : 1f - Mathf.Clamp01(
                     ReloadRemaining / reloadDuration
                 );
+        public bool IsBlockedBySafeHarbor =>
+            !PrototypeSafeHarborProtection.AllowsWeapons(
+                gameObject
+            );
         public bool CanFire =>
+            !IsBlockedBySafeHarbor &&
             IsAiming &&
             hasAimPoint &&
             HarpoonStock > 0 &&
@@ -69,6 +74,7 @@ namespace Seaborn.Hunting
             }
 
             bool wantsToAim =
+                !IsBlockedBySafeHarbor &&
                 Keyboard.current != null &&
                 Keyboard.current.leftShiftKey.isPressed;
 

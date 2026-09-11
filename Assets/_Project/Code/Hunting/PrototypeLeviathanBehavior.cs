@@ -1,5 +1,6 @@
 using Seaborn.Combat;
 using Seaborn.Combat.Damage;
+using Seaborn.Expeditions;
 using UnityEngine;
 
 namespace Seaborn.Hunting
@@ -65,6 +66,13 @@ namespace Seaborn.Hunting
                 return;
             }
 
+            if (!PrototypeSafeHarborProtection.AllowsWeapons(
+                    hunter))
+            {
+                DisengageAtHarbor();
+                return;
+            }
+
             if (Time.time < retreatUntil)
             {
                 RetreatFromHunter();
@@ -127,6 +135,19 @@ namespace Seaborn.Hunting
 
             Debug.Log(
                 "Stormjaw öfkelendi ve hücuma hazırlanıyor.",
+                this
+            );
+        }
+
+        private void DisengageAtHarbor()
+        {
+            hunter = null;
+            creature.IsMovementExternallyControlled = false;
+            needsChargeWarning = false;
+            retreatUntil = 0f;
+
+            Debug.Log(
+                "Stormjaw güvenli liman sınırında avı bıraktı.",
                 this
             );
         }
