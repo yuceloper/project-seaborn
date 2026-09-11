@@ -23,6 +23,13 @@ namespace Seaborn.Hunting
 
         public void AddSilver(int amount)
         {
+            AddSilver(amount, "Av tamamlandı");
+        }
+
+        public void AddSilver(
+            int amount,
+            string reason)
+        {
             if (amount <= 0)
             {
                 return;
@@ -31,7 +38,7 @@ namespace Seaborn.Hunting
             silver += amount;
             SilverChanged?.Invoke(silver);
             Debug.Log(
-                $"Av tamamlandı: +{amount} silver " +
+                $"{reason}: +{amount} silver " +
                 $"(Toplam: {silver})",
                 this
             );

@@ -1,5 +1,6 @@
 using System;
 using Seaborn.Combat;
+using Seaborn.Expeditions;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -279,6 +280,12 @@ namespace Seaborn.Hunting
                 player.transform.position
             );
             PrototypeHarborDeliveryZone.EnsureCreated(
+                player.transform
+            );
+            PrototypeExpeditionDirector.EnsureCreated(
+                player.transform
+            );
+            PrototypeContractBoard.EnsureCreated(
                 player.transform
             );
         }

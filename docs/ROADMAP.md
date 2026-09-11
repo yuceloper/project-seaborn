@@ -122,13 +122,23 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 
 ## Milestone 4 — Sefer prototipi
 
-- [ ] Liman → sefer → liman akışı
-- [ ] 15–25 dakikalık sefer zamanlaması
-- [ ] PvE hedefleri ve mini boss
-- [ ] Kargo toplama
-- [ ] Çıkış/ganimeti güvenceye alma
+- [~] Liman → sefer → liman akışı
+- [~] 15–25 dakikalık sefer zamanlaması; hızlandırılmış prototip saat hazır
+- [x] PvE hedefleri ve mini boss
+- [x] Kargo toplama
+- [x] Çıkış/ganimeti güvenceye alma
 - [ ] Batış sonrası yedek gemi ve kurtarma görevi
 - [ ] Basit kalıcılık
+
+### Kontratlar ve liman
+
+- [x] Sefer öncesi kontrat seçimi
+- [x] Kıyı Avı, Tehlikeli Av ve Serbest Sefer
+- [x] İsteğe bağlı günlük kontrat havuzu
+- [x] Aylık kaptan seyir defteri
+- [ ] Sunucu otoriteli günlük/aylık yenileme
+- [ ] Ayrı güvenli liman hub sahnesi
+- [ ] Limanda gemi temelli sosyal görünürlük
 
 ## Milestone 5 — Çevrim içi temel
 

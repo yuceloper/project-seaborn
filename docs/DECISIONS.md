@@ -127,3 +127,21 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 **Karar:** İlk nadir av Stormjaw Leviathan’dır. Normal Tideback’ten büyük, dayanıklı ve yüksek değerli olur; ilk zıpkın isabetinden sonra kaçmak yerine avcı gemisine yönelip aralıklı koçbaşı hasarı verir.
 
 **Neden:** Nadir avı yalnızca daha uzun bir can çubuğuna çevirmemek; oyuncunun kaçış, yön verme ve riskli yük kararını savaş tehdidiyle birleştirmek.
+
+## 2026-09-10 — Hızlandırılmış sefer prototipi
+
+**Karar:** İlk sefer durum makinesi limandan ayrılınca otomatik başlar. Oyuncu istediği anda yükle dönebilir; 90 güvencesiz silver yalnızca “dönüş tavsiye edilir” eşiğidir. Limanda güvenceye alınan herhangi bir pozitif yük başarılı sefer, batış başarısız sefer sayılır. Prototipte baskı 3,5 dakikada başlar ve 6 dakikada tepeye çıkar; üretim hedefi sert süre sonu olmadan 15–25 dakikadır.
+
+**Neden:** Hazırlık, av/savaş, risk büyütme ve dönüş ritmini kısa testlerde doğrulamak; oyuncunun erken çıkış özgürlüğünü korurken ileride hava, görünürlük ve çıkış baskısını aynı durum modeline bağlamak.
+
+## 2026-09-10 — Günlük ve aylık kontratlar
+
+**Karar:** Günlük kontratlar üç seçenek sunar ve iki tamamlamayla ana ödül verir; aylık kaptan seyir defteri farklı faaliyetlerle ilerleyen uzun hedeflerden oluşur. Giriş serisi, kaçırılan gün cezası ve zorunlu güç ödülü kullanılmaz. Gerçek yenileme ve kalıcılık sunucu otoriteli olacaktır.
+
+**Neden:** Düzenli dönüş motivasyonu üretirken Project Seaborn’u oyuncunun kendi sefer hedefini seçtiği yapıdan zorunlu günlük görev listesine çevirmemek ve premium/pay-to-win baskısından korumak.
+
+## 2026-09-10 — Güvenli limanın ayrı hub olması
+
+**Karar:** Ürün sürümünde güvenli liman, sefer haritalarından ayrı bir sosyal şehir/hub instance’ıdır. Oyuncu limanda da gemisiyle temsil edilir; yürüyen kaptan ve kara savaşı yapılmaz. İlk prototipte mevcut başlangıç halkası liman yerine geçmeye devam eder.
+
+**Neden:** PvP’siz hazırlık, ticaret ve sosyalleşme alanını riskli seferlerden net ayırmak; sunucu instance yaşam döngüsünü sadeleştirirken kara karakteri kapsamını açmamak.
