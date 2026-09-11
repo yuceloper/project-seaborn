@@ -246,6 +246,54 @@ namespace Seaborn.Harbor
             return PrototypeHarborServiceResult.Completed;
         }
 
+        [ContextMenu("Prototype/Repair Ship")]
+        private void RepairFromInspector()
+        {
+            Debug.Log(
+                $"Onarım sonucu: {TryRepair()}",
+                this
+            );
+        }
+
+        [ContextMenu("Prototype/Restock Standard")]
+        private void RestockStandardFromInspector()
+        {
+            Debug.Log(
+                $"Standart ikmal sonucu: " +
+                $"{TryRestockAmmunition(AmmunitionType.Standard)}",
+                this
+            );
+        }
+
+        [ContextMenu("Prototype/Restock Chain")]
+        private void RestockChainFromInspector()
+        {
+            Debug.Log(
+                $"Zincirli ikmal sonucu: " +
+                $"{TryRestockAmmunition(AmmunitionType.Chain)}",
+                this
+            );
+        }
+
+        [ContextMenu("Prototype/Restock Grapeshot")]
+        private void RestockGrapeshotFromInspector()
+        {
+            Debug.Log(
+                $"Saçma ikmal sonucu: " +
+                $"{TryRestockAmmunition(AmmunitionType.Grapeshot)}",
+                this
+            );
+        }
+
+        [ContextMenu("Prototype/Restock Harpoons")]
+        private void RestockHarpoonsFromInspector()
+        {
+            Debug.Log(
+                $"Zıpkın ikmal sonucu: {TryRestockHarpoons()}",
+                this
+            );
+        }
+
         private PrototypeHarborServiceResult ValidateService(
             bool dependencyAvailable)
         {
