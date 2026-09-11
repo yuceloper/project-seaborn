@@ -175,3 +175,9 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 **Karar:** Prototip yedek gemi ana gemiye göre yüzde 18 daha hızlı, yüzde 30 daha çevik, 60 cana ve 90 silver av yükü kapasitesine sahiptir. Ana gemi yeniden hizmete alındığında hareket, can ve yük değerleri eksiksiz biçimde ana gemi profiline döner.
 
 **Neden:** Kurtarma seferini normal kazanç seferinden farklılaştırmak; oyuncuya enkaza ulaşmak için güçlü kaçış araçları verirken yedek geminin düşük dayanıklılık ve ambar sınırıyla ana geminin yerine kalıcı olarak geçmesini engellemek.
+
+## 2026-09-11 — Enkaz alanında isteğe bağlı tehdit
+
+**Karar:** Ana gemi enkazının çevresinde mevcut düşman borda AI’sını kullanan bir Enkaz Yağmacısı bulunur. Yağmacıyı batırmak ana gemiyi kurtarmak için zorunlu değildir; zafer 30 güvencesiz silver, 12 standart gülle ve 3 zıpkın verir.
+
+**Neden:** Yedek geminin çeviklik avantajını savaşmak veya kaçınmak için anlamlı hale getirmek; kurtarma görevini tek bir etkileşim çubuğundan çıkarıp oyuncunun mevcut riskini büyütmeyi seçebildiği kısa bir karşılaşmaya dönüştürmek.

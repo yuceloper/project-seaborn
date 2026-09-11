@@ -131,6 +131,8 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Batış konumunda kalıcı enkaz hedefi
 - [x] Ana gemiyi limanda tekrar hizmete alma
 - [x] Yedek gemi hız, dönüş, can ve yük profili
+- [x] Enkaz Yağmacısı isteğe bağlı savaş karşılaşması
+- [x] Yağmacı için riskli silver ve mühimmat ödülü
 - [ ] Basit kalıcılık
 
 ### Kontratlar ve liman
