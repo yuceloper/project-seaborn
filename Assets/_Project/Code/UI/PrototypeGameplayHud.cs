@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Seaborn.Combat;
 using Seaborn.Expeditions;
 using Seaborn.Hunting;
@@ -44,6 +45,19 @@ namespace Seaborn.UI
         private RectTransform harpoonFill;
         private Text harborLockText;
         private float nextRefreshTime;
+        private Transform boundPlayer;
+        private RectTransform notificationRoot;
+        private Font interfaceFont;
+        private readonly List<Toast> toasts = new();
+        private bool criticalHullWarningShown;
+
+        private sealed class Toast
+        {
+            public RectTransform Rect;
+            public CanvasGroup Group;
+            public float CreatedAt;
+            public float ExpiresAt;
+        }
 
         public static void EnsureCreated(Transform player)
         {
@@ -64,6 +78,7 @@ namespace Seaborn.UI
 
         private void Update()
         {
+            AnimateNotifications();
             if (Time.unscaledTime < nextRefreshTime) return;
             nextRefreshTime = Time.unscaledTime + 0.1f;
             Refresh();
@@ -71,11 +86,25 @@ namespace Seaborn.UI
 
         private void Bind(Transform player)
         {
+            if (boundPlayer == player && health != null && cargo != null) return;
+            Unsubscribe();
+            boundPlayer = player;
             health = player.GetComponentInChildren<ShipHealth>();
             broadside = player.GetComponentInChildren<BroadsideController>();
             harpoons = player.GetComponentInChildren<HarpoonHuntingController>();
             cargo = player.GetComponentInChildren<PrototypeHuntCargo>();
             wallet = player.GetComponentInChildren<PrototypeSilverWallet>();
+            if (health != null)
+            {
+                health.HealthChanged += HandleHealthChanged;
+                health.Sunk += HandleSunk;
+            }
+            if (cargo != null)
+            {
+                cargo.CatchAdded += HandleCatchAdded;
+                cargo.CargoSecured += HandleCargoSecured;
+                cargo.CargoLost += HandleCargoLost;
+            }
             Refresh();
         }
 
@@ -91,6 +120,7 @@ namespace Seaborn.UI
             scaler.matchWidthOrHeight = 0.5f;
 
             Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            interfaceFont = font;
 
             RectTransform ship = CreateCard("Ship", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(24f, -24f), new Vector2(330f, 98f));
             shipNameText = CreateText(ship, font, "ANA GEMİ", 15, Gold, FontStyle.Bold, new Vector2(16f, -11f), new Vector2(298f, 22f));
@@ -116,6 +146,15 @@ namespace Seaborn.UI
             starboardText = CreateText(combat, font, "SANCAK HAZIR", 12, Cream, FontStyle.Bold, new Vector2(584f, -14f), new Vector2(178f, 22f), TextAnchor.UpperRight);
             starboardFill = CreateBar(combat, "Starboard", new Vector2(584f, -43f), new Vector2(178f, 10f), out _);
             harborLockText = CreateText(combat, font, "SİLAHLAR LİMANDA KİLİTLİ", 12, Gold, FontStyle.Bold, new Vector2(18f, -83f), new Vector2(744f, 20f), TextAnchor.UpperCenter);
+
+            GameObject notifications = new("Notifications", typeof(RectTransform));
+            notifications.transform.SetParent(transform, false);
+            notificationRoot = notifications.GetComponent<RectTransform>();
+            notificationRoot.anchorMin = new Vector2(1f, 1f);
+            notificationRoot.anchorMax = new Vector2(1f, 1f);
+            notificationRoot.pivot = new Vector2(1f, 1f);
+            notificationRoot.anchoredPosition = new Vector2(-24f, -138f);
+            notificationRoot.sizeDelta = new Vector2(360f, 260f);
         }
 
         private void Refresh()
@@ -185,6 +224,139 @@ namespace Seaborn.UI
             SetBar(harpoonFill, reload);
             bool locked = broadside != null && broadside.IsBlockedBySafeHarbor;
             harborLockText.gameObject.SetActive(locked);
+        }
+
+        private void HandleCatchAdded(string source, int value)
+        {
+            ShowNotification($"+{value} GÜVENCESİZ SILVER", source, Gold);
+        }
+
+        private void HandleCargoSecured(int value)
+        {
+            ShowNotification($"{value} SILVER GÜVENCEDE", "Liman teslimi tamamlandı", Success);
+        }
+
+        private void HandleCargoLost(int value)
+        {
+            ShowNotification($"{value} SILVER KAYBEDİLDİ", "Güvencesiz yük denizde kaldı", Danger, 4.5f);
+        }
+
+        private void HandleSunk()
+        {
+            ShowNotification("GEMİ BATTI", "Yedek gemi hazırlanıyor", Danger, 5f);
+        }
+
+        private void HandleHealthChanged(float current, float maximum)
+        {
+            float ratio = current / Mathf.Max(1f, maximum);
+            if (ratio <= 0.3f && current > 0f && !criticalHullWarningShown)
+            {
+                criticalHullWarningShown = true;
+                ShowNotification("KRİTİK GÖVDE HASARI", "Limana dönmeyi düşün", Danger, 4f);
+            }
+            else if (ratio > 0.4f)
+            {
+                criticalHullWarningShown = false;
+            }
+        }
+
+        private void ShowNotification(string title, string detail, Color accent, float lifetime = 3.2f)
+        {
+            if (notificationRoot == null || interfaceFont == null) return;
+            while (toasts.Count >= 4) RemoveToast(0);
+
+            GameObject card = new("Gameplay Notification", typeof(RectTransform), typeof(Image), typeof(CanvasGroup));
+            card.transform.SetParent(notificationRoot, false);
+            RectTransform rect = card.GetComponent<RectTransform>();
+            rect.anchorMin = new Vector2(1f, 1f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.pivot = new Vector2(1f, 1f);
+            rect.sizeDelta = new Vector2(360f, 58f);
+            card.GetComponent<Image>().color = Navy;
+
+            GameObject stripe = new("Accent", typeof(RectTransform), typeof(Image));
+            stripe.transform.SetParent(card.transform, false);
+            RectTransform stripeRect = stripe.GetComponent<RectTransform>();
+            stripeRect.anchorMin = new Vector2(0f, 0f);
+            stripeRect.anchorMax = new Vector2(0f, 1f);
+            stripeRect.pivot = new Vector2(0f, 0.5f);
+            stripeRect.sizeDelta = new Vector2(4f, 0f);
+            stripeRect.anchoredPosition = Vector2.zero;
+            stripe.GetComponent<Image>().color = accent;
+
+            CreateText(rect, interfaceFont, title, 13, accent, FontStyle.Bold, new Vector2(14f, -8f), new Vector2(332f, 20f));
+            CreateText(rect, interfaceFont, detail, 11, Cream, FontStyle.Normal, new Vector2(14f, -31f), new Vector2(332f, 18f));
+
+            float now = Time.unscaledTime;
+            toasts.Add(new Toast
+            {
+                Rect = rect,
+                Group = card.GetComponent<CanvasGroup>(),
+                CreatedAt = now,
+                ExpiresAt = now + lifetime
+            });
+            LayoutNotifications();
+        }
+
+        private void AnimateNotifications()
+        {
+            float now = Time.unscaledTime;
+            for (int index = toasts.Count - 1; index >= 0; index--)
+            {
+                Toast toast = toasts[index];
+                if (now >= toast.ExpiresAt)
+                {
+                    RemoveToast(index);
+                    continue;
+                }
+
+                float fadeIn = Mathf.InverseLerp(toast.CreatedAt, toast.CreatedAt + 0.18f, now);
+                float fadeOut = Mathf.InverseLerp(toast.ExpiresAt, toast.ExpiresAt - 0.35f, now);
+                toast.Group.alpha = Mathf.Min(fadeIn, fadeOut);
+                float slide = Mathf.Lerp(24f, 0f, Mathf.SmoothStep(0f, 1f, fadeIn));
+                Vector2 position = toast.Rect.anchoredPosition;
+                position.x = slide;
+                toast.Rect.anchoredPosition = position;
+            }
+        }
+
+        private void LayoutNotifications()
+        {
+            for (int index = 0; index < toasts.Count; index++)
+            {
+                Vector2 position = toasts[index].Rect.anchoredPosition;
+                position.y = -index * 66f;
+                toasts[index].Rect.anchoredPosition = position;
+            }
+        }
+
+        private void RemoveToast(int index)
+        {
+            if (index < 0 || index >= toasts.Count) return;
+            Toast toast = toasts[index];
+            toasts.RemoveAt(index);
+            if (toast.Rect != null) Destroy(toast.Rect.gameObject);
+            LayoutNotifications();
+        }
+
+        private void Unsubscribe()
+        {
+            if (health != null)
+            {
+                health.HealthChanged -= HandleHealthChanged;
+                health.Sunk -= HandleSunk;
+            }
+            if (cargo != null)
+            {
+                cargo.CatchAdded -= HandleCatchAdded;
+                cargo.CargoSecured -= HandleCargoSecured;
+                cargo.CargoLost -= HandleCargoLost;
+            }
+        }
+
+        private void OnDestroy()
+        {
+            Unsubscribe();
         }
 
         private RectTransform CreateCard(string name, Vector2 anchor, Vector2 pivot, Vector2 position, Vector2 size)
