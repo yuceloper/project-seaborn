@@ -182,5 +182,7 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Harita kenarı geçitleri ve yönsel bağlantılar
 - [x] Harita geçişinde oyuncu gemisi, hasar ve güvencesiz yükü koruma
 - [x] Mevcut harita ve tehlike seviyesini HUD'da gösterme
+- [x] Yönleri, çıkışları ve gemi konumunu gösteren taktik mini harita
+- [x] Düşman AI, loot ve liman teslim sistemlerini haritalar arasında yeniden kurma
 - [ ] Her haritaya özgü çevre sanatı, ses katmanı ve içerik tabloları
 - [ ] Limanı ticaret, tersane, görev ve sosyal merkez olarak görsel üretime alma
