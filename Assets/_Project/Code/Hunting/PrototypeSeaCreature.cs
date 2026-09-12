@@ -429,24 +429,14 @@ namespace Seaborn.Hunting
 
     public static class PrototypeSeaCreatureSpawner
     {
-        private static bool hasSpawned;
-
-        [RuntimeInitializeOnLoadMethod(
-            RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void ResetState()
-        {
-            hasSpawned = false;
-        }
-
         public static void EnsureSpawned(
             Vector3 playerPosition)
         {
-            if (hasSpawned)
+            if (FindFirstObjectByType<
+                    PrototypeSeaCreature>() != null)
             {
                 return;
             }
-
-            hasSpawned = true;
             Spawn(
                 "Tideback - North",
                 playerPosition +

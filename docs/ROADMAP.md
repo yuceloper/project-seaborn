@@ -175,9 +175,12 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - Gerçek para mağazası
 
 
-### Expedition region pass (2026-09-12)
+### Multi-map expedition foundation (2026-09-12)
 
-- [x] Güvenli liman, kıyı av sahası, korsan geçidi ve Stormjaw derinliği yerleşimi
-- [x] Bölge tehlikesini oyun HUD'ında okunur hale getirme
-- [x] Av ve düşman karşılaşmalarını risk bölgelerine yerleştirme
-- [ ] Bölgelere özgü çevre sanatı, ses katmanı ve kalıcı içerik tabloları
+- [x] Güvenli limanı bağımsız merkez sahnesine ayırma
+- [x] Merkez deniz, batı sınırı ve doğu avları için ayrı sahne omurgası
+- [x] Harita kenarı geçitleri ve yönsel bağlantılar
+- [x] Harita geçişinde oyuncu gemisi, hasar ve güvencesiz yükü koruma
+- [x] Mevcut harita ve tehlike seviyesini HUD'da gösterme
+- [ ] Her haritaya özgü çevre sanatı, ses katmanı ve içerik tabloları
+- [ ] Limanı ticaret, tersane, görev ve sosyal merkez olarak görsel üretime alma

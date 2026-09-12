@@ -231,9 +231,11 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 **Neden:** Alt sistem mühimmatlarının sonucunu oyuncuya görünür kılmak, hedef önceliğini desteklemek ve üç gemilik karşılaşmayı ekranı çok sayıda dünya can çubuğuyla kaplamadan okunabilir tutmak.
 
 
-## 2026-09-12 — İlk sefer haritası dört okunabilir risk bölgesinden oluşur
+## 2026-09-12 — Liman ve sefer denizleri ayrı haritalardır
 
-- Güvenli liman, kıyı av sahası, korsan geçidi ve Stormjaw derinliği aynı sefer alanında bulunur.
-- Bölgeler sert kapılar değildir; oyuncu istediği bölgeye girebilir.
-- Mesafe, düşman türü ve kazanç birlikte yükselerek doğal bir risk rotası oluşturur.
-- HUD her an mevcut bölgeyi ve tehlike seviyesini gösterir; prototip sınır halkaları ileride çevre sanatıyla değiştirilebilir.
+- Seaborn Limanı savaşsız ve bağımsız bir merkez sahnesidir.
+- Ticaret, tersane, görev panosu ve ileride sosyal özellikler limanda büyütülür.
+- Sefer denizleri yönsel bir ağ oluşturur: merkez denizin batı ve doğu kenarları farklı haritalara açılır.
+- Harita geçişi mevcut oyuncu gemisini korur; hasar ve güvencesiz yük sahne değiştirerek sıfırlanmaz.
+- Harita isimleri ve tehlike seviyeleri HUD'da gösterilir.
+- İlk sahneler aynı prototip deniz temelini paylaşabilir; sanat ve içerik kimlikleri ayrı iterasyonlarda farklılaştırılır.

@@ -229,16 +229,26 @@ namespace Seaborn.UI
         private void RefreshExpedition()
         {
             PrototypeExpeditionDirector director = PrototypeExpeditionDirector.Instance;
+            PrototypeExpeditionRegionDirector regions =
+                PrototypeExpeditionRegionDirector.Instance;
             if (director == null)
             {
-                expeditionStateText.text = "SEFER BEKLENİYOR";
-                expeditionDetailText.text = "SİSTEMLER HAZIRLANIYOR";
+                bool harbor = regions != null &&
+                    regions.CurrentRegionKind ==
+                    PrototypeRegionKind.SafeHarbor;
+                expeditionStateText.text = harbor
+                    ? "GÜVENLİ LİMAN"
+                    : "SEFER BEKLENİYOR";
+                expeditionStateText.color = harbor
+                    ? Success
+                    : Gold;
+                expeditionDetailText.text = harbor
+                    ? "TİCARET VE HAZIRLIK MERKEZİ"
+                    : "SİSTEMLER HAZIRLANIYOR";
                 SetBar(pressureFill, 0f);
                 return;
             }
 
-            PrototypeExpeditionRegionDirector regions =
-                PrototypeExpeditionRegionDirector.Instance;
             string regionName = regions != null
                 ? regions.CurrentRegionName
                 : "AÇIK DENİZ";
