@@ -197,3 +197,12 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Tersane, ticaret ve açık deniz dünya etiketleri
 - [ ] Prototip geometrileri üretim kalitesinde liman assetleriyle değiştirme
 - [ ] Yürünebilir liman ve görünür kaptan katmanı
+
+
+### Harbor docking interactions (2026-09-12)
+
+- [x] Tersane, ticaret/ikmal ve liman idaresi yanaşma alanları
+- [x] Yakınlık tabanlı dünya işareti ve E etkileşimi
+- [x] Tersane panelini batı rıhtımına bağlama
+- [x] Hazırlık ve kontrat panelini doğu/güney istasyonlarına bağlama
+- [ ] Yanaşma animasyonu, halat ve rıhtım sesleri
