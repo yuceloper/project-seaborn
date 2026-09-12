@@ -31,13 +31,18 @@ namespace Seaborn.Combat
         private float nextStarboardFireTime;
         private float portReloadDuration;
         private float starboardReloadDuration;
+        private float equipmentDamageMultiplier = 1f;
+        private float equipmentReloadMultiplier = 1f;
 
         public event Action AmmunitionStateChanged;
         public event Action<BroadsideSide> BroadsideFired;
 
         public AmmunitionType SelectedAmmunition => selectedAmmunition;
         public float MaximumRange => projectileRange * AmmunitionProfile.Get(selectedAmmunition).RangeMultiplier;
-        public float CooldownDuration => broadsideCooldown * AmmunitionProfile.Get(selectedAmmunition).ReloadMultiplier;
+        public float CooldownDuration =>
+            broadsideCooldown *
+            AmmunitionProfile.Get(selectedAmmunition).ReloadMultiplier *
+            equipmentReloadMultiplier;
         public bool IsBlockedBySafeHarbor =>
             !PrototypeSafeHarborProtection.AllowsWeapons(gameObject);
 
@@ -76,6 +81,17 @@ namespace Seaborn.Combat
             standardStock = Mathf.Max(0, standard);
             chainStock = Mathf.Max(0, chain);
             grapeshotStock = Mathf.Max(0, grapeshot);
+            AmmunitionStateChanged?.Invoke();
+        }
+
+        public void SetEquipmentModifiers(
+            float damageMultiplier,
+            float reloadMultiplier)
+        {
+            equipmentDamageMultiplier =
+                Mathf.Max(0.1f, damageMultiplier);
+            equipmentReloadMultiplier =
+                Mathf.Clamp(reloadMultiplier, 0.35f, 2f);
             AmmunitionStateChanged?.Invoke();
         }
 
@@ -146,7 +162,10 @@ namespace Seaborn.Combat
 
         private void SetReload(BroadsideSide side, float reloadMultiplier)
         {
-            float duration = broadsideCooldown * reloadMultiplier;
+            float duration =
+                broadsideCooldown *
+                reloadMultiplier *
+                equipmentReloadMultiplier;
             if (side == BroadsideSide.Port)
             {
                 portReloadDuration = duration;
@@ -219,7 +238,12 @@ namespace Seaborn.Combat
                 muzzle.position,
                 Quaternion.LookRotation(toTarget.normalized, Vector3.up)
             );
-            projectile.Configure(ammunitionType, profile.DamageMultiplier, profile.ProjectileScale);
+            projectile.Configure(
+                ammunitionType,
+                profile.DamageMultiplier *
+                    equipmentDamageMultiplier,
+                profile.ProjectileScale
+            );
             projectile.LaunchAt(transform, clampedTarget, duration, height);
         }
 

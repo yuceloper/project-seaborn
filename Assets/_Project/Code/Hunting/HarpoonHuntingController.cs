@@ -33,6 +33,9 @@ namespace Seaborn.Hunting
         [SerializeField]
         private float aimPlaneHeight = 0.75f;
 
+        private float equipmentDamageMultiplier = 1f;
+        private float equipmentReloadMultiplier = 1f;
+
         public event Action HuntingStateChanged;
 
         public bool IsAiming { get; private set; }
@@ -41,11 +44,14 @@ namespace Seaborn.Hunting
         public float ReloadRemaining =>
             Mathf.Max(0f, nextFireTime - Time.time);
         public float ReloadProgress =>
-            reloadDuration <= 0f
+            EffectiveReloadDuration <= 0f
                 ? 1f
                 : 1f - Mathf.Clamp01(
-                    ReloadRemaining / reloadDuration
+                    ReloadRemaining / EffectiveReloadDuration
                 );
+
+        private float EffectiveReloadDuration =>
+            reloadDuration * equipmentReloadMultiplier;
         public bool IsBlockedBySafeHarbor =>
             !PrototypeSafeHarborProtection.AllowsWeapons(
                 gameObject
@@ -122,6 +128,17 @@ namespace Seaborn.Hunting
             HuntingStateChanged?.Invoke();
         }
 
+        public void SetEquipmentModifiers(
+            float damageMultiplier,
+            float reloadMultiplier)
+        {
+            equipmentDamageMultiplier =
+                Mathf.Max(0.1f, damageMultiplier);
+            equipmentReloadMultiplier =
+                Mathf.Clamp(reloadMultiplier, 0.35f, 2f);
+            HuntingStateChanged?.Invoke();
+        }
+
         public void RestoreHarpoonStock(int amount)
         {
             harpoonStock = Mathf.Max(0, amount);
@@ -188,12 +205,13 @@ namespace Seaborn.Hunting
                 AimPoint,
                 flightDuration,
                 arcHeight,
-                harpoonDamage
+                harpoonDamage *
+                    equipmentDamageMultiplier
             );
 
             harpoonStock--;
             nextFireTime =
-                Time.time + reloadDuration;
+                Time.time + EffectiveReloadDuration;
             HuntingStateChanged?.Invoke();
         }
 
@@ -311,6 +329,10 @@ namespace Seaborn.Hunting
             PrototypeShipRecoveryDirector.EnsureCreated(
                 player.transform
             );
+            Seaborn.Progression.PrototypeShipEquipment
+                .EnsureAttached(player.transform);
+            Seaborn.Harbor.UI.PrototypeShipyardUpgradePanel
+                .EnsureCreated(player.transform);
             Seaborn.Persistence.PrototypeProgressPersistence
                 .EnsureAttached(player.transform);
         }
