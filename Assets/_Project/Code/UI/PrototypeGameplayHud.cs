@@ -475,8 +475,7 @@ namespace Seaborn.UI
                                : 1f;
 
             targetNameText.text =
-                $"{RoleLabel(selected.Archetype)}  •  " +
-                selected.name.ToUpperInvariant();
+                RoleLabel(selected.Archetype);
             targetStateText.text = selected.IsAggressive
                 ? "ÇATIŞMADA"
                 : "PASİF";

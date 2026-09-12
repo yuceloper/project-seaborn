@@ -22,6 +22,8 @@ namespace Seaborn.Ship
             }
 
             director.BuildFleet();
+            Seaborn.UI.PrototypeEnemyNameplateOverlay
+                .EnsureCreated();
         }
 
         private void BuildFleet()

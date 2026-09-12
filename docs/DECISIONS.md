@@ -226,6 +226,6 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 
 ## 2026-09-12 — Aktif düşman hedef kartı
 
-**Karar:** HUD aynı anda yalnızca bir düşman gemisini gösterir. Saldırgan gemi 30 metreye kadar önceliklidir; pasif gemi yalnızca 14 metre içinde aday olur. Kartta arketip, ad, çatışma durumu, gövde, yelken ve mürettebat bulunur.
+**Karar:** Her düşman gemisinin yalnızca adı, ekran uzayında gemi silüetinin altında gösterilir. HUD aynı anda yalnızca bir düşmanın ayrıntılı bilgi panelini gösterir. Saldırgan gemi 30 metreye kadar önceliklidir; pasif gemi yalnızca 14 metre içinde aday olur. Kartta arketip, ad, çatışma durumu, gövde, yelken ve mürettebat bulunur.
 
 **Neden:** Alt sistem mühimmatlarının sonucunu oyuncuya görünür kılmak, hedef önceliğini desteklemek ve üç gemilik karşılaşmayı ekranı çok sayıda dünya can çubuğuyla kaplamadan okunabilir tutmak.
