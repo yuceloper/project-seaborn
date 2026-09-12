@@ -2,6 +2,7 @@ using System.Collections;
 using Seaborn.Combat;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 namespace Seaborn.World
 {
@@ -61,6 +62,8 @@ namespace Seaborn.World
         private Transform player;
         private UnityEngine.Camera persistentCamera;
         private Material gatewayMaterial;
+        private CanvasGroup transitionGroup;
+        private Text transitionText;
         private bool transitioning;
 
         public static void EnsureCreated(Transform player)
@@ -95,6 +98,7 @@ namespace Seaborn.World
 
             Instance = this;
             DontDestroyOnLoad(gameObject);
+            BuildTransitionOverlay();
             SceneManager.sceneLoaded += HandleSceneLoaded;
             ConfigureActiveMap();
         }
@@ -213,7 +217,9 @@ namespace Seaborn.World
                 $"→ {sceneName}.",
                 this
             );
-            SceneManager.LoadScene(sceneName);
+            StartCoroutine(
+                TravelRoutine(sceneName)
+            );
         }
 
         private void HandleSceneLoaded(
@@ -225,7 +231,70 @@ namespace Seaborn.World
             ConfigureActiveMap();
             PlacePlayerAtEntry();
             StartCoroutine(RestorePlayerInput());
+        }
+
+        private IEnumerator TravelRoutine(
+            string sceneName)
+        {
+            Seaborn.Ship.ShipMotor motor =
+                player != null
+                    ? player.GetComponent<
+                        Seaborn.Ship.ShipMotor>()
+                    : null;
+            if (motor != null)
+            {
+                motor.enabled = false;
+            }
+
+            StopPlayerMotion();
+            if (transitionText != null)
+            {
+                transitionText.text =
+                    GetMapDisplayName(sceneName);
+            }
+
+            yield return FadeTo(1f, 0.28f);
+            PreserveRuntimeUi();
+
+            AsyncOperation load =
+                SceneManager.LoadSceneAsync(sceneName);
+            while (load != null && !load.isDone)
+            {
+                yield return null;
+            }
+
+            yield return new WaitForSecondsRealtime(0.18f);
+            yield return FadeTo(0f, 0.35f);
             transitioning = false;
+        }
+
+        private IEnumerator FadeTo(
+            float target,
+            float duration)
+        {
+            if (transitionGroup == null)
+            {
+                yield break;
+            }
+
+            float start = transitionGroup.alpha;
+            float elapsed = 0f;
+            transitionGroup.blocksRaycasts = true;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                transitionGroup.alpha = Mathf.Lerp(
+                    start,
+                    target,
+                    Mathf.Clamp01(elapsed / duration)
+                );
+                yield return null;
+            }
+
+            transitionGroup.alpha = target;
+            transitionGroup.blocksRaycasts =
+                target > 0.01f;
         }
 
         private IEnumerator RestorePlayerInput()
@@ -245,6 +314,7 @@ namespace Seaborn.World
                     Seaborn.Ship.ShipMotor>();
             if (motor != null)
             {
+                motor.enabled = true;
                 motor.RefreshInputBindings();
             }
 
@@ -252,7 +322,40 @@ namespace Seaborn.World
                 player.GetComponent<Rigidbody>();
             if (body != null)
             {
+                body.isKinematic = false;
                 body.WakeUp();
+            }
+        }
+
+        private void StopPlayerMotion()
+        {
+            if (player == null)
+            {
+                return;
+            }
+
+            Rigidbody body =
+                player.GetComponent<Rigidbody>();
+            if (body == null)
+            {
+                return;
+            }
+
+            body.linearVelocity = Vector3.zero;
+            body.angularVelocity = Vector3.zero;
+        }
+
+        private void PreserveRuntimeUi()
+        {
+            Canvas[] canvases =
+                FindObjectsByType<Canvas>(
+                    FindObjectsSortMode.None
+                );
+            for (int i = 0; i < canvases.Length; i++)
+            {
+                DontDestroyOnLoad(
+                    canvases[i].transform.root.gameObject
+                );
             }
         }
 
@@ -320,6 +423,8 @@ namespace Seaborn.World
                 .GetActiveScene().name;
             Vector3 position = player.position;
             position.y = 0.5f;
+            Quaternion rotation =
+                Quaternion.identity;
 
             if (scene == HarborScene)
             {
@@ -333,19 +438,116 @@ namespace Seaborn.World
             }
             else if (pendingEntry == EntrySide.West)
             {
+                bool enteringWest =
+                    scene == WestScene;
                 position.x =
-                    scene == WestScene ? 70f : -70f;
+                    enteringWest ? 68f : -68f;
                 position.z = 0f;
+                rotation = Quaternion.Euler(
+                    0f,
+                    enteringWest ? -90f : 90f,
+                    0f
+                );
             }
             else if (pendingEntry == EntrySide.East)
             {
+                bool enteringEast =
+                    scene == EastScene;
                 position.x =
-                    scene == EastScene ? -70f : 70f;
+                    enteringEast ? -68f : 68f;
                 position.z = 0f;
+                rotation = Quaternion.Euler(
+                    0f,
+                    enteringEast ? 90f : -90f,
+                    0f
+                );
             }
 
-            player.position = position;
+            player.SetPositionAndRotation(
+                position,
+                rotation
+            );
+            StopPlayerMotion();
             pendingEntry = EntrySide.None;
+        }
+
+        private void BuildTransitionOverlay()
+        {
+            GameObject overlay = new(
+                "Prototype Map Transition");
+            DontDestroyOnLoad(overlay);
+
+            Canvas canvas = overlay.AddComponent<Canvas>();
+            canvas.renderMode =
+                RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 1000;
+            overlay.AddComponent<CanvasScaler>();
+            overlay.AddComponent<GraphicRaycaster>();
+            transitionGroup =
+                overlay.AddComponent<CanvasGroup>();
+            transitionGroup.alpha = 0f;
+            transitionGroup.blocksRaycasts = false;
+
+            GameObject background = new(
+                "Background",
+                typeof(RectTransform),
+                typeof(Image)
+            );
+            background.transform.SetParent(
+                overlay.transform,
+                false
+            );
+            RectTransform backgroundRect =
+                background.GetComponent<RectTransform>();
+            backgroundRect.anchorMin = Vector2.zero;
+            backgroundRect.anchorMax = Vector2.one;
+            backgroundRect.offsetMin = Vector2.zero;
+            backgroundRect.offsetMax = Vector2.zero;
+            background.GetComponent<Image>().color =
+                new Color(0.01f, 0.035f, 0.05f, 1f);
+
+            GameObject title = new(
+                "Map Name",
+                typeof(RectTransform),
+                typeof(Text)
+            );
+            title.transform.SetParent(
+                background.transform,
+                false
+            );
+            RectTransform titleRect =
+                title.GetComponent<RectTransform>();
+            titleRect.anchorMin =
+                new Vector2(0.2f, 0.42f);
+            titleRect.anchorMax =
+                new Vector2(0.8f, 0.58f);
+            titleRect.offsetMin = Vector2.zero;
+            titleRect.offsetMax = Vector2.zero;
+
+            transitionText = title.GetComponent<Text>();
+            transitionText.font =
+                Resources.GetBuiltinResource<Font>(
+                    "LegacyRuntime.ttf");
+            transitionText.fontSize = 28;
+            transitionText.fontStyle =
+                FontStyle.Bold;
+            transitionText.alignment =
+                TextAnchor.MiddleCenter;
+            transitionText.color =
+                new Color(0.91f, 0.78f, 0.46f, 1f);
+            transitionText.text = "SEABORN";
+        }
+
+        private static string GetMapDisplayName(
+            string sceneName)
+        {
+            return sceneName switch
+            {
+                HarborScene => "SEABORN LİMANI",
+                WestScene => "BATI SINIRI",
+                EastScene => "DOĞU AVLARI",
+                _ => "MERKEZ SULAR"
+            };
         }
 
         private void ConfigureActiveMap()
@@ -535,8 +737,13 @@ namespace Seaborn.World
                  i >= 0;
                  i--)
             {
-                Destroy(
-                    transform.GetChild(i).gameObject);
+                Transform child =
+                    transform.GetChild(i);
+                if (child.name.StartsWith(
+                        "Harita Geçidi"))
+                {
+                    Destroy(child.gameObject);
+                }
             }
         }
 
@@ -553,6 +760,11 @@ namespace Seaborn.World
             if (gatewayMaterial != null)
             {
                 Destroy(gatewayMaterial);
+            }
+            if (transitionGroup != null)
+            {
+                Destroy(
+                    transitionGroup.gameObject);
             }
         }
     }
