@@ -332,6 +332,9 @@ namespace Seaborn.Hunting
                 Seaborn.Harbor
                     .PrototypeHarborVisualDirector
                     .EnsureCreated(player.transform.position);
+                Seaborn.Harbor
+                    .PrototypeHarborDockingDirector
+                    .EnsureCreated(player.transform);
                 PrototypeHarborDeliveryZone.EnsureCreated(
                     player.transform
                 );
