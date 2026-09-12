@@ -26,9 +26,13 @@ namespace Seaborn.Ship
         private float speedMultiplier = 1f;
         private float accelerationMultiplier = 1f;
         private float turnMultiplier = 1f;
+        private float damageSpeedMultiplier = 1f;
+        private float damageTurnMultiplier = 1f;
 
-        public float SpeedMultiplier => speedMultiplier;
-        public float TurnMultiplier => turnMultiplier;
+        public float SpeedMultiplier =>
+            speedMultiplier * damageSpeedMultiplier;
+        public float TurnMultiplier =>
+            turnMultiplier * damageTurnMultiplier;
 
         public void SetRuntimePerformance(
             float speed,
@@ -39,6 +43,16 @@ namespace Seaborn.Ship
             accelerationMultiplier =
                 Mathf.Max(0.1f, accelerationRate);
             turnMultiplier = Mathf.Max(0.1f, turning);
+        }
+
+        public void SetDamagePerformance(
+            float speed,
+            float turning)
+        {
+            damageSpeedMultiplier =
+                Mathf.Clamp(speed, 0.25f, 1f);
+            damageTurnMultiplier =
+                Mathf.Clamp(turning, 0.4f, 1f);
         }
 
         public void ResetRuntimePerformance()
@@ -78,8 +92,8 @@ namespace Seaborn.Ship
         private void ApplyForwardMovement()
         {
             float requestedSpeed = moveInput.y >= 0f
-                ? moveInput.y * maxForwardSpeed * speedMultiplier
-                : moveInput.y * maxReverseSpeed * speedMultiplier;
+                ? moveInput.y * maxForwardSpeed * SpeedMultiplier
+                : moveInput.y * maxReverseSpeed * SpeedMultiplier;
 
             float currentForwardSpeed = Vector3.Dot(
                 shipRigidbody.linearVelocity,
@@ -104,12 +118,12 @@ namespace Seaborn.Ship
                 1f,
                 Mathf.Clamp01(
                     forwardSpeed /
-                    (maxForwardSpeed * speedMultiplier)));
+                    (maxForwardSpeed * SpeedMultiplier)));
 
             float rotationAmount =
                 moveInput.x *
                 turnSpeed *
-                turnMultiplier *
+                TurnMultiplier *
                 steeringAuthority *
                 Time.fixedDeltaTime;
 

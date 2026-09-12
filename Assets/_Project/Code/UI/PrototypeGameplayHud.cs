@@ -21,6 +21,7 @@ namespace Seaborn.UI
         private static readonly Color Danger = new(0.82f, 0.28f, 0.22f, 1f);
 
         private ShipHealth health;
+        private ShipSubsystemController subsystems;
         private BroadsideController broadside;
         private HarpoonHuntingController harpoons;
         private PrototypeHuntCargo cargo;
@@ -30,6 +31,10 @@ namespace Seaborn.UI
         private Text hullText;
         private RectTransform hullFill;
         private Image hullFillImage;
+        private Text sailText;
+        private Text crewText;
+        private RectTransform sailFill;
+        private RectTransform crewFill;
         private Text expeditionStateText;
         private Text expeditionDetailText;
         private RectTransform pressureFill;
@@ -90,6 +95,9 @@ namespace Seaborn.UI
             Unsubscribe();
             boundPlayer = player;
             health = player.GetComponentInChildren<ShipHealth>();
+            subsystems = health != null
+                ? health.GetComponent<ShipSubsystemController>()
+                : null;
             broadside = player.GetComponentInChildren<BroadsideController>();
             harpoons = player.GetComponentInChildren<HarpoonHuntingController>();
             cargo = player.GetComponentInChildren<PrototypeHuntCargo>();
@@ -122,10 +130,14 @@ namespace Seaborn.UI
             Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             interfaceFont = font;
 
-            RectTransform ship = CreateCard("Ship", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(24f, -24f), new Vector2(330f, 98f));
+            RectTransform ship = CreateCard("Ship", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(24f, -24f), new Vector2(330f, 132f));
             shipNameText = CreateText(ship, font, "ANA GEMİ", 15, Gold, FontStyle.Bold, new Vector2(16f, -11f), new Vector2(298f, 22f));
             hullText = CreateText(ship, font, "GÖVDE", 13, Cream, FontStyle.Normal, new Vector2(16f, -39f), new Vector2(298f, 22f));
             hullFill = CreateBar(ship, "Hull", new Vector2(16f, -70f), new Vector2(298f, 12f), out hullFillImage);
+            sailText = CreateText(ship, font, "YELKEN %100", 10, Muted, FontStyle.Bold, new Vector2(16f, -91f), new Vector2(140f, 16f));
+            sailFill = CreateBar(ship, "Sail", new Vector2(16f, -112f), new Vector2(140f, 7f), out _);
+            crewText = CreateText(ship, font, "MÜRETTEBAT %100", 10, Muted, FontStyle.Bold, new Vector2(174f, -91f), new Vector2(140f, 16f), TextAnchor.UpperRight);
+            crewFill = CreateBar(ship, "Crew", new Vector2(174f, -112f), new Vector2(140f, 7f), out _);
 
             RectTransform expedition = CreateCard("Expedition", new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -24f), new Vector2(500f, 88f));
             expeditionStateText = CreateText(expedition, font, "GÜVENLİ LİMAN", 16, Gold, FontStyle.Bold, new Vector2(16f, -10f), new Vector2(468f, 24f), TextAnchor.UpperCenter);
@@ -177,6 +189,19 @@ namespace Seaborn.UI
             hullText.text = $"GÖVDE   {current:0} / {maximum:0}";
             SetBar(hullFill, ratio);
             hullFillImage.color = ratio > 0.55f ? Success : ratio > 0.25f ? Gold : Danger;
+
+            float sail = subsystems != null
+                ? subsystems.SailNormalized
+                : 1f;
+            float crew = subsystems != null
+                ? subsystems.CrewNormalized
+                : 1f;
+            sailText.text = $"YELKEN  %{sail * 100f:0}";
+            crewText.text = $"MÜRETTEBAT  %{crew * 100f:0}";
+            sailText.color = sail < 0.4f ? Danger : Muted;
+            crewText.color = crew < 0.4f ? Danger : Muted;
+            SetBar(sailFill, sail);
+            SetBar(crewFill, crew);
         }
 
         private void RefreshExpedition()
