@@ -358,6 +358,9 @@ namespace Seaborn.Hunting
                 .EnsureAttached(player.transform);
             Seaborn.Persistence.PrototypeProgressPersistence
                 .EnsureAttached(player.transform);
+            Seaborn.UI.PrototypeGameplayHud.EnsureCreated(
+                player.transform
+            );
         }
     }
 }
