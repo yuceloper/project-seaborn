@@ -1,3 +1,4 @@
+using System.Collections;
 using Seaborn.Combat;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -223,7 +224,36 @@ namespace Seaborn.World
             RemoveDuplicateCamera();
             ConfigureActiveMap();
             PlacePlayerAtEntry();
+            StartCoroutine(RestorePlayerInput());
             transitioning = false;
+        }
+
+        private IEnumerator RestorePlayerInput()
+        {
+            // Duplicate scene objects disable the shared
+            // InputActionAsset when they are destroyed.
+            // Wait until their OnDisable calls have finished.
+            yield return null;
+
+            if (player == null)
+            {
+                yield break;
+            }
+
+            Seaborn.Ship.ShipMotor motor =
+                player.GetComponent<
+                    Seaborn.Ship.ShipMotor>();
+            if (motor != null)
+            {
+                motor.RefreshInputBindings();
+            }
+
+            Rigidbody body =
+                player.GetComponent<Rigidbody>();
+            if (body != null)
+            {
+                body.WakeUp();
+            }
         }
 
         private void RemoveDuplicatePlayer()
