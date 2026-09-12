@@ -1,5 +1,6 @@
 using Seaborn.Progression;
 using Seaborn.Hunting;
+using Seaborn.Harbor;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -238,9 +239,14 @@ namespace Seaborn.Harbor.UI
         {
             if (panel == null) return;
 
+            PrototypeHarborDockingDirector docking =
+                PrototypeHarborDockingDirector.Instance;
             bool visible =
                 equipment != null &&
-                equipment.CanUseShipyard;
+                equipment.CanUseShipyard &&
+                docking != null &&
+                docking.IsDockedAt(
+                    PrototypeHarborStation.Shipyard);
             panel.SetActive(visible);
             if (!visible) return;
 
