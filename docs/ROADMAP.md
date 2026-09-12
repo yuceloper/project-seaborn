@@ -40,6 +40,7 @@ Bu dosya yaşayan backlog’dur. Tamamlanan her feature merge’ünde güncellen
 - [x] Hazırlığa bağlı saçılma
 - [x] Cooldown ve borda dünya göstergesi
 - [x] Düşman ateş hazırlığı telegraph’ı
+- [x] Aktif hedef gövde, yelken ve mürettebat HUD'ı
 
 ## Milestone 2 — Atmosfer dikey dilimi
 

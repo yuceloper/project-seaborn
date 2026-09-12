@@ -49,6 +49,15 @@ namespace Seaborn.UI
         private Text harpoonText;
         private RectTransform harpoonFill;
         private Text harborLockText;
+        private GameObject targetPanel;
+        private Text targetNameText;
+        private Text targetStateText;
+        private Text targetSailText;
+        private Text targetCrewText;
+        private RectTransform targetHullFill;
+        private RectTransform targetSailFill;
+        private RectTransform targetCrewFill;
+        private Image targetHullImage;
         private float nextRefreshTime;
         private Transform boundPlayer;
         private RectTransform notificationRoot;
@@ -144,6 +153,17 @@ namespace Seaborn.UI
             expeditionDetailText = CreateText(expedition, font, "SEFERE HAZIRLAN", 13, Cream, FontStyle.Normal, new Vector2(16f, -38f), new Vector2(468f, 22f), TextAnchor.UpperCenter);
             pressureFill = CreateBar(expedition, "Pressure", new Vector2(16f, -69f), new Vector2(468f, 7f), out _);
 
+            RectTransform target = CreateCard("Target", new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -124f), new Vector2(440f, 104f));
+            targetPanel = target.gameObject;
+            targetNameText = CreateText(target, font, "HEDEF", 14, Gold, FontStyle.Bold, new Vector2(14f, -9f), new Vector2(265f, 20f));
+            targetStateText = CreateText(target, font, "PASİF", 11, Muted, FontStyle.Bold, new Vector2(290f, -10f), new Vector2(136f, 20f), TextAnchor.UpperRight);
+            targetHullFill = CreateBar(target, "Target Hull", new Vector2(14f, -37f), new Vector2(412f, 10f), out targetHullImage);
+            targetSailText = CreateText(target, font, "YELKEN %100", 10, Muted, FontStyle.Bold, new Vector2(14f, -58f), new Vector2(196f, 16f));
+            targetSailFill = CreateBar(target, "Target Sail", new Vector2(14f, -80f), new Vector2(196f, 7f), out _);
+            targetCrewText = CreateText(target, font, "MÜRETTEBAT %100", 10, Muted, FontStyle.Bold, new Vector2(230f, -58f), new Vector2(196f, 16f), TextAnchor.UpperRight);
+            targetCrewFill = CreateBar(target, "Target Crew", new Vector2(230f, -80f), new Vector2(196f, 7f), out _);
+            targetPanel.SetActive(false);
+
             RectTransform resources = CreateCard("Resources", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-24f, -24f), new Vector2(310f, 98f));
             silverText = CreateText(resources, font, "SILVER  0", 16, Gold, FontStyle.Bold, new Vector2(16f, -12f), new Vector2(278f, 24f), TextAnchor.UpperRight);
             cargoText = CreateText(resources, font, "GÜVENCESİZ YÜK  0", 13, Cream, FontStyle.Normal, new Vector2(16f, -45f), new Vector2(278f, 40f), TextAnchor.UpperRight);
@@ -175,6 +195,7 @@ namespace Seaborn.UI
             RefreshExpedition();
             RefreshResources();
             RefreshCombat();
+            RefreshTarget();
         }
 
         private void RefreshShip()
@@ -382,6 +403,118 @@ namespace Seaborn.UI
         private void OnDestroy()
         {
             Unsubscribe();
+        }
+
+        private void RefreshTarget()
+        {
+            if (boundPlayer == null || targetPanel == null)
+            {
+                return;
+            }
+
+            EnemyShipController[] enemies =
+                FindObjectsByType<EnemyShipController>(
+                    FindObjectsSortMode.None
+                );
+            EnemyShipController selected = null;
+            float bestScore = float.MaxValue;
+
+            foreach (EnemyShipController enemy in enemies)
+            {
+                if (enemy == null ||
+                    !enemy.gameObject.activeInHierarchy)
+                {
+                    continue;
+                }
+
+                ShipHealth enemyHealth =
+                    enemy.GetComponent<ShipHealth>();
+                if (enemyHealth == null || enemyHealth.IsSunk)
+                {
+                    continue;
+                }
+
+                float distance = Vector3.Distance(
+                    boundPlayer.position,
+                    enemy.transform.position
+                );
+                float maximumDistance =
+                    enemy.IsAggressive ? 30f : 14f;
+                if (distance > maximumDistance)
+                {
+                    continue;
+                }
+
+                float score = distance -
+                    (enemy.IsAggressive ? 100f : 0f);
+                if (score < bestScore)
+                {
+                    bestScore = score;
+                    selected = enemy;
+                }
+            }
+
+            targetPanel.SetActive(selected != null);
+            if (selected == null) return;
+
+            ShipHealth health =
+                selected.GetComponent<ShipHealth>();
+            ShipSubsystemController systems =
+                selected.GetComponent<
+                    ShipSubsystemController>();
+
+            float hull = Mathf.Clamp01(
+                health.CurrentHealth /
+                Mathf.Max(1f, health.MaximumHealth)
+            );
+            float sail = systems != null
+                ? systems.SailNormalized
+                : 1f;
+            float crew = systems != null
+                ? systems.CrewNormalized
+                               : 1f;
+
+            targetNameText.text =
+                $"{RoleLabel(selected.Archetype)}  •  " +
+                selected.name.ToUpperInvariant();
+            targetStateText.text = selected.IsAggressive
+                ? "ÇATIŞMADA"
+                : "PASİF";
+            targetStateText.color = selected.IsAggressive
+                ? Danger
+                : Muted;
+            targetSailText.text =
+                $"YELKEN  %{sail * 100f:0}";
+            targetCrewText.text =
+                $"MÜRETTEBAT  %{crew * 100f:0}";
+            targetSailText.color =
+                sail < 0.4f ? Danger : Muted;
+            targetCrewText.color =
+                crew < 0.4f ? Danger : Muted;
+            targetHullImage.color =
+                hull > 0.55f
+                    ? Success
+                    : hull > 0.25f
+                        ? Gold
+                        : Danger;
+            SetBar(targetHullFill, hull);
+            SetBar(targetSailFill, sail);
+            SetBar(targetCrewFill, crew);
+        }
+
+        private static string RoleLabel(
+            EnemyShipArchetype archetype)
+        {
+            return archetype switch
+            {
+                EnemyShipArchetype.Skirmisher =>
+                    "AVCI",
+                EnemyShipArchetype.Gunship =>
+                    "TOPÇU",
+                EnemyShipArchetype.Marauder =>
+                    "YAĞMACI",
+                _ => "DÜŞMAN"
+            };
         }
 
         private RectTransform CreateCard(string name, Vector2 anchor, Vector2 pivot, Vector2 position, Vector2 size)
