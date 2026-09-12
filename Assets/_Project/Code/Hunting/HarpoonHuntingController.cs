@@ -253,6 +253,11 @@ namespace Seaborn.Hunting
         private const float ScanInterval = 0.5f;
         private float nextScanTime;
 
+        private void Awake()
+        {
+            DontDestroyOnLoad(gameObject);
+        }
+
         [RuntimeInitializeOnLoadMethod(
             RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Create()
