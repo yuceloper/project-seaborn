@@ -376,6 +376,7 @@ namespace Seaborn.Recovery
 
             wreckRaider = candidate;
             wreckRaider.name = "Wreck Raider";
+            wreckRaider.SetPassive();
 
             Vector3 offset =
                 new Vector3(7.5f, 0f, 4.5f);

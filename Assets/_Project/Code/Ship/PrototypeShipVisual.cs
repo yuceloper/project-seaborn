@@ -34,6 +34,9 @@ namespace Seaborn.Ship
         private Transform visualRoot;
         private Transform motionRoot;
         private MeshRenderer originalRenderer;
+        private Material hullMaterial;
+        private Material sailMaterial;
+        private Material accentMaterial;
         private float motionPhase;
 
         private void Awake()
@@ -66,7 +69,39 @@ namespace Seaborn.Ship
                     StringComparison.OrdinalIgnoreCase
                 ) >= 0;
 
+            Transform staleVisual =
+                transform.Find("Ship Visual");
+            if (staleVisual != null)
+            {
+                Destroy(staleVisual.gameObject);
+            }
+
             BuildVisual(isEnemy);
+        }
+
+        public void ApplyEnemyPalette(
+            Color hull,
+            Color sail,
+            Color accent)
+        {
+            SetMaterialColor(hullMaterial, hull);
+            SetMaterialColor(sailMaterial, sail);
+            SetMaterialColor(accentMaterial, accent);
+        }
+
+        private static void SetMaterialColor(
+            Material material,
+            Color color)
+        {
+            if (material == null) return;
+            if (material.HasProperty("_BaseColor"))
+            {
+                material.SetColor("_BaseColor", color);
+            }
+            else if (material.HasProperty("_Color"))
+            {
+                material.SetColor("_Color", color);
+            }
         }
 
         private void LateUpdate()
@@ -122,7 +157,7 @@ namespace Seaborn.Ship
             motionRoot = motionObject.transform;
             motionRoot.SetParent(visualRoot, false);
 
-            Material hullMaterial = CreateMaterial(
+            hullMaterial = CreateMaterial(
                 isEnemy
                     ? new Color(0.24f, 0.105f, 0.075f, 1f)
                     : new Color(0.29f, 0.17f, 0.095f, 1f),
@@ -132,7 +167,7 @@ namespace Seaborn.Ship
                 new Color(0.47f, 0.33f, 0.19f, 1f),
                 0.32f
             );
-            Material sailMaterial = CreateMaterial(
+            sailMaterial = CreateMaterial(
                 isEnemy
                     ? new Color(0.42f, 0.18f, 0.15f, 1f)
                     : new Color(0.72f, 0.68f, 0.55f, 1f),
@@ -142,7 +177,7 @@ namespace Seaborn.Ship
                 new Color(0.055f, 0.05f, 0.045f, 1f),
                 0.12f
             );
-            Material accentMaterial = CreateMaterial(
+            accentMaterial = CreateMaterial(
                 isEnemy
                     ? new Color(0.58f, 0.08f, 0.055f, 1f)
                     : new Color(0.08f, 0.28f, 0.36f, 1f),
