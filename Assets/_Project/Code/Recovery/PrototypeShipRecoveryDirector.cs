@@ -330,6 +330,8 @@ namespace Seaborn.Recovery
                 0.6f,
                 true
             );
+            health?.GetComponent<ShipSubsystemController>()
+                ?.RestoreAll();
             cargo?.SetRuntimeCapacity(90);
 
             Debug.Log(

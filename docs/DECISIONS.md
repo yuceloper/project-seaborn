@@ -211,3 +211,9 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 **Karar:** İlk tersane ilerlemesi üç bağımsız ve üç seviyeli hattan oluşur: güçlendirilmiş gövde azami canı, top takımı borda hasarı ile yeniden doldurma hızını, zıpkın donanımı av hasarı ile yeniden doldurma hızını geliştirir. Yükseltmeler yalnızca güvenli limanda silver ile alınır ve yerel prototip kaydında korunur.
 
 **Neden:** Ekipman gücünü hissedilir ve uzun vadeli kılarken tek bir doğrusal güç puanı yerine oyuncunun savaş, dayanıklılık veya av odağını seçmesine izin vermek. Yüzdesel artışları sınırlı tutarak rota, menzil ve atış zamanlamasının güç farkını aşabilmesini korumak.
+
+## 2026-09-12 — Mühimmatın alt sistem rolleri
+
+**Karar:** Standart gülle mevcut yüksek gövde hasarı rolünü korur. Zincirli gülle yelken bütünlüğünü düşürerek hız ve dönüşü, saçma mühimmatı mürettebat hazırlığını düşürerek borda yeniden doldurmasını zayıflatır. Alt sistem hasarı hem oyuncu hem düşman gemilerinde işler ve liman onarımıyla tamamen giderilir.
+
+**Neden:** Üç mühimmatı yalnızca farklı hasar katsayıları olmaktan çıkarıp hedefi batırmak, kaçışını kesmek veya ateş temposunu bozmak arasında taktik seçim üretmek. Cezaları taban gücü tamamen yok etmeyecek şekilde sınırlamak, hasarlı gemiye hâlâ manevra ve karşı oyun şansı bırakır.

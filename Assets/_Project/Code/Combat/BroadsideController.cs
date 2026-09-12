@@ -33,6 +33,7 @@ namespace Seaborn.Combat
         private float starboardReloadDuration;
         private float equipmentDamageMultiplier = 1f;
         private float equipmentReloadMultiplier = 1f;
+        private float crewReloadMultiplier = 1f;
 
         public event Action AmmunitionStateChanged;
         public event Action<BroadsideSide> BroadsideFired;
@@ -42,7 +43,8 @@ namespace Seaborn.Combat
         public float CooldownDuration =>
             broadsideCooldown *
             AmmunitionProfile.Get(selectedAmmunition).ReloadMultiplier *
-            equipmentReloadMultiplier;
+            equipmentReloadMultiplier *
+            crewReloadMultiplier;
         public bool IsBlockedBySafeHarbor =>
             !PrototypeSafeHarborProtection.AllowsWeapons(gameObject);
 
@@ -92,6 +94,14 @@ namespace Seaborn.Combat
                 Mathf.Max(0.1f, damageMultiplier);
             equipmentReloadMultiplier =
                 Mathf.Clamp(reloadMultiplier, 0.35f, 2f);
+            AmmunitionStateChanged?.Invoke();
+        }
+
+        public void SetCrewReloadMultiplier(
+            float reloadMultiplier)
+        {
+            crewReloadMultiplier =
+                Mathf.Clamp(reloadMultiplier, 1f, 2f);
             AmmunitionStateChanged?.Invoke();
         }
 
@@ -165,7 +175,8 @@ namespace Seaborn.Combat
             float duration =
                 broadsideCooldown *
                 reloadMultiplier *
-                equipmentReloadMultiplier;
+                equipmentReloadMultiplier *
+            crewReloadMultiplier;
             if (side == BroadsideSide.Port)
             {
                 portReloadDuration = duration;

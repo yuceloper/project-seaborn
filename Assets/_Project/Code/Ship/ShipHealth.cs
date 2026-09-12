@@ -26,11 +26,16 @@ namespace Seaborn.Ship
 
         private float maximumHealthMultiplier = 1f;
         private float equipmentHealthMultiplier = 1f;
+        private ShipSubsystemController subsystems;
 
         public bool IsSunk { get; private set; }
 
         private void Awake()
         {
+            subsystems =
+                ShipSubsystemController.EnsureAttached(
+                    transform
+                );
             CurrentHealth = MaximumHealth;
         }
 
@@ -44,6 +49,8 @@ namespace Seaborn.Ship
             {
                 return;
             }
+
+            subsystems?.RegisterHit(damageInfo);
 
             CurrentHealth = Mathf.Max(
                 0f,

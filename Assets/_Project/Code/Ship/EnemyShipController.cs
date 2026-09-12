@@ -65,6 +65,7 @@ namespace Seaborn.Ship
         private Rigidbody shipRigidbody;
         private BroadsideController broadsideController;
         private ShipHealth shipHealth;
+        private ShipSubsystemController subsystems;
         private float engagementStartTime;
         private float aimPreparation;
 
@@ -74,6 +75,10 @@ namespace Seaborn.Ship
             broadsideController =
                 GetComponent<BroadsideController>();
             shipHealth = GetComponent<ShipHealth>();
+            subsystems =
+                ShipSubsystemController.EnsureAttached(
+                    transform
+                );
             engagementStartTime = Time.time;
         }
 
@@ -254,14 +259,21 @@ namespace Seaborn.Ship
                 Quaternion.RotateTowards(
                     shipRigidbody.rotation,
                     desiredRotation,
-                    turnSpeed * Time.fixedDeltaTime
+                    turnSpeed *
+                    (subsystems != null
+                        ? subsystems.TurnMultiplier
+                        : 1f) *
+                    Time.fixedDeltaTime
                 );
 
             shipRigidbody.MoveRotation(nextRotation);
             shipRigidbody.linearVelocity =
                 nextRotation *
                 Vector3.forward *
-                speed;
+                speed *
+                (subsystems != null
+                    ? subsystems.MovementSpeedMultiplier
+                    : 1f);
         }
 
         private void StopMoving()

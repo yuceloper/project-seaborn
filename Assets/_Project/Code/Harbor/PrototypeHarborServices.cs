@@ -74,8 +74,13 @@ namespace Seaborn.Harbor
                     shipHealth.MaximumHealth -
                     shipHealth.CurrentHealth
                 );
+                float subsystemDamage =
+                    subsystems != null
+                        ? subsystems.MissingIntegrity * 0.5f
+                        : 0f;
                 return Mathf.CeilToInt(
-                    missingHealth * silverPerHealthPoint
+                    missingHealth * silverPerHealthPoint +
+                    subsystemDamage
                 );
             }
         }
@@ -86,6 +91,7 @@ namespace Seaborn.Harbor
         private PrototypeSafeHarborProtection protection;
         private PrototypeSilverWallet wallet;
         private ShipHealth shipHealth;
+        private ShipSubsystemController subsystems;
         private BroadsideController broadside;
         private HarpoonHuntingController harpoons;
 
@@ -178,6 +184,7 @@ namespace Seaborn.Harbor
             }
 
             shipHealth.RestoreToFullHealth();
+            subsystems?.RestoreAll();
             Complete(
                 PrototypeHarborServiceType.Repair,
                 cost
@@ -344,6 +351,10 @@ namespace Seaborn.Harbor
                 PrototypeSilverWallet>();
             shipHealth = player.GetComponentInChildren<
                 ShipHealth>();
+            subsystems = shipHealth != null
+                ? shipHealth.GetComponent<
+                    ShipSubsystemController>()
+                : null;
             broadside = player.GetComponentInChildren<
                 BroadsideController>();
             harpoons = player.GetComponent<

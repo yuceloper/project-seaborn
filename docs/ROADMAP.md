@@ -97,7 +97,7 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Standart gülle
 - [x] Zincirli gülle temel profili
 - [x] Saçma mühimmatı temel profili
-- [ ] Gövde/yelken/mürettebat alt sistemleri
+- [x] Gövde/yelken/mürettebat alt sistemleri
 - [x] İskele/sancak bağımsız yeniden doldurma
 - [x] Sonlu mühimmat stoğu ve UI olayları
 - [x] Üç seviyeli gövde, top ve zıpkın ekipman istatistikleri

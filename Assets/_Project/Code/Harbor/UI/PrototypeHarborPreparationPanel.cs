@@ -32,6 +32,7 @@ namespace Seaborn.Harbor
         private PrototypeSafeHarborProtection protection;
         private PrototypeContractBoard contracts;
         private ShipHealth health;
+        private ShipSubsystemController subsystems;
         private BroadsideController broadside;
         private HarpoonHuntingController harpoons;
 
@@ -128,6 +129,10 @@ namespace Seaborn.Harbor
                 PrototypeSafeHarborProtection>();
             health = player.GetComponentInChildren<
                 ShipHealth>();
+            subsystems = health != null
+                ? health.GetComponent<
+                    ShipSubsystemController>()
+                : null;
             broadside = player.GetComponentInChildren<
                 BroadsideController>();
             harpoons = player.GetComponent<
@@ -511,7 +516,9 @@ namespace Seaborn.Harbor
             bool repaired =
                 health != null &&
                 health.CurrentHealth >=
-                    health.MaximumHealth - 0.01f;
+                    health.MaximumHealth - 0.01f &&
+                (subsystems == null ||
+                    subsystems.MissingIntegrity <= 0.01f);
             bool supplied =
                 broadside != null &&
                 broadside.GetAmmunitionStock(
