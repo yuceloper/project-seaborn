@@ -247,3 +247,11 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 - Tersane batı rıhtımında, ticaret doğu rıhtımında, liman idaresi güney kıyısında konumlanır.
 - Mendirekler ve kuzeydoğu deniz feneri güvenli merkezin siluetini oluşturur.
 - Prototip geometri yerleşim doğrulaması içindir; ileride aynı kök nesneler gerçek liman assetleriyle değiştirilecektir.
+
+
+## 2026-09-12 — Liman servisleri konuma bağlı yanaşma etkileşimidir
+
+- Liman panelleri güvenli bölgede otomatik olarak her yerde açılmaz.
+- Oyuncu ilgili rıhtımın yaklaşma alanına girip E ile yanaşır.
+- Tersane batı istasyonunda; ikmal ve hazırlık doğu ticaret istasyonunda; kontratlar ayrıca liman idaresinde kullanılabilir.
+- Bu durum ileride gemiden inme ve yürünebilir kaptan akışına dönüştürülebilir.
