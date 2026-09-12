@@ -122,6 +122,12 @@ namespace Seaborn.Hunting
             HuntingStateChanged?.Invoke();
         }
 
+        public void RestoreHarpoonStock(int amount)
+        {
+            harpoonStock = Mathf.Max(0, amount);
+            HuntingStateChanged?.Invoke();
+        }
+
         private bool TryUpdateAimPoint()
         {
             if (aimCamera == null ||
@@ -305,6 +311,8 @@ namespace Seaborn.Hunting
             PrototypeShipRecoveryDirector.EnsureCreated(
                 player.transform
             );
+            Seaborn.Persistence.PrototypeProgressPersistence
+                .EnsureAttached(player.transform);
         }
     }
 }

@@ -40,6 +40,12 @@ namespace Seaborn.Hunting
             return true;
         }
 
+        public void RestoreSilver(int amount)
+        {
+            silver = Mathf.Max(0, amount);
+            SilverChanged?.Invoke(silver);
+        }
+
         public void AddSilver(int amount)
         {
             AddSilver(amount, "Av tamamlandı");

@@ -66,6 +66,19 @@ namespace Seaborn.Combat
             AmmunitionStateChanged?.Invoke();
         }
 
+        public void RestorePersistentState(
+            AmmunitionType ammunitionType,
+            int standard,
+            int chain,
+            int grapeshot)
+        {
+            selectedAmmunition = ammunitionType;
+            standardStock = Mathf.Max(0, standard);
+            chainStock = Mathf.Max(0, chain);
+            grapeshotStock = Mathf.Max(0, grapeshot);
+            AmmunitionStateChanged?.Invoke();
+        }
+
         public bool TryFire(BroadsideSide side)
         {
             Vector3 direction = side == BroadsideSide.Port ? -transform.right : transform.right;
