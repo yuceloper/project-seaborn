@@ -205,3 +205,9 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 **Karar:** Yerel prototip kaydı yalnızca güvenceye alınmış silver, top mühimmatı, seçili mühimmat ve zıpkın stoğunu saklar. Güvencesiz yük, aktif sefer, gemi hasarı ve batış/kurtarma durumu kaydedilmez. Kayıt JSON olarak uygulamanın kalıcı veri dizinine yazılır; çevrim içi sürümde sunucu otoritesi bunun yerini alacaktır.
 
 **Neden:** Oyuncuya oturumlar arasında ilerleme hissi verirken oyunu kapatmanın riskli yükü güvenceye alma yoluna dönüşmesini engellemek ve geçici istemci kaydını nihai backend mimarisiyle karıştırmamak.
+
+## 2026-09-12 — İlk kalıcı gemi ekipmanları
+
+**Karar:** İlk tersane ilerlemesi üç bağımsız ve üç seviyeli hattan oluşur: güçlendirilmiş gövde azami canı, top takımı borda hasarı ile yeniden doldurma hızını, zıpkın donanımı av hasarı ile yeniden doldurma hızını geliştirir. Yükseltmeler yalnızca güvenli limanda silver ile alınır ve yerel prototip kaydında korunur.
+
+**Neden:** Ekipman gücünü hissedilir ve uzun vadeli kılarken tek bir doğrusal güç puanı yerine oyuncunun savaş, dayanıklılık veya av odağını seçmesine izin vermek. Yüzdesel artışları sınırlı tutarak rota, menzil ve atış zamanlamasının güç farkını aşabilmesini korumak.

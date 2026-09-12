@@ -100,7 +100,7 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [ ] Gövde/yelken/mürettebat alt sistemleri
 - [x] İskele/sancak bağımsız yeniden doldurma
 - [x] Sonlu mühimmat stoğu ve UI olayları
-- [ ] Ekipman istatistikleri
+- [x] Üç seviyeli gövde, top ve zıpkın ekipman istatistikleri
 - [ ] AI zorluk profilleri
 - [x] Batırma ödülü ve süreli enkaz sandığı
 
@@ -150,6 +150,7 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Top mühimmatı ve zıpkın ikmali
 - [x] Liman servisleri için UI-bağımsız API ve olaylar
 - [x] Kontrat, onarım ve ikmali birleştiren liman hazırlık paneli
+- [x] Silver harcatan kalıcı tersane geliştirme paneli
 - [ ] Ayrı güvenli liman hub sahnesi
 - [ ] Limanda gemi temelli sosyal görünürlük
 

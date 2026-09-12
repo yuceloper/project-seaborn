@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using Seaborn.Combat;
 using Seaborn.Hunting;
+using Seaborn.Progression;
 using UnityEngine;
 
 namespace Seaborn.Persistence
@@ -23,11 +24,15 @@ namespace Seaborn.Persistence
             public int chainStock;
             public int grapeshotStock;
             public int harpoonStock;
+            public int hullLevel;
+            public int cannonLevel;
+            public int harpoonLevel;
         }
 
         private PrototypeSilverWallet wallet;
         private BroadsideController broadside;
         private HarpoonHuntingController harpoons;
+        private PrototypeShipEquipment equipment;
         private SaveData lastSnapshot;
         private float nextScanTime;
         private bool loaded;
@@ -71,8 +76,15 @@ namespace Seaborn.Persistence
                     HarpoonHuntingController>();
             }
 
+            if (equipment == null)
+            {
+                equipment = player.GetComponentInChildren<
+                    PrototypeShipEquipment>();
+            }
+
             if (!loaded && wallet != null &&
-                broadside != null && harpoons != null)
+                broadside != null && harpoons != null &&
+                equipment != null)
             {
                 Load();
                 loaded = true;
@@ -137,6 +149,11 @@ namespace Seaborn.Persistence
                 harpoons.RestoreHarpoonStock(
                     data.harpoonStock
                 );
+                equipment.RestoreLevels(
+                    data.hullLevel,
+                    data.cannonLevel,
+                    data.harpoonLevel
+                );
 
                 Debug.Log(
                     $"Kaptan kaydı yüklendi: {data.silver} silver.",
@@ -168,6 +185,15 @@ namespace Seaborn.Persistence
                     AmmunitionType.Grapeshot),
                 harpoonStock = harpoons != null
                     ? harpoons.HarpoonStock
+                    : 0,
+                hullLevel = equipment != null
+                    ? equipment.HullLevel
+                    : 0,
+                cannonLevel = equipment != null
+                    ? equipment.CannonLevel
+                    : 0,
+                harpoonLevel = equipment != null
+                    ? equipment.HarpoonLevel
                     : 0
             };
         }
@@ -219,7 +245,10 @@ namespace Seaborn.Persistence
                 first.grapeshotStock ==
                     second.grapeshotStock &&
                 first.harpoonStock ==
-                    second.harpoonStock;
+                    second.harpoonStock &&
+                first.hullLevel == second.hullLevel &&
+                first.cannonLevel == second.cannonLevel &&
+                first.harpoonLevel == second.harpoonLevel;
         }
 
         private void SaveNow()
