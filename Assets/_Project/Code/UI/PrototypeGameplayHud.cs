@@ -59,6 +59,14 @@ namespace Seaborn.UI
         private RectTransform targetSailFill;
         private RectTransform targetCrewFill;
         private Image targetHullImage;
+        private Text minimapNameText;
+        private Text minimapHintText;
+        private RectTransform minimapArea;
+        private RectTransform minimapShip;
+        private GameObject minimapNorth;
+        private GameObject minimapEast;
+        private GameObject minimapSouth;
+        private GameObject minimapWest;
         private float nextRefreshTime;
         private Transform boundPlayer;
         private RectTransform notificationRoot;
@@ -169,6 +177,142 @@ namespace Seaborn.UI
             silverText = CreateText(resources, font, "SILVER  0", 16, Gold, FontStyle.Bold, new Vector2(16f, -12f), new Vector2(278f, 24f), TextAnchor.UpperRight);
             cargoText = CreateText(resources, font, "GÜVENCESİZ YÜK  0", 13, Cream, FontStyle.Normal, new Vector2(16f, -45f), new Vector2(278f, 40f), TextAnchor.UpperRight);
 
+            RectTransform minimap = CreateCard(
+                "Navigation",
+                new Vector2(0f, 0f),
+                new Vector2(0f, 0f),
+                new Vector2(24f, 24f),
+                new Vector2(264f, 210f)
+            );
+            minimapNameText = CreateText(
+                minimap,
+                font,
+                "SEABORN LİMANI",
+                13,
+                Gold,
+                FontStyle.Bold,
+                new Vector2(14f, -10f),
+                new Vector2(236f, 20f),
+                TextAnchor.UpperCenter
+            );
+
+            GameObject mapObject = new(
+                "Chart",
+                typeof(RectTransform),
+                typeof(Image)
+            );
+            mapObject.transform.SetParent(
+                minimap,
+                false
+            );
+            minimapArea =
+                mapObject.GetComponent<RectTransform>();
+            minimapArea.anchorMin =
+                new Vector2(0f, 1f);
+            minimapArea.anchorMax =
+                new Vector2(0f, 1f);
+            minimapArea.pivot =
+                new Vector2(0f, 1f);
+            minimapArea.anchoredPosition =
+                new Vector2(22f, -39f);
+            minimapArea.sizeDelta =
+                new Vector2(220f, 132f);
+            mapObject.GetComponent<Image>().color =
+                NavyLight;
+
+            CreateText(
+                minimapArea,
+                font,
+                "N",
+                10,
+                Muted,
+                FontStyle.Bold,
+                new Vector2(102f, -2f),
+                new Vector2(16f, 16f),
+                TextAnchor.UpperCenter
+            );
+            CreateText(
+                minimapArea,
+                font,
+                "W",
+                10,
+                Muted,
+                FontStyle.Bold,
+                new Vector2(4f, -57f),
+                new Vector2(18f, 16f),
+                TextAnchor.UpperCenter
+            );
+            CreateText(
+                minimapArea,
+                font,
+                "E",
+                10,
+                Muted,
+                FontStyle.Bold,
+                new Vector2(198f, -57f),
+                new Vector2(18f, 16f),
+                TextAnchor.UpperCenter
+            );
+            CreateText(
+                minimapArea,
+                font,
+                "S",
+                10,
+                Muted,
+                FontStyle.Bold,
+                new Vector2(102f, -112f),
+                new Vector2(16f, 16f),
+                TextAnchor.UpperCenter
+            );
+
+            minimapNorth = CreateMapDot(
+                minimapArea,
+                "North Exit",
+                new Vector2(110f, -12f),
+                Success,
+                10f
+            );
+            minimapEast = CreateMapDot(
+                minimapArea,
+                "East Exit",
+                new Vector2(207f, -66f),
+                Gold,
+                10f
+            );
+            minimapSouth = CreateMapDot(
+                minimapArea,
+                "South Exit",
+                new Vector2(110f, -120f),
+                Success,
+                10f
+            );
+            minimapWest = CreateMapDot(
+                minimapArea,
+                "West Exit",
+                new Vector2(13f, -66f),
+                Danger,
+                10f
+            );
+            minimapShip = CreateMapDot(
+                minimapArea,
+                "Player",
+                new Vector2(110f, -66f),
+                Cream,
+                13f
+            ).GetComponent<RectTransform>();
+
+            minimapHintText = CreateText(
+                minimap,
+                font,
+                "N • SEFER DENİZİ",
+                10,
+                Cream,
+                FontStyle.Bold,
+                new Vector2(14f, -178f),
+                new Vector2(236f, 18f),
+                TextAnchor.UpperCenter
+            );
+
             RectTransform combat = CreateCard("Combat", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 24f), new Vector2(780f, 116f));
             portText = CreateText(combat, font, "İSKELE HAZIR", 12, Cream, FontStyle.Bold, new Vector2(18f, -14f), new Vector2(178f, 22f));
             portFill = CreateBar(combat, "Port", new Vector2(18f, -43f), new Vector2(178f, 10f), out _);
@@ -197,6 +341,7 @@ namespace Seaborn.UI
             RefreshResources();
             RefreshCombat();
             RefreshTarget();
+            RefreshMinimap();
         }
 
         private void RefreshShip()
@@ -428,6 +573,70 @@ namespace Seaborn.UI
             Unsubscribe();
         }
 
+        private void RefreshMinimap()
+        {
+            PrototypeExpeditionRegionDirector map =
+                PrototypeExpeditionRegionDirector.Instance;
+            if (map == null ||
+                minimapShip == null ||
+                boundPlayer == null)
+            {
+                return;
+            }
+
+            minimapNameText.text =
+                map.CurrentRegionName;
+            Vector3 position = boundPlayer.position;
+            float normalizedX = Mathf.Clamp(
+                position.x / 90f,
+                -1f,
+                1f
+            );
+            float normalizedZ = Mathf.Clamp(
+                position.z / 90f,
+                -1f,
+                1f
+            );
+            minimapShip.anchoredPosition =
+                new Vector2(
+                    110f + normalizedX * 88f,
+                    -66f + normalizedZ * 49f
+                );
+
+            PrototypeRegionKind kind =
+                map.CurrentRegionKind;
+            minimapNorth.SetActive(
+                kind == PrototypeRegionKind.SafeHarbor
+            );
+            minimapWest.SetActive(
+                kind ==
+                PrototypeRegionKind.CentralWaters ||
+                kind ==
+                PrototypeRegionKind.EasternReach
+            );
+            minimapEast.SetActive(
+                kind ==
+                PrototypeRegionKind.CentralWaters ||
+                kind ==
+                PrototypeRegionKind.WesternReach
+            );
+            minimapSouth.SetActive(
+                kind != PrototypeRegionKind.SafeHarbor
+            );
+
+            minimapHintText.text = kind switch
+            {
+                PrototypeRegionKind.SafeHarbor =>
+                    "N  •  MERKEZ SULAR",
+                PrototypeRegionKind.WesternReach =>
+                    "E  •  MERKEZ   S  •  LİMAN",
+                PrototypeRegionKind.EasternReach =>
+                    "W  •  MERKEZ   S  •  LİMAN",
+                _ =>
+                    "W  •  BATI   E  •  DOĞU   S  •  LİMAN"
+            };
+        }
+
         private void RefreshTarget()
         {
             if (boundPlayer == null || targetPanel == null)
@@ -582,6 +791,32 @@ namespace Seaborn.UI
             text.alignment = alignment;
             text.raycastTarget = false;
             return text;
+        }
+
+        private static GameObject CreateMapDot(
+            RectTransform parent,
+            string dotName,
+            Vector2 position,
+            Color color,
+            float size)
+        {
+            GameObject dot = new(
+                dotName,
+                typeof(RectTransform),
+                typeof(Image)
+            );
+            dot.transform.SetParent(parent, false);
+            RectTransform rect =
+                dot.GetComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0f, 1f);
+            rect.anchorMax = new Vector2(0f, 1f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = position;
+            rect.sizeDelta = Vector2.one * size;
+            Image image = dot.GetComponent<Image>();
+            image.color = color;
+            image.raycastTarget = false;
+            return dot;
         }
 
         private static RectTransform CreateBar(RectTransform parent, string name, Vector2 position, Vector2 dimensions, out Image fillImage)
