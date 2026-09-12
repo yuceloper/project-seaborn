@@ -223,3 +223,9 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 **Karar:** İlk PvE filosu üç okunabilir rolden oluşur. Razorwind Skirmisher hızlı ve çeviktir, zincirli gülleyle kaçışı keser; Ironwake Gunship yavaş ve dayanıklıdır, uzun menzilli standart borda kullanır; Saltfang Marauder yakın mesafeye girip saçmayla mürettebat hazırlığını bozar. Prototip sahnesinde mevcut düşman şablonundan yalnızca bir kez üçlü filo kurulur. Düşmanlar pasif başlar; yalnızca oyuncu tarafından hasar verilen gemi karşılık verir ve yakındaki diğer gemiler otomatik olarak savaşa katılmaz.
 
 **Neden:** Aynı yapay zekânın yalnızca canı artan kopyaları yerine mühimmat ve manevra kararlarını değiştiren hedef öncelikleri üretmek; ilk gerçek sefer haritasına geçmeden önce küçük bir savaş ekolojisini doğrulamak.
+
+## 2026-09-12 — Aktif düşman hedef kartı
+
+**Karar:** Her düşman gemisinin yalnızca adı, ekran uzayında gemi silüetinin altında gösterilir. HUD aynı anda yalnızca bir düşmanın ayrıntılı bilgi panelini gösterir. Saldırgan gemi 30 metreye kadar önceliklidir; pasif gemi yalnızca 14 metre içinde aday olur. Kartta arketip, ad, çatışma durumu, gövde, yelken ve mürettebat bulunur.
+
+**Neden:** Alt sistem mühimmatlarının sonucunu oyuncuya görünür kılmak, hedef önceliğini desteklemek ve üç gemilik karşılaşmayı ekranı çok sayıda dünya can çubuğuyla kaplamadan okunabilir tutmak.
