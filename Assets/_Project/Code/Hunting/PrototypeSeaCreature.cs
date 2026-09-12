@@ -432,7 +432,7 @@ namespace Seaborn.Hunting
         public static void EnsureSpawned(
             Vector3 playerPosition)
         {
-            if (FindFirstObjectByType<
+            if (UnityEngine.Object.FindFirstObjectByType<
                     PrototypeSeaCreature>() != null)
             {
                 return;
