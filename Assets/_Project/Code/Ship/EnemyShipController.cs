@@ -1,4 +1,5 @@
 using Seaborn.Combat;
+using Seaborn.Combat.Damage;
 using UnityEngine;
 
 namespace Seaborn.Ship
@@ -60,6 +61,8 @@ namespace Seaborn.Ship
             private set;
         } = EnemyShipArchetype.Marauder;
 
+        public bool IsAggressive { get; private set; }
+
         public float AimPreparation =>
             Mathf.Clamp01(
                 aimPreparation /
@@ -92,6 +95,7 @@ namespace Seaborn.Ship
                 ShipSubsystemController.EnsureAttached(
                     transform
                 );
+            shipHealth.Damaged += HandleDamaged;
             engagementStartTime = Time.time;
         }
 
@@ -188,7 +192,9 @@ namespace Seaborn.Ship
 
         private void FixedUpdate()
         {
-            if (target == null || shipHealth.IsSunk)
+            if (!IsAggressive ||
+                target == null ||
+                shipHealth.IsSunk)
             {
                 StopMoving();
                 return;
@@ -384,6 +390,43 @@ namespace Seaborn.Ship
         {
             shipRigidbody.linearVelocity = Vector3.zero;
             shipRigidbody.angularVelocity = Vector3.zero;
+        }
+
+        public void SetPassive()
+        {
+            IsAggressive = false;
+            aimPreparation = 0f;
+            if (shipRigidbody != null)
+            {
+                StopMoving();
+            }
+        }
+
+        private void HandleDamaged(DamageInfo damageInfo)
+        {
+            if (IsAggressive ||
+                damageInfo.Instigator == null ||
+                damageInfo.Instigator.transform.root
+                    .GetComponentInChildren<
+                        ManualBroadsideAimController>() == null)
+            {
+                return;
+            }
+
+            IsAggressive = true;
+            engagementStartTime = Time.time;
+            Debug.Log(
+                $"{name} saldırıya karşılık veriyor.",
+                this
+            );
+        }
+
+        private void OnDestroy()
+        {
+            if (shipHealth != null)
+            {
+                shipHealth.Damaged -= HandleDamaged;
+            }
         }
 
         private void OnValidate()

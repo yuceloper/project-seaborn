@@ -220,6 +220,6 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 
 ## 2026-09-12 — İlk düşman gemisi arketipleri
 
-**Karar:** İlk PvE filosu üç okunabilir rolden oluşur. Razorwind Skirmisher hızlı ve çeviktir, zincirli gülleyle kaçışı keser; Ironwake Gunship yavaş ve dayanıklıdır, uzun menzilli standart borda kullanır; Saltfang Marauder yakın mesafeye girip saçmayla mürettebat hazırlığını bozar. Prototip sahnesinde mevcut düşman şablonundan yalnızca bir kez üçlü filo kurulur.
+**Karar:** İlk PvE filosu üç okunabilir rolden oluşur. Razorwind Skirmisher hızlı ve çeviktir, zincirli gülleyle kaçışı keser; Ironwake Gunship yavaş ve dayanıklıdır, uzun menzilli standart borda kullanır; Saltfang Marauder yakın mesafeye girip saçmayla mürettebat hazırlığını bozar. Prototip sahnesinde mevcut düşman şablonundan yalnızca bir kez üçlü filo kurulur. Düşmanlar pasif başlar; yalnızca oyuncu tarafından hasar verilen gemi karşılık verir ve yakındaki diğer gemiler otomatik olarak savaşa katılmaz.
 
 **Neden:** Aynı yapay zekânın yalnızca canı artan kopyaları yerine mühimmat ve manevra kararlarını değiştiren hedef öncelikleri üretmek; ilk gerçek sefer haritasına geçmeden önce küçük bir savaş ekolojisini doğrulamak.
