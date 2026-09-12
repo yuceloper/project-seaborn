@@ -239,3 +239,11 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 - Harita geçişi mevcut oyuncu gemisini korur; hasar ve güvencesiz yük sahne değiştirerek sıfırlanmaz.
 - Harita isimleri ve tehlike seviyeleri HUD'da gösterilir.
 - İlk sahneler aynı prototip deniz temelini paylaşabilir; sanat ve içerik kimlikleri ayrı iterasyonlarda farklılaştırılır.
+
+
+## 2026-09-12 — Limanın ilk görsel yerleşimi işlevlere göre ayrılır
+
+- Oyuncu gemisi korunaklı koyun merkezinde doğar ve kuzeye, açık deniz çıkışına yönelir.
+- Tersane batı rıhtımında, ticaret doğu rıhtımında, liman idaresi güney kıyısında konumlanır.
+- Mendirekler ve kuzeydoğu deniz feneri güvenli merkezin siluetini oluşturur.
+- Prototip geometri yerleşim doğrulaması içindir; ileride aynı kök nesneler gerçek liman assetleriyle değiştirilecektir.
