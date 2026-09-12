@@ -186,3 +186,14 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Düşman AI, loot ve liman teslim sistemlerini haritalar arasında yeniden kurma
 - [ ] Her haritaya özgü çevre sanatı, ses katmanı ve içerik tabloları
 - [ ] Limanı ticaret, tersane, görev ve sosyal merkez olarak görsel üretime alma
+
+
+### Harbor identity pass (2026-09-12)
+
+- [x] Güvenli koy ve yönlü açık deniz koridoru
+- [x] Batı tersane rıhtımı ve prototip vinç
+- [x] Doğu ticaret rıhtımı ve depo alanı
+- [x] Liman idaresi, mendirekler ve deniz feneri
+- [x] Tersane, ticaret ve açık deniz dünya etiketleri
+- [ ] Prototip geometrileri üretim kalitesinde liman assetleriyle değiştirme
+- [ ] Yürünebilir liman ve görünür kaptan katmanı
