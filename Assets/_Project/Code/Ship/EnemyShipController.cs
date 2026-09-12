@@ -3,6 +3,13 @@ using UnityEngine;
 
 namespace Seaborn.Ship
 {
+    public enum EnemyShipArchetype
+    {
+        Skirmisher,
+        Gunship,
+        Marauder
+    }
+
     [RequireComponent(typeof(Rigidbody))]
     [RequireComponent(typeof(BroadsideController))]
     [RequireComponent(typeof(ShipHealth))]
@@ -47,6 +54,12 @@ namespace Seaborn.Ship
         [SerializeField, Range(0f, 1f)]
         private float movementPrediction = 0.65f;
 
+        public EnemyShipArchetype Archetype
+        {
+            get;
+            private set;
+        } = EnemyShipArchetype.Marauder;
+
         public float AimPreparation =>
             Mathf.Clamp01(
                 aimPreparation /
@@ -80,6 +93,97 @@ namespace Seaborn.Ship
                     transform
                 );
             engagementStartTime = Time.time;
+        }
+
+        public void ConfigureArchetype(
+            EnemyShipArchetype archetype)
+        {
+            Archetype = archetype;
+
+            switch (archetype)
+            {
+                case EnemyShipArchetype.Skirmisher:
+                    name = "Razorwind Skirmisher";
+                    detectionRange = 25f;
+                    preferredRange = 6.2f;
+                    retreatDistance = 3.6f;
+                    forwardSpeed = 4.5f;
+                    broadsideSpeed = 2.5f;
+                    turnSpeed = 62f;
+                    fireRange = 8.5f;
+                    fireAlignment = 0.76f;
+                    aimPreparationTime = 0.78f;
+                    movementPrediction = 0.9f;
+                    shipHealth.SetRuntimeMaximumHealthMultiplier(
+                        0.72f, true);
+                    broadsideController.TrySelectAmmunition(
+                        AmmunitionType.Chain);
+                    ApplyPalette(
+                        new Color(0.12f, 0.26f, 0.3f),
+                        new Color(0.28f, 0.58f, 0.62f),
+                        new Color(0.18f, 0.72f, 0.78f));
+                    break;
+
+                case EnemyShipArchetype.Gunship:
+                    name = "Ironwake Gunship";
+                    detectionRange = 27f;
+                    preferredRange = 9f;
+                    retreatDistance = 6f;
+                    forwardSpeed = 2.2f;
+                    broadsideSpeed = 1.05f;
+                    turnSpeed = 27f;
+                    fireRange = 12f;
+                    fireAlignment = 0.86f;
+                    aimPreparationTime = 1.55f;
+                    movementPrediction = 0.52f;
+                    shipHealth.SetRuntimeMaximumHealthMultiplier(
+                        1.4f, true);
+                    broadsideController.TrySelectAmmunition(
+                        AmmunitionType.Standard);
+                    ApplyPalette(
+                        new Color(0.19f, 0.12f, 0.1f),
+                        new Color(0.52f, 0.38f, 0.25f),
+                        new Color(0.82f, 0.5f, 0.16f));
+                    break;
+
+                default:
+                    name = "Saltfang Marauder";
+                    detectionRange = 22f;
+                    preferredRange = 5.5f;
+                    retreatDistance = 3.5f;
+                    forwardSpeed = 3.5f;
+                    broadsideSpeed = 1.8f;
+                    turnSpeed = 44f;
+                    fireRange = 7.2f;
+                    fireAlignment = 0.74f;
+                    aimPreparationTime = 0.62f;
+                    movementPrediction = 0.72f;
+                    shipHealth.SetRuntimeMaximumHealthMultiplier(
+                        0.9f, true);
+                    broadsideController.TrySelectAmmunition(
+                        AmmunitionType.Grapeshot);
+                    ApplyPalette(
+                        new Color(0.28f, 0.08f, 0.07f),
+                        new Color(0.52f, 0.15f, 0.12f),
+                        new Color(0.78f, 0.12f, 0.08f));
+                    break;
+            }
+
+            engagementStartTime = Time.time;
+        }
+
+        private void ApplyPalette(
+            Color hull,
+            Color sail,
+            Color accent)
+        {
+            PrototypeShipVisual visual =
+                GetComponent<PrototypeShipVisual>();
+            visual?.ApplyEnemyPalette(
+                hull,
+                sail,
+                accent
+            );
         }
 
         private void FixedUpdate()

@@ -101,7 +101,7 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] İskele/sancak bağımsız yeniden doldurma
 - [x] Sonlu mühimmat stoğu ve UI olayları
 - [x] Üç seviyeli gövde, top ve zıpkın ekipman istatistikleri
-- [ ] AI zorluk profilleri
+- [x] Razorwind, Ironwake ve Saltfang düşman arketipleri
 - [x] Batırma ödülü ve süreli enkaz sandığı
 
 ## Milestone 3.5 — Deniz avcılığı dikey dilimi

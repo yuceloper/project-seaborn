@@ -311,6 +311,8 @@ namespace Seaborn.Hunting
             PrototypeSeaCreatureSpawner.EnsureSpawned(
                 player.transform.position
             );
+            Seaborn.Ship.PrototypeEnemyFleetDirector
+                .EnsureCreated();
             PrototypeHarborDeliveryZone.EnsureCreated(
                 player.transform
             );
