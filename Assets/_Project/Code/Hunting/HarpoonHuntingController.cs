@@ -312,13 +312,15 @@ namespace Seaborn.Hunting
                 player.transform.position
             );
             Seaborn.Ship.PrototypeEnemyFleetDirector
-                .EnsureCreated();
+                .EnsureCreated(player.transform);
             PrototypeHarborDeliveryZone.EnsureCreated(
                 player.transform
             );
             PrototypeExpeditionDirector.EnsureCreated(
                 player.transform
             );
+            Seaborn.World.PrototypeExpeditionRegionDirector
+                .EnsureCreated(player.transform);
             PrototypeHarborServices.EnsureAttached(
                 player.transform
             );

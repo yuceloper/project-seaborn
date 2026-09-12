@@ -105,12 +105,14 @@ namespace Seaborn.Hunting
         private float health;
         private float fleeUntil;
         private float movementPhase;
+        private Vector3 homePosition;
         private Transform visualRoot;
         private Material material;
 
         private void Awake()
         {
             health = maximumHealth;
+            homePosition = transform.position;
             movementPhase =
                 transform.position.x * 0.17f +
                 transform.position.z * 0.31f;
@@ -137,17 +139,37 @@ namespace Seaborn.Hunting
                       )
                     : cruiseSpeed;
 
-            float turn =
-                Mathf.Sin(
-                    Time.time * 0.42f +
-                    movementPhase
-                ) * 16f;
+            Vector3 toHome =
+                homePosition - transform.position;
+            toHome.y = 0f;
 
-            transform.Rotate(
-                0f,
-                turn * Time.deltaTime,
-                0f
-            );
+            if (toHome.sqrMagnitude > 64f)
+            {
+                Quaternion homeward =
+                    Quaternion.LookRotation(
+                        toHome.normalized,
+                        Vector3.up
+                    );
+                transform.rotation =
+                    Quaternion.RotateTowards(
+                        transform.rotation,
+                        homeward,
+                        38f * Time.deltaTime
+                    );
+            }
+            else
+            {
+                float turn =
+                    Mathf.Sin(
+                        Time.time * 0.42f +
+                        movementPhase
+                    ) * 16f;
+                transform.Rotate(
+                    0f,
+                    turn * Time.deltaTime,
+                    0f
+                );
+            }
             transform.position +=
                 transform.forward *
                 speed *
@@ -428,24 +450,24 @@ namespace Seaborn.Hunting
             Spawn(
                 "Tideback - North",
                 playerPosition +
-                new Vector3(7f, 0.74f, 8f),
+                new Vector3(16f, 0.74f, 14f),
                 210f
             );
             Spawn(
                 "Tideback - East",
                 playerPosition +
-                new Vector3(11f, 0.74f, -3f),
+                new Vector3(22f, 0.74f, 10f),
                 285f
             );
             Spawn(
                 "Tideback - West",
                 playerPosition +
-                new Vector3(-9f, 0.74f, 2f),
+                new Vector3(12f, 0.74f, 7f),
                 75f
             );
             SpawnLeviathan(
                 playerPosition +
-                new Vector3(-19f, 0.74f, 17f)
+                new Vector3(12f, 0.74f, 34f)
             );
         }
 

@@ -4,6 +4,7 @@ using Seaborn.Expeditions;
 using Seaborn.Hunting;
 using Seaborn.Recovery;
 using Seaborn.Ship;
+using Seaborn.World;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -236,11 +237,23 @@ namespace Seaborn.UI
                 return;
             }
 
-            expeditionStateText.text = StateLabel(director.State);
+            PrototypeExpeditionRegionDirector regions =
+                PrototypeExpeditionRegionDirector.Instance;
+            string regionName = regions != null
+                ? regions.CurrentRegionName
+                : "AÇIK DENİZ";
+            string danger = regions != null
+                ? regions.CurrentDangerLabel
+                : "ORTA TEHLİKE";
+            expeditionStateText.text =
+                $"{StateLabel(director.State)}   •   {regionName}";
+            expeditionStateText.color = regions != null
+                ? regions.CurrentDangerColor
+                : Gold;
             int seconds = Mathf.FloorToInt(director.ElapsedTime);
             expeditionDetailText.text = director.IsActive
-                ? $"{seconds / 60:00}:{seconds % 60:00}   •   HEDEF {director.CurrentUnsecuredValue} / {director.RecommendedReturnValue}"
-                : director.State == PrototypeExpeditionState.AtHarbor ? "SEFERE HAZIRLAN" : $"SÜRE {seconds / 60:00}:{seconds % 60:00}";
+                ? $"{danger}   •   {seconds / 60:00}:{seconds % 60:00}   •   HEDEF {director.CurrentUnsecuredValue} / {director.RecommendedReturnValue}"
+                : director.State == PrototypeExpeditionState.AtHarbor ? $"{danger}   •   SEFERE HAZIRLAN" : $"{danger}   •   SÜRE {seconds / 60:00}:{seconds % 60:00}";
             SetBar(pressureFill, director.PressureNormalized);
         }
 

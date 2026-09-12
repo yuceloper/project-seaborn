@@ -7,7 +7,8 @@ namespace Seaborn.Ship
     {
         private bool initialized;
 
-        public static void EnsureCreated()
+        public static void EnsureCreated(
+            Transform player)
         {
             PrototypeEnemyFleetDirector director =
                 FindFirstObjectByType<
@@ -21,12 +22,15 @@ namespace Seaborn.Ship
                     PrototypeEnemyFleetDirector>();
             }
 
-            director.BuildFleet();
+            if (player != null)
+            {
+                director.BuildFleet(player.position);
+            }
             Seaborn.UI.PrototypeEnemyNameplateOverlay
                 .EnsureCreated();
         }
 
-        private void BuildFleet()
+        private void BuildFleet(Vector3 playerPosition)
         {
             if (initialized) return;
 
@@ -40,13 +44,19 @@ namespace Seaborn.Ship
             EnemyShipController template = ships[0];
             if (ships.Length >= 3)
             {
-                ConfigureExisting(ships);
+                ConfigureExisting(
+                    ships,
+                    playerPosition
+                );
                 initialized = true;
                 return;
             }
 
-            Vector3 origin = template.transform.position;
+            Vector3 origin = playerPosition +
+                new Vector3(-18f, 0f, 22f);
+            origin.y = template.transform.position.y;
             Quaternion rotation = template.transform.rotation;
+            template.transform.position = origin;
 
             template.ConfigureArchetype(
                 EnemyShipArchetype.Marauder
@@ -55,7 +65,7 @@ namespace Seaborn.Ship
             EnemyShipController skirmisher =
                 Instantiate(
                     template.gameObject,
-                    origin + new Vector3(12f, 0f, 8f),
+                    origin + new Vector3(6f, 0f, -4f),
                     rotation
                 ).GetComponent<EnemyShipController>();
             skirmisher.ConfigureArchetype(
@@ -65,7 +75,7 @@ namespace Seaborn.Ship
             EnemyShipController gunship =
                 Instantiate(
                     template.gameObject,
-                    origin + new Vector3(-13f, 0f, 10f),
+                    origin + new Vector3(-6f, 0f, 3f),
                     rotation
                 ).GetComponent<EnemyShipController>();
             gunship.ConfigureArchetype(
@@ -81,8 +91,23 @@ namespace Seaborn.Ship
         }
 
         private static void ConfigureExisting(
-            EnemyShipController[] ships)
+            EnemyShipController[] ships,
+            Vector3 playerPosition)
         {
+            Vector3 center = playerPosition +
+                new Vector3(-18f, 0f, 22f);
+            Vector3 first = center;
+            Vector3 second = center +
+                new Vector3(6f, 0f, -4f);
+            Vector3 third = center +
+                new Vector3(-6f, 0f, 3f);
+            first.y = ships[0].transform.position.y;
+            second.y = ships[1].transform.position.y;
+            third.y = ships[2].transform.position.y;
+            ships[0].transform.position = first;
+            ships[1].transform.position = second;
+            ships[2].transform.position = third;
+
             ships[0].ConfigureArchetype(
                 EnemyShipArchetype.Marauder);
             ships[1].ConfigureArchetype(

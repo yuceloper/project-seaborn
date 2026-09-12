@@ -229,3 +229,11 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 **Karar:** Her düşman gemisinin yalnızca adı, ekran uzayında gemi silüetinin altında gösterilir. HUD aynı anda yalnızca bir düşmanın ayrıntılı bilgi panelini gösterir. Saldırgan gemi 30 metreye kadar önceliklidir; pasif gemi yalnızca 14 metre içinde aday olur. Kartta arketip, ad, çatışma durumu, gövde, yelken ve mürettebat bulunur.
 
 **Neden:** Alt sistem mühimmatlarının sonucunu oyuncuya görünür kılmak, hedef önceliğini desteklemek ve üç gemilik karşılaşmayı ekranı çok sayıda dünya can çubuğuyla kaplamadan okunabilir tutmak.
+
+
+## 2026-09-12 — İlk sefer haritası dört okunabilir risk bölgesinden oluşur
+
+- Güvenli liman, kıyı av sahası, korsan geçidi ve Stormjaw derinliği aynı sefer alanında bulunur.
+- Bölgeler sert kapılar değildir; oyuncu istediği bölgeye girebilir.
+- Mesafe, düşman türü ve kazanç birlikte yükselerek doğal bir risk rotası oluşturur.
+- HUD her an mevcut bölgeyi ve tehlike seviyesini gösterir; prototip sınır halkaları ileride çevre sanatıyla değiştirilebilir.
