@@ -318,5 +318,16 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Dreadwake için seviye 25 gemi lisansı
 - [x] HUD seviye bilgisi ve seviye atlama bildirimi
 - [x] Kaptan EXP'sini yerel kayıtta koruma
-- [ ] Harita geçitlerinde tier erişimini uygulama
+- [x] Harita geçitlerinde tier erişimini uygulama
 - [ ] Skill puanı harcama ve ilk skill ağacı
+
+
+### Map tier access gates (2026-09-13)
+
+- [x] Liman ve Merkez Sular tier 1
+- [x] Doğu Avları tier 2 / Kaptan seviye 5
+- [x] Batı Sınırı tier 3 / Kaptan seviye 9
+- [x] Kilitli sınırda gemiyi güvenli biçimde harita içine geri alma
+- [x] Kilitli geçitte hareket hızını sıfırlama
+- [x] HUD kilit bildirimi ve mini harita seviye etiketleri
+- [ ] Tier 4–8 harita sahneleri ve bağlantı ağı
