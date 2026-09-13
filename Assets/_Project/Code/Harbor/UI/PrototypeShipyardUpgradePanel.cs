@@ -25,6 +25,7 @@ namespace Seaborn.Harbor.UI
         private static readonly Color Danger =
             new(0.9f, 0.43f, 0.34f, 1f);
 
+        private Transform player;
         private PrototypeShipEquipment equipment;
         private PrototypeSilverWallet wallet;
         private GameObject panel;
@@ -68,13 +69,30 @@ namespace Seaborn.Harbor.UI
             BuildInterface();
         }
 
-        private void Bind(Transform player)
+        private void Bind(Transform playerTransform)
         {
-            equipment = player.GetComponentInChildren<
-                PrototypeShipEquipment>();
-            wallet = player.GetComponentInChildren<
-                PrototypeSilverWallet>();
+            player = playerTransform;
+            ResolveBindings();
             Refresh();
+        }
+
+        private void ResolveBindings()
+        {
+            if (player == null)
+            {
+                return;
+            }
+
+            if (equipment == null)
+            {
+                equipment = player.GetComponentInChildren<
+                    PrototypeShipEquipment>();
+            }
+            if (wallet == null)
+            {
+                wallet = player.GetComponentInChildren<
+                    PrototypeSilverWallet>();
+            }
         }
 
         private void Update()
@@ -239,6 +257,7 @@ namespace Seaborn.Harbor.UI
         {
             if (panel == null) return;
 
+            ResolveBindings();
             PrototypeHarborDockingDirector docking =
                 PrototypeHarborDockingDirector.Instance;
             bool visible =
