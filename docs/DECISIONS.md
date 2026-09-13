@@ -273,3 +273,12 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 - Batı Sınırı daha soğuk, karanlık ve puslu bir savaş rotasıdır.
 - Farklılıklar yeni köpük veya hız çizgileriyle değil; su paleti, dalga şiddeti, sis, güneş ve kontrollü post-processing ile kurulur.
 - Okyanus asseti sahneler arasında değiştirilmez; her sahne kendi çalışma zamanı materyal örneğini kullanır.
+
+
+## 2026-09-13 — Liman servisleri istasyona özgü arayüzlerdir
+
+- Tersane geliştirmeleri yalnızca Tersane'ye yanaşıldığında açılır.
+- Günlük görev seçimi ve aylık seyir defteri Liman İdaresi'ne yanaşıldığında görünür.
+- Aynı gün içinde yalnızca seçili günlük görev ilerler; tamamlanıp limana dönüldükten sonra başka bir günlük görev seçilebilir.
+- Günlük ana ödül için iki farklı günlük görevi tamamlama hedefi korunur.
+- Yanaşma noktaları dünya koordinatında sabittir; oyuncunun haritaya giriş konumu istasyonları taşımaz.
