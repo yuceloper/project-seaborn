@@ -717,7 +717,7 @@ namespace Seaborn.UI
                 PrototypeRegionKind.EasternReach =>
                     "W  •  MERKEZ   S  •  LİMAN",
                 _ =>
-                    "W  •  BATI   E  •  DOĞU   S  •  LİMAN"
+                    "W  •  BATI (SV.9)   E  •  DOĞU (SV.5)   S  •  LİMAN"
             };
         }
 
