@@ -90,10 +90,24 @@ namespace Seaborn.Hunting
                 aimCamera = UnityEngine.Camera.main;
             }
 
-            bool wantsToAim =
-                !IsBlockedBySafeHarbor &&
+            bool shiftHeld =
                 Keyboard.current != null &&
                 Keyboard.current.leftShiftKey.isPressed;
+
+            if (shiftHeld &&
+                Keyboard.current.digit1Key.wasPressedThisFrame)
+            {
+                TrySelectHarpoon("light_2kg");
+            }
+            else if (shiftHeld &&
+                     Keyboard.current.digit2Key.wasPressedThisFrame)
+            {
+                TrySelectHarpoon("heavy_4kg");
+            }
+
+            bool wantsToAim =
+                !IsBlockedBySafeHarbor &&
+                shiftHeld;
 
             if (IsAiming != wantsToAim)
             {
