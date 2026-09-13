@@ -348,7 +348,16 @@ namespace Seaborn.UI
         {
             PrototypeShipRecoveryDirector recovery = PrototypeShipRecoveryDirector.Instance;
             bool reserve = recovery != null && recovery.State != PrototypeShipRecoveryState.MainShipActive;
-            shipNameText.text = reserve ? "YEDEK GEMİ" : "ANA GEMİ";
+            ShipProfileController profile =
+                boundPlayer != null
+                    ? boundPlayer.GetComponent<
+                        ShipProfileController>()
+                    : null;
+            shipNameText.text = reserve
+                ? "YEDEK GEMİ"
+                : profile?.Definition != null
+                    ? profile.Definition.displayName.ToUpperInvariant()
+                    : "ANA GEMİ";
 
             float current = health != null ? health.CurrentHealth : 0f;
             float maximum = health != null ? health.MaximumHealth : 1f;
