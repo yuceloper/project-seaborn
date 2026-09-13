@@ -72,6 +72,18 @@ namespace Seaborn.Ship
             Sunk?.Invoke();
         }
 
+        public void SetBaseMaximumHealth(
+            float value,
+            bool restoreToFull)
+        {
+            maximumHealth = Mathf.Max(1f, value);
+            CurrentHealth = restoreToFull
+                ? MaximumHealth
+                : Mathf.Min(CurrentHealth, MaximumHealth);
+            IsSunk = CurrentHealth <= 0f;
+            HealthChanged?.Invoke(CurrentHealth, MaximumHealth);
+        }
+
         public void SetRuntimeMaximumHealthMultiplier(
             float multiplier,
             bool restoreToFull)
