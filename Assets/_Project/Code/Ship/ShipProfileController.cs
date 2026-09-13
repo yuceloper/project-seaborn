@@ -1,5 +1,6 @@
 using System;
 using Seaborn.Combat;
+using Seaborn.Hunting;
 using Seaborn.Ship.Data;
 using UnityEngine;
 
@@ -16,6 +17,27 @@ namespace Seaborn.Ship
 
         public string ShipId => shipId;
         public ShipDefinition Definition { get; private set; }
+
+        [RuntimeInitializeOnLoadMethod(
+            RuntimeInitializeLoadType.AfterSceneLoad)]
+        private static void AttachToPlayer()
+        {
+            HarpoonHuntingController player =
+                UnityEngine.Object.FindFirstObjectByType<
+                    HarpoonHuntingController>();
+
+            if (player == null) return;
+
+            ShipProfileController profile =
+                player.GetComponent<ShipProfileController>();
+            if (profile == null)
+            {
+                profile = player.gameObject.AddComponent<
+                    ShipProfileController>();
+            }
+
+            profile.ApplyProfile();
+        }
 
         private void Awake()
         {
