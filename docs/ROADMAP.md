@@ -273,7 +273,7 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Create cannon, ammunition, harpoon, sail and consumable catalogues
 - [x] Replace prototype broadside constants with equipped-cannon salvo calculation
 - [x] Add equipment inventory, ship loadout validation and shipyard equipment market
-- [ ] Add Silver-based harbor ship market and ship switching
+- [x] Add Silver-based harbor ship market and ship switching
 - [ ] Add captain EXP, levels, unlock gates and skill-point earning
 - [ ] Add first cannon, harpoon and ship skill branches
 - [ ] Add timed repair, tonic and special-item cooldown categories
@@ -293,3 +293,15 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Kurulu top hasarı/dolumu ve yelken hareket çarpanlarını uygulama
 - [ ] Gemi satın alma, gemi envanteri ve aktif gemi değiştirme
 - [ ] Karma top bataryası ve tekil ekipman dayanıklılığı
+
+
+### Harbor fleet market (2026-09-13)
+
+- [x] Başlangıç gemisini kalıcı filoya ekleme
+- [x] Rat Sails ve Dreadwake için Silver satın alma
+- [x] Yalnızca tersanede aktif gemi değiştirme
+- [x] Aktif gemide can, top yuvası, menzil, hız ve manevra profilini yeniden uygulama
+- [x] Gemi sahipliği ve aktif gemiyi yerel kayıtta koruma
+- [x] Gemi pazarı paneli ve HUD'da aktif gemi adı
+- [ ] Her gemi profiline özgü görsel prefab
+- [ ] Gemiler arasında ayrı hasar ve onarım durumu
