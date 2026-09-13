@@ -19,13 +19,15 @@ namespace Seaborn.Ship
         public float MaximumHealth =>
             maximumHealth *
             maximumHealthMultiplier *
-            equipmentHealthMultiplier;
+            equipmentHealthMultiplier *
+            skillHealthMultiplier;
 
         public float MaximumHealthMultiplier =>
             maximumHealthMultiplier;
 
         private float maximumHealthMultiplier = 1f;
         private float equipmentHealthMultiplier = 1f;
+        private float skillHealthMultiplier = 1f;
         private ShipSubsystemController subsystems;
 
         public bool IsSunk { get; private set; }
@@ -89,6 +91,22 @@ namespace Seaborn.Ship
             bool restoreToFull)
         {
             maximumHealthMultiplier =
+                Mathf.Max(0.1f, multiplier);
+            CurrentHealth = restoreToFull
+                ? MaximumHealth
+                : Mathf.Min(CurrentHealth, MaximumHealth);
+            IsSunk = CurrentHealth <= 0f;
+            HealthChanged?.Invoke(
+                CurrentHealth,
+                MaximumHealth
+            );
+        }
+
+        public void SetSkillHealthMultiplier(
+            float multiplier,
+            bool restoreToFull)
+        {
+            skillHealthMultiplier =
                 Mathf.Max(0.1f, multiplier);
             CurrentHealth = restoreToFull
                 ? MaximumHealth
