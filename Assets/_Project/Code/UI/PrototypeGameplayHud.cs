@@ -3,6 +3,7 @@ using Seaborn.Combat;
 using Seaborn.Expeditions;
 using Seaborn.Hunting;
 using Seaborn.Recovery;
+using Seaborn.Progression;
 using Seaborn.Ship;
 using Seaborn.World;
 using UnityEngine;
@@ -27,6 +28,7 @@ namespace Seaborn.UI
         private HarpoonHuntingController harpoons;
         private PrototypeHuntCargo cargo;
         private PrototypeSilverWallet wallet;
+        private PrototypeCaptainProgression captainProgression;
 
         private Text shipNameText;
         private Text hullText;
@@ -120,6 +122,9 @@ namespace Seaborn.UI
             harpoons = player.GetComponentInChildren<HarpoonHuntingController>();
             cargo = player.GetComponentInChildren<PrototypeHuntCargo>();
             wallet = player.GetComponentInChildren<PrototypeSilverWallet>();
+            captainProgression =
+                player.GetComponentInChildren<
+                    PrototypeCaptainProgression>();
             if (health != null)
             {
                 health.HealthChanged += HandleHealthChanged;
@@ -353,11 +358,18 @@ namespace Seaborn.UI
                     ? boundPlayer.GetComponent<
                         ShipProfileController>()
                     : null;
-            shipNameText.text = reserve
-                ? "YEDEK GEMİ"
-                : profile?.Definition != null
-                    ? profile.Definition.displayName.ToUpperInvariant()
+            string shipLabel =
+                profile?.Definition != null
+                    ? profile.Definition.displayName
+                        .ToUpperInvariant()
                     : "ANA GEMİ";
+            string captainLabel =
+                captainProgression != null
+                    ? $"  •  KAPTAN SV. {captainProgression.Level}"
+                    : "";
+            shipNameText.text = reserve
+                ? "YEDEK GEMİ" + captainLabel
+                : shipLabel + captainLabel;
 
             float current = health != null ? health.CurrentHealth : 0f;
             float maximum = health != null ? health.MaximumHealth : 1f;
