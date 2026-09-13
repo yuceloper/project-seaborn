@@ -35,6 +35,10 @@ namespace Seaborn.Persistence
             public int iron12LbCannons;
             public int patchedCanvasSails;
             public int ratSails;
+            public bool ownsStarterSloop;
+            public bool ownsRatSailsShip;
+            public bool ownsDreadwake;
+            public string activeShipId;
             public int hullLevel;
             public int cannonLevel;
             public int harpoonLevel;
@@ -51,6 +55,7 @@ namespace Seaborn.Persistence
         private PrototypeRegionalLootInventory materials;
         private ShipLoadout loadout;
         private PrototypeEquipmentInventory inventory;
+        private PrototypeFleetInventory fleet;
         private SaveData lastSnapshot;
         private float nextScanTime;
         private bool loaded;
@@ -118,10 +123,17 @@ namespace Seaborn.Persistence
                     PrototypeEquipmentInventory>();
             }
 
+            if (fleet == null)
+            {
+                fleet = player.GetComponentInChildren<
+                    PrototypeFleetInventory>();
+            }
+
             if (!loaded && wallet != null &&
                 broadside != null && harpoons != null &&
                 equipment != null && materials != null &&
-                loadout != null && inventory != null)
+                loadout != null && inventory != null &&
+                fleet != null)
             {
                 Load();
                 loaded = true;
@@ -202,6 +214,12 @@ namespace Seaborn.Persistence
                     );
                 }
 
+                fleet.Restore(
+                    data.ownsStarterSloop,
+                    data.ownsRatSailsShip,
+                    data.ownsDreadwake,
+                    data.activeShipId
+                );
                 inventory.Restore(
                     data.iron6LbCannons,
                     data.iron12LbCannons,
@@ -287,6 +305,15 @@ namespace Seaborn.Persistence
                 ratSails = inventory != null
                     ? inventory.RatSails
                     : 0,
+                ownsStarterSloop = fleet == null ||
+                    fleet.OwnsStarterSloop,
+                ownsRatSailsShip = fleet != null &&
+                    fleet.OwnsRatSails,
+                ownsDreadwake = fleet != null &&
+                    fleet.OwnsDreadwake,
+                activeShipId = fleet != null
+                    ? fleet.ActiveShipId
+                    : "starter_sloop",
                 hullLevel = equipment != null
                     ? equipment.HullLevel
                     : 0,
@@ -384,6 +411,16 @@ namespace Seaborn.Persistence
                 first.patchedCanvasSails ==
                     second.patchedCanvasSails &&
                 first.ratSails == second.ratSails &&
+                first.ownsStarterSloop ==
+                    second.ownsStarterSloop &&
+                first.ownsRatSailsShip ==
+                    second.ownsRatSailsShip &&
+                first.ownsDreadwake ==
+                    second.ownsDreadwake &&
+                string.Equals(
+                    first.activeShipId,
+                    second.activeShipId,
+                    StringComparison.Ordinal) &&
                 first.hullLevel == second.hullLevel &&
                 first.cannonLevel == second.cannonLevel &&
                 first.harpoonLevel == second.harpoonLevel &&
