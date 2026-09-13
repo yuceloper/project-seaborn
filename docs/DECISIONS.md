@@ -328,3 +328,14 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 **Karar:** Kaptan seviyesi doğrudan can veya hasar vermez. Her iki seviyede bir skill puanı, her dört seviyede bir sonraki harita tier erişimi kazanılır. Rat Sails gemi lisansı seviye 5, Dreadwake lisansı seviye 25 ister.
 
 **Neden:** Seferin başarılı dönüşünü kalıcı ilerlemenin merkezi yapmak, limana dönme kararını güçlendirmek ve hesap seviyesini ham istatistik şişirmesi yerine yeni içerik/tercih erişimi olarak kullanmak.
+
+
+## 2026-09-13 — İlk kaptan yetenek ağacı
+
+**Karar:** İlk ağaç Topçuluk, Zıpkıncılık ve Gemi olmak üzere üç daldır. Her dalın ilk yeteneği doğrudan açılabilir; ikinci yetenek için aynı dalın ilk yeteneğinde en az bir rütbe gerekir. Puanlar yalnızca güvenli limandaki Liman İdaresi'ne yanaşıldığında harcanır ve yerel prototip kaydında korunur.
+
+**Karar:** Top Ustalığı rütbe başına yüzde 5 top hasarı, Menzil Hesabı yüzde 4 top menzili; Zıpkın Ustalığı yüzde 8 zıpkın hasarı, Hızlı Donanım yüzde 5 daha kısa zıpkın dolumu; Güçlendirilmiş Omurga yüzde 8 azami gövde, İnce Yelkenler yüzde 4 hız ve yüzde 3 manevra verir. İlk ağacın toplam maliyeti 15 puandır ve 30 seviyelik modelde kazanılabilen 15 puanla bütünü tamamlanabilir.
+
+**Karar:** İlk prototipte puan dağıtımı kalıcıdır. Silver karşılığı yeniden dağıtım ayrı bir ekonomi ve kullanılabilirlik iterasyonunda eklenecektir.
+
+**Neden:** Kaptan seviyesini doğrudan otomatik güç artışına çevirmeden oyuncuya uzmanlaşma kararı vermek; seferden başarılı dönüş, seviye, liman hazırlığı ve geminin sahadaki davranışı arasında görünür bir bağ kurmak.
