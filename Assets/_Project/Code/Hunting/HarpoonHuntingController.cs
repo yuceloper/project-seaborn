@@ -43,6 +43,8 @@ namespace Seaborn.Hunting
 
         private float equipmentDamageMultiplier = 1f;
         private float equipmentReloadMultiplier = 1f;
+        private float skillDamageMultiplier = 1f;
+        private float skillReloadMultiplier = 1f;
 
         public event Action HuntingStateChanged;
 
@@ -67,7 +69,9 @@ namespace Seaborn.Hunting
                 );
 
         private float EffectiveReloadDuration =>
-            reloadDuration * equipmentReloadMultiplier;
+            reloadDuration *
+            equipmentReloadMultiplier *
+            skillReloadMultiplier;
         public bool IsBlockedBySafeHarbor =>
             !PrototypeSafeHarborProtection.AllowsWeapons(
                 gameObject
@@ -182,6 +186,17 @@ namespace Seaborn.Hunting
             HuntingStateChanged?.Invoke();
         }
 
+        public void SetSkillModifiers(
+            float damageMultiplier,
+            float reloadMultiplier)
+        {
+            skillDamageMultiplier =
+                Mathf.Max(0.1f, damageMultiplier);
+            skillReloadMultiplier =
+                Mathf.Clamp(reloadMultiplier, 0.35f, 2f);
+            HuntingStateChanged?.Invoke();
+        }
+
         public void SetEquipmentModifiers(
             float damageMultiplier,
             float reloadMultiplier)
@@ -284,7 +299,8 @@ namespace Seaborn.Hunting
                 flightDuration,
                 arcHeight,
                 harpoonDamage *
-                    equipmentDamageMultiplier
+                    equipmentDamageMultiplier *
+                    skillDamageMultiplier
             );
 
             if (IsHeavyHarpoon(selectedHarpoonId))
