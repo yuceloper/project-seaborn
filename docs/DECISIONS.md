@@ -319,3 +319,12 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 **Karar:** İlk prototipte farklı gemi profilleri aynı blockout görselini kullanabilir. HUD ve tersane aktif mekanik profili adıyla gösterir. Üretim gemi prefabları ayrı sanat geçişinde bağlanacaktır.
 
 **Neden:** Gemi satın almayı yalnızca bir istatistik yükseltmesi değil, oyuncunun koruduğu ve roller arasında değiştirdiği filo ilerlemesine dönüştürmek; düşük kapasiteli gemiye dönüşte kazanılmış ekipmanı yok etmemek.
+
+
+## 2026-09-13 — Kaptan EXP kaynak ve erişim kuralı
+
+**Karar:** Kaptan seviyesi 1–30 arasındadır. İlk prototipte EXP yalnızca güvencesiz yük limanda güvenceye alındığında verilir; kazanım teslim edilen Silver değerinin yüzde 50'si ve en az 10 EXP'dir. Batışta kaybedilen yük EXP üretmez.
+
+**Karar:** Kaptan seviyesi doğrudan can veya hasar vermez. Her iki seviyede bir skill puanı, her dört seviyede bir sonraki harita tier erişimi kazanılır. Rat Sails gemi lisansı seviye 5, Dreadwake lisansı seviye 25 ister.
+
+**Neden:** Seferin başarılı dönüşünü kalıcı ilerlemenin merkezi yapmak, limana dönme kararını güçlendirmek ve hesap seviyesini ham istatistik şişirmesi yerine yeni içerik/tercih erişimi olarak kullanmak.
