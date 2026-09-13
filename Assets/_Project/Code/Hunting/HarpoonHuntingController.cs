@@ -327,6 +327,9 @@ namespace Seaborn.Hunting
                     HuntCargoLossOnSinking>();
             }
 
+            Seaborn.Progression.PrototypeShipEquipment
+                .EnsureAttached(player.transform);
+
             if (isHarbor)
             {
                 Seaborn.Harbor
@@ -350,6 +353,9 @@ namespace Seaborn.Hunting
                 Seaborn.Harbor.UI
                     .PrototypeShipyardUpgradePanel
                     .EnsureCreated(player.transform);
+                Seaborn.Harbor.UI
+                    .PrototypeHarborContractPanel
+                    .EnsureCreated(player.transform);
             }
             else
             {
@@ -365,8 +371,6 @@ namespace Seaborn.Hunting
             PrototypeShipRecoveryDirector.EnsureCreated(
                 player.transform
             );
-            Seaborn.Progression.PrototypeShipEquipment
-                .EnsureAttached(player.transform);
             Seaborn.Persistence.PrototypeProgressPersistence
                 .EnsureAttached(player.transform);
             Seaborn.UI.PrototypeGameplayHud.EnsureCreated(

@@ -217,4 +217,25 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Batı Sınırı için beş gemilik yüksek riskli korsan filosu
 - [x] Spawn noktalarını harita merkezine sabitleme
 - [ ] Bölgesel ödül tabloları ve nadir ganimetler
-- [ ] Haritaya özgü hava, su rengi ve ses kimliği
+- [x] Haritaya özgü sis, ışık, su rengi ve post-process kimliği
+- [ ] Haritaya özgü çevresel ses kimliği
+
+
+### Regional atmosphere profiles (2026-09-13)
+
+- [x] Seaborn Limanı için sıcak, güvenli ve sakin kıyı tonu
+- [x] Merkez Sular için dengeli altın saat profili
+- [x] Doğu Avları için berrak, turkuaz ve daha sakin deniz
+- [x] Batı Sınırı için soğuk, karanlık ve daha yoğun uzaklık sisi
+- [x] Sahne geçişlerinde atmosfer profilini yeniden uygulama
+- [x] Paylaşılan okyanus assetini değiştirmeden çalışma zamanı materyal kopyası
+- [ ] Bölgesel ambiyans döngüleri ve uzamsal çevre sesleri
+
+
+### Harbor station UI repair (2026-09-13)
+
+- [x] Tersane panelini ekipman sistemi kurulduktan sonra bağlama
+- [x] Eksik UI bağlarını çalışma anında yeniden çözme
+- [x] Yanaşma noktalarını oyuncu girişinden bağımsız sabit harita koordinatlarına alma
+- [x] Liman İdaresi için günlük görev seçim paneli
+- [x] Aylık seyir defteri ilerlemesini Liman İdaresi'nde gösterme

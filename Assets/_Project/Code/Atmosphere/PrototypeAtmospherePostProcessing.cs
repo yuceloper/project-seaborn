@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
+using UnityEngine.SceneManagement;
 
 namespace Seaborn.Atmosphere
 {
@@ -8,82 +9,89 @@ namespace Seaborn.Atmosphere
     public sealed class PrototypeAtmospherePostProcessing :
         MonoBehaviour
     {
-        [Header("Color")]
-        [SerializeField, Range(-1f, 1f)]
-        private float postExposure = -0.04f;
-
-        [SerializeField, Range(-100f, 100f)]
-        private float contrast = 7f;
-
-        [SerializeField, Range(-100f, 100f)]
-        private float saturation = -4f;
-
-        [SerializeField]
-        private Color colorFilter =
-            new Color(1f, 0.97f, 0.92f, 1f);
-
-        [Header("Bloom")]
-        [SerializeField, Min(0f)]
-        private float bloomThreshold = 1.15f;
-
-        [SerializeField, Range(0f, 1f)]
-        private float bloomIntensity = 0.09f;
-
-        [SerializeField, Range(0f, 1f)]
-        private float bloomScatter = 0.52f;
-
-        [Header("Framing")]
-        [SerializeField, Range(0f, 1f)]
-        private float vignetteIntensity = 0.115f;
-
-        [SerializeField, Range(0.01f, 1f)]
-        private float vignetteSmoothness = 0.44f;
-
         private VolumeProfile runtimeProfile;
+        private Volume runtimeVolume;
 
         [RuntimeInitializeOnLoadMethod(
             RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void CreateForPrototypeOcean()
         {
-            if (GameObject.Find("Ocean") == null ||
-                FindFirstObjectByType<
-                    PrototypeAtmospherePostProcessing>() != null)
+            EnsureForActiveScene();
+        }
+
+        public static void EnsureForActiveScene()
+        {
+            if (GameObject.Find("Ocean") == null)
             {
                 return;
             }
 
-            GameObject volumeObject =
-                new GameObject(
-                    "Prototype Atmosphere Post Processing"
-                );
-            volumeObject.AddComponent<
-                PrototypeAtmospherePostProcessing>();
+            PrototypeAtmospherePostProcessing instance =
+                FindFirstObjectByType<
+                    PrototypeAtmospherePostProcessing>();
+
+            if (instance == null)
+            {
+                GameObject volumeObject =
+                    new GameObject(
+                        "Prototype Atmosphere Post Processing"
+                    );
+                instance = volumeObject.AddComponent<
+                    PrototypeAtmospherePostProcessing>();
+            }
+            else
+            {
+                instance.RebuildProfile();
+            }
         }
 
         private void Awake()
         {
+            RebuildProfile();
+        }
+
+        private void RebuildProfile()
+        {
+            if (runtimeVolume != null)
+            {
+                Destroy(runtimeVolume);
+            }
+            if (runtimeProfile != null)
+            {
+                Destroy(runtimeProfile);
+            }
+
+            PostProfile profile = PostProfile.ForScene(
+                SceneManager.GetActiveScene().name
+            );
+
             runtimeProfile =
                 ScriptableObject.CreateInstance<VolumeProfile>();
             runtimeProfile.name =
-                "Runtime Prototype Atmosphere Profile";
+                $"Runtime Post - {profile.Label}";
 
             ColorAdjustments color =
                 runtimeProfile.Add<ColorAdjustments>(true);
-            color.postExposure.Override(postExposure);
-            color.contrast.Override(contrast);
-            color.saturation.Override(saturation);
-            color.colorFilter.Override(colorFilter);
+            color.postExposure.Override(
+                profile.Exposure);
+            color.contrast.Override(profile.Contrast);
+            color.saturation.Override(
+                profile.Saturation);
+            color.colorFilter.Override(
+                profile.ColorFilter);
 
             WhiteBalance whiteBalance =
                 runtimeProfile.Add<WhiteBalance>(true);
-            whiteBalance.temperature.Override(3f);
-            whiteBalance.tint.Override(-1f);
+            whiteBalance.temperature.Override(
+                profile.Temperature);
+            whiteBalance.tint.Override(profile.Tint);
 
             Bloom bloom =
                 runtimeProfile.Add<Bloom>(true);
-            bloom.threshold.Override(bloomThreshold);
-            bloom.intensity.Override(bloomIntensity);
-            bloom.scatter.Override(bloomScatter);
+            bloom.threshold.Override(1.15f);
+            bloom.intensity.Override(
+                profile.BloomIntensity);
+            bloom.scatter.Override(0.52f);
             bloom.highQualityFiltering.Override(false);
             bloom.dirtIntensity.Override(0f);
 
@@ -96,18 +104,16 @@ namespace Seaborn.Atmosphere
                 new Vector2(0.5f, 0.5f)
             );
             vignette.intensity.Override(
-                vignetteIntensity
-            );
-            vignette.smoothness.Override(
-                vignetteSmoothness
-            );
+                profile.Vignette);
+            vignette.smoothness.Override(0.44f);
             vignette.rounded.Override(false);
 
-            Volume volume = gameObject.AddComponent<Volume>();
-            volume.isGlobal = true;
-            volume.priority = 20f;
-            volume.weight = 1f;
-            volume.sharedProfile = runtimeProfile;
+            runtimeVolume =
+                gameObject.AddComponent<Volume>();
+            runtimeVolume.isGlobal = true;
+            runtimeVolume.priority = 20f;
+            runtimeVolume.weight = 1f;
+            runtimeVolume.sharedProfile = runtimeProfile;
         }
 
         private void OnDestroy()
@@ -115,6 +121,93 @@ namespace Seaborn.Atmosphere
             if (runtimeProfile != null)
             {
                 Destroy(runtimeProfile);
+            }
+        }
+
+        private readonly struct PostProfile
+        {
+            public readonly string Label;
+            public readonly float Exposure;
+            public readonly float Contrast;
+            public readonly float Saturation;
+            public readonly Color ColorFilter;
+            public readonly float Temperature;
+            public readonly float Tint;
+            public readonly float BloomIntensity;
+            public readonly float Vignette;
+
+            private PostProfile(
+                string label,
+                float exposure,
+                float contrast,
+                float saturation,
+                Color colorFilter,
+                float temperature,
+                float tint,
+                float bloomIntensity,
+                float vignette)
+            {
+                Label = label;
+                Exposure = exposure;
+                Contrast = contrast;
+                Saturation = saturation;
+                ColorFilter = colorFilter;
+                Temperature = temperature;
+                Tint = tint;
+                BloomIntensity = bloomIntensity;
+                Vignette = vignette;
+            }
+
+            public static PostProfile ForScene(
+                string sceneName)
+            {
+                return sceneName switch
+                {
+                    "PrototypeHarbor" => new(
+                        "Seaborn Limanı",
+                        0.01f,
+                        6f,
+                        -2f,
+                        new Color(1f, 0.97f, 0.91f),
+                        5f,
+                        -1f,
+                        0.08f,
+                        0.09f
+                    ),
+                    "PrototypeEasternReach" => new(
+                        "Doğu Avları",
+                        0.08f,
+                        5f,
+                        3f,
+                        new Color(0.94f, 1f, 0.98f),
+                        1f,
+                        -3f,
+                        0.1f,
+                        0.075f
+                    ),
+                    "PrototypeWesternReach" => new(
+                        "Batı Sınırı",
+                        -0.16f,
+                        10f,
+                        -13f,
+                        new Color(0.86f, 0.93f, 1f),
+                        -8f,
+                        -2f,
+                        0.055f,
+                        0.14f
+                    ),
+                    _ => new(
+                        "Merkez Sular",
+                        -0.04f,
+                        7f,
+                        -4f,
+                        new Color(1f, 0.97f, 0.92f),
+                        3f,
+                        -1f,
+                        0.09f,
+                        0.115f
+                    )
+                };
             }
         }
     }
