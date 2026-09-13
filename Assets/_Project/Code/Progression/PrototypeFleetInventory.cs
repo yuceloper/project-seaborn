@@ -15,7 +15,8 @@ namespace Seaborn.Progression
         NotOwned,
         ActiveShip,
         UnknownShip,
-        InsufficientSilver
+        InsufficientSilver,
+        LevelLocked
     }
 
     [DisallowMultipleComponent]
@@ -103,6 +104,12 @@ namespace Seaborn.Progression
             }
             if (Owns(shipId))
                 return ShipMarketResult.AlreadyOwned;
+            if (progression == null ||
+                !progression.MeetsLevel(
+                    definition.requiredCaptainLevel))
+            {
+                return ShipMarketResult.LevelLocked;
+            }
             if (wallet == null ||
                 !wallet.TrySpendSilver(
                     definition.basePrice,
@@ -162,6 +169,7 @@ namespace Seaborn.Progression
         }
 
         private PrototypeSilverWallet wallet;
+        private PrototypeCaptainProgression progression;
         private ShipProfileController profile;
         private ShipLoadout loadout;
 
@@ -169,6 +177,8 @@ namespace Seaborn.Progression
         {
             wallet = player.GetComponentInChildren<
                 PrototypeSilverWallet>();
+            progression = player.GetComponentInChildren<
+                PrototypeCaptainProgression>();
             profile = player.GetComponent<
                 ShipProfileController>();
             loadout = player.GetComponentInChildren<
