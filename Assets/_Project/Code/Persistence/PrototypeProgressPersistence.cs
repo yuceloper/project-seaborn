@@ -40,6 +40,12 @@ namespace Seaborn.Persistence
             public bool ownsDreadwake;
             public string activeShipId;
             public int captainExperience;
+            public int cannonMasteryRank;
+            public int rangefindingRank;
+            public int harpoonMasteryRank;
+            public int harpoonRiggingRank;
+            public int reinforcedHullRank;
+            public int fineSailsRank;
             public int hullLevel;
             public int cannonLevel;
             public int harpoonLevel;
@@ -58,6 +64,7 @@ namespace Seaborn.Persistence
         private PrototypeEquipmentInventory inventory;
         private PrototypeFleetInventory fleet;
         private PrototypeCaptainProgression captainProgression;
+        private PrototypeCaptainSkills captainSkills;
         private SaveData lastSnapshot;
         private float nextScanTime;
         private bool loaded;
@@ -138,12 +145,20 @@ namespace Seaborn.Persistence
                         PrototypeCaptainProgression>();
             }
 
+            if (captainSkills == null)
+            {
+                captainSkills =
+                    player.GetComponentInChildren<
+                        PrototypeCaptainSkills>();
+            }
+
             if (!loaded && wallet != null &&
                 broadside != null && harpoons != null &&
                 equipment != null && materials != null &&
                 loadout != null && inventory != null &&
                 fleet != null &&
-                captainProgression != null)
+                captainProgression != null &&
+                captainSkills != null)
             {
                 Load();
                 loaded = true;
@@ -226,6 +241,14 @@ namespace Seaborn.Persistence
 
                 captainProgression.RestoreExperience(
                     data.captainExperience
+                );
+                captainSkills.Restore(
+                    data.cannonMasteryRank,
+                    data.rangefindingRank,
+                    data.harpoonMasteryRank,
+                    data.harpoonRiggingRank,
+                    data.reinforcedHullRank,
+                    data.fineSailsRank
                 );
                 fleet.Restore(
                     data.ownsStarterSloop,
@@ -331,6 +354,30 @@ namespace Seaborn.Persistence
                     captainProgression != null
                         ? captainProgression.TotalExperience
                         : 0,
+                cannonMasteryRank = captainSkills != null
+                    ? captainSkills.GetRank(
+                        CaptainSkill.CannonMastery)
+                    : 0,
+                rangefindingRank = captainSkills != null
+                    ? captainSkills.GetRank(
+                        CaptainSkill.Rangefinding)
+                    : 0,
+                harpoonMasteryRank = captainSkills != null
+                    ? captainSkills.GetRank(
+                        CaptainSkill.HarpoonMastery)
+                    : 0,
+                harpoonRiggingRank = captainSkills != null
+                    ? captainSkills.GetRank(
+                        CaptainSkill.HarpoonRigging)
+                    : 0,
+                reinforcedHullRank = captainSkills != null
+                    ? captainSkills.GetRank(
+                        CaptainSkill.ReinforcedHull)
+                    : 0,
+                fineSailsRank = captainSkills != null
+                    ? captainSkills.GetRank(
+                        CaptainSkill.FineSails)
+                    : 0,
                 hullLevel = equipment != null
                     ? equipment.HullLevel
                     : 0,
@@ -440,6 +487,18 @@ namespace Seaborn.Persistence
                     StringComparison.Ordinal) &&
                 first.captainExperience ==
                     second.captainExperience &&
+                first.cannonMasteryRank ==
+                    second.cannonMasteryRank &&
+                first.rangefindingRank ==
+                    second.rangefindingRank &&
+                first.harpoonMasteryRank ==
+                    second.harpoonMasteryRank &&
+                first.harpoonRiggingRank ==
+                    second.harpoonRiggingRank &&
+                first.reinforcedHullRank ==
+                    second.reinforcedHullRank &&
+                first.fineSailsRank ==
+                    second.fineSailsRank &&
                 first.hullLevel == second.hullLevel &&
                 first.cannonLevel == second.cannonLevel &&
                 first.harpoonLevel == second.harpoonLevel &&
