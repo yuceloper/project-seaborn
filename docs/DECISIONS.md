@@ -282,3 +282,12 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 - Aynı gün içinde yalnızca seçili günlük görev ilerler; tamamlanıp limana dönüldükten sonra başka bir günlük görev seçilebilir.
 - Günlük ana ödül için iki farklı günlük görevi tamamlama hedefi korunur.
 - Yanaşma noktaları dünya koordinatında sabittir; oyuncunun haritaya giriş konumu istasyonları taşımaz.
+
+
+## 2026-09-13 — Bölgeler farklı geliştirme kaynakları üretir
+
+- Doğu Avları zıpkın ve av ilerlemesini besleyen Tide Yağı ile Stormjaw Pulu üretir.
+- Batı Sınırı gövde ve top ilerlemesini besleyen Korsan Demiri üretir.
+- Kayıp Harita Parçası iki risk rotasının nadir üst seviye kaynağıdır.
+- Tersane geliştirmeleri silver ile birlikte bölgesel malzeme tüketir; böylece rotalar yalnızca farklı renkte aynı silver çiftliği olmaz.
+- Malzemeler batışta kaybolmaz ve yerel prototip kaydında korunur. Güvencesiz silver yükü mevcut risk kuralını sürdürür.
