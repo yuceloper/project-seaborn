@@ -24,7 +24,10 @@ namespace Seaborn.Hunting
         private float reloadDuration = 1.8f;
 
         [SerializeField, Min(0)]
-        private int harpoonStock = 30;
+        private int lightHarpoonStock = 20;
+
+        [SerializeField, Min(0)]
+        private int heavyHarpoonStock = 10;
 
         [SerializeField, Min(0f)]
         private float harpoonDamage = 34f;
@@ -48,7 +51,12 @@ namespace Seaborn.Hunting
 
         public bool IsAiming { get; private set; }
         public Vector3 AimPoint { get; private set; }
-        public int HarpoonStock => harpoonStock;
+        public int HarpoonStock =>
+            GetHarpoonStock(selectedHarpoonId);
+        public int LightHarpoonStock => lightHarpoonStock;
+        public int HeavyHarpoonStock => heavyHarpoonStock;
+        public int TotalHarpoonStock =>
+            lightHarpoonStock + heavyHarpoonStock;
         public float ReloadRemaining =>
             Mathf.Max(0f, nextFireTime - Time.time);
         public float ReloadProgress =>
@@ -162,7 +170,15 @@ namespace Seaborn.Hunting
                 return;
             }
 
-            harpoonStock += amount;
+            if (IsHeavyHarpoon(selectedHarpoonId))
+            {
+                heavyHarpoonStock += amount;
+            }
+            else
+            {
+                lightHarpoonStock += amount;
+            }
+
             HuntingStateChanged?.Invoke();
         }
 
@@ -179,8 +195,32 @@ namespace Seaborn.Hunting
 
         public void RestoreHarpoonStock(int amount)
         {
-            harpoonStock = Mathf.Max(0, amount);
+            lightHarpoonStock = Mathf.Max(0, amount);
+            heavyHarpoonStock = 0;
             HuntingStateChanged?.Invoke();
+        }
+
+        public void RestoreHarpoonStocks(
+            int light,
+            int heavy,
+            string selectedId)
+        {
+            lightHarpoonStock = Mathf.Max(0, light);
+            heavyHarpoonStock = Mathf.Max(0, heavy);
+
+            if (!string.IsNullOrWhiteSpace(selectedId))
+            {
+                TrySelectHarpoon(selectedId);
+            }
+
+            HuntingStateChanged?.Invoke();
+        }
+
+        public int GetHarpoonStock(string harpoonId)
+        {
+            return IsHeavyHarpoon(harpoonId)
+                ? heavyHarpoonStock
+                : lightHarpoonStock;
         }
 
         private bool TryUpdateAimPoint()
@@ -247,10 +287,26 @@ namespace Seaborn.Hunting
                     equipmentDamageMultiplier
             );
 
-            harpoonStock--;
+            if (IsHeavyHarpoon(selectedHarpoonId))
+            {
+                heavyHarpoonStock--;
+            }
+            else
+            {
+                lightHarpoonStock--;
+            }
             nextFireTime =
                 Time.time + EffectiveReloadDuration;
             HuntingStateChanged?.Invoke();
+        }
+
+        private static bool IsHeavyHarpoon(string harpoonId)
+        {
+            return string.Equals(
+                harpoonId,
+                "heavy_4kg",
+                StringComparison.OrdinalIgnoreCase
+            );
         }
 
         private void ApplyHarpoonProfile()
@@ -401,6 +457,8 @@ namespace Seaborn.Hunting
                 .PrototypeRegionalLootInventory
                 .EnsureAttached(player.transform);
             Seaborn.Progression.PrototypeShipEquipment
+                .EnsureAttached(player.transform);
+            Seaborn.Ship.ShipLoadout
                 .EnsureAttached(player.transform);
 
             if (isHarbor)
