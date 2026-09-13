@@ -39,6 +39,7 @@ namespace Seaborn.Persistence
             public bool ownsRatSailsShip;
             public bool ownsDreadwake;
             public string activeShipId;
+            public int captainExperience;
             public int hullLevel;
             public int cannonLevel;
             public int harpoonLevel;
@@ -56,6 +57,7 @@ namespace Seaborn.Persistence
         private ShipLoadout loadout;
         private PrototypeEquipmentInventory inventory;
         private PrototypeFleetInventory fleet;
+        private PrototypeCaptainProgression captainProgression;
         private SaveData lastSnapshot;
         private float nextScanTime;
         private bool loaded;
@@ -129,11 +131,19 @@ namespace Seaborn.Persistence
                     PrototypeFleetInventory>();
             }
 
+            if (captainProgression == null)
+            {
+                captainProgression =
+                    player.GetComponentInChildren<
+                        PrototypeCaptainProgression>();
+            }
+
             if (!loaded && wallet != null &&
                 broadside != null && harpoons != null &&
                 equipment != null && materials != null &&
                 loadout != null && inventory != null &&
-                fleet != null)
+                fleet != null &&
+                captainProgression != null)
             {
                 Load();
                 loaded = true;
@@ -214,6 +224,9 @@ namespace Seaborn.Persistence
                     );
                 }
 
+                captainProgression.RestoreExperience(
+                    data.captainExperience
+                );
                 fleet.Restore(
                     data.ownsStarterSloop,
                     data.ownsRatSailsShip,
@@ -314,6 +327,10 @@ namespace Seaborn.Persistence
                 activeShipId = fleet != null
                     ? fleet.ActiveShipId
                     : "starter_sloop",
+                captainExperience =
+                    captainProgression != null
+                        ? captainProgression.TotalExperience
+                        : 0,
                 hullLevel = equipment != null
                     ? equipment.HullLevel
                     : 0,
@@ -421,6 +438,8 @@ namespace Seaborn.Persistence
                     first.activeShipId,
                     second.activeShipId,
                     StringComparison.Ordinal) &&
+                first.captainExperience ==
+                    second.captainExperience &&
                 first.hullLevel == second.hullLevel &&
                 first.cannonLevel == second.cannonLevel &&
                 first.harpoonLevel == second.harpoonLevel &&
