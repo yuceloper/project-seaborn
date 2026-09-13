@@ -1,4 +1,5 @@
 using System.Collections;
+using Seaborn.Atmosphere;
 using Seaborn.Combat;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -555,6 +556,11 @@ namespace Seaborn.World
             ClearGateways();
             string scene = SceneManager
                 .GetActiveScene().name;
+
+            PrototypeRegionalAtmosphere.Apply(
+                scene,
+                persistentCamera
+            );
 
             if (scene == HarborScene)
             {
