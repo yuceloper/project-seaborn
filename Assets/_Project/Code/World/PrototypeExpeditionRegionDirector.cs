@@ -1,4 +1,6 @@
+using System;
 using System.Collections;
+using Seaborn.Progression;
 using Seaborn.Atmosphere;
 using Seaborn.Combat;
 using UnityEngine;
@@ -59,6 +61,8 @@ namespace Seaborn.World
             private set;
         } = PrototypeRegionKind.CentralWaters;
 
+        public event Action<string, int> TravelBlocked;
+
         private static EntrySide pendingEntry;
         private Transform player;
         private UnityEngine.Camera persistentCamera;
@@ -66,6 +70,7 @@ namespace Seaborn.World
         private CanvasGroup transitionGroup;
         private Text transitionText;
         private bool transitioning;
+        private float nextBlockedNoticeTime;
 
         public static void EnsureCreated(Transform player)
         {
@@ -199,6 +204,26 @@ namespace Seaborn.World
                 return;
             }
 
+            int requiredTier = RequiredTier(sceneName);
+            PrototypeCaptainProgression progression =
+                player != null
+                    ? player.GetComponent<
+                        PrototypeCaptainProgression>()
+                    : null;
+            int unlockedTier = progression != null
+                ? progression.HighestUnlockedMapTier
+                : 1;
+
+            if (unlockedTier < requiredTier)
+            {
+                BlockLockedTravel(
+                    sceneName,
+                    entrySide,
+                    requiredTier
+                );
+                return;
+            }
+
             transitioning = true;
             pendingEntry = entrySide;
 
@@ -221,6 +246,67 @@ namespace Seaborn.World
             StartCoroutine(
                 TravelRoutine(sceneName)
             );
+        }
+
+        private void BlockLockedTravel(
+            string sceneName,
+            EntrySide entrySide,
+            int requiredTier)
+        {
+            StopPlayerMotion();
+
+            if (player != null)
+            {
+                Vector3 position = player.position;
+                if (entrySide == EntrySide.West)
+                {
+                    position.x = -Edge + 4f;
+                }
+                else if (entrySide == EntrySide.East)
+                {
+                    position.x = Edge - 4f;
+                }
+                else if (position.z >= Edge)
+                {
+                    position.z = Edge - 4f;
+                }
+                else if (position.z <= -Edge)
+                {
+                    position.z = -Edge + 4f;
+                }
+
+                player.position = position;
+            }
+
+            int requiredLevel =
+                RequiredLevelForTier(requiredTier);
+            if (Time.unscaledTime >= nextBlockedNoticeTime)
+            {
+                nextBlockedNoticeTime =
+                    Time.unscaledTime + 1f;
+                TravelBlocked?.Invoke(
+                    GetMapDisplayName(sceneName),
+                    requiredLevel
+                );
+                Debug.Log(
+                    $"Bölge kilitli: " +
+                    $"{GetMapDisplayName(sceneName)}, " +
+                    $"Kaptan SV. {requiredLevel} gerekir.",
+                    this
+                );
+            }
+        }
+
+        private static int RequiredTier(string sceneName)
+        {
+            if (sceneName == EastScene) return 2;
+            if (sceneName == WestScene) return 3;
+            return 1;
+        }
+
+        private static int RequiredLevelForTier(int tier)
+        {
+            return 1 + (Mathf.Max(1, tier) - 1) * 4;
         }
 
         private void HandleSceneLoaded(
