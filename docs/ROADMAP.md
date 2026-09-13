@@ -216,7 +216,7 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Doğu Avları için yoğun Tideback sürüleri ve Stormjaw
 - [x] Batı Sınırı için beş gemilik yüksek riskli korsan filosu
 - [x] Spawn noktalarını harita merkezine sabitleme
-- [ ] Bölgesel ödül tabloları ve nadir ganimetler
+- [x] Bölgesel ödül tabloları ve nadir ganimetler
 - [x] Haritaya özgü sis, ışık, su rengi ve post-process kimliği
 - [ ] Haritaya özgü çevresel ses kimliği
 
@@ -239,3 +239,15 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Yanaşma noktalarını oyuncu girişinden bağımsız sabit harita koordinatlarına alma
 - [x] Liman İdaresi için günlük görev seçim paneli
 - [x] Aylık seyir defteri ilerlemesini Liman İdaresi'nde gösterme
+
+
+### Regional loot economy (2026-09-13)
+
+- [x] Doğu avları için Tide Yağı ve Stormjaw Pulu
+- [x] Batı korsanları için Korsan Demiri
+- [x] İki risk rotasında nadir Kayıp Harita Parçası
+- [x] Bölgeye göre enkaz silver ve mühimmat miktarı
+- [x] Malzemeleri tersane geliştirme maliyetlerine bağlama
+- [x] Bölgesel malzemeleri yerel prototip kaydında koruma
+- [ ] Malzemeler için üretim kalitesinde ikon ve envanter ekranı
+- [ ] Sunucu otoriteli düşüş tablosu ve ekonomi telemetrisi
