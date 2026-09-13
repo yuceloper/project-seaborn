@@ -208,3 +208,13 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Kısa yanaşma hizalama animasyonu ve motor kilidi
 - [x] Dinamik baş/kıç halat görselleri
 - [ ] Rıhtım sesleri ve suya temas geri bildirimi
+
+
+### Expedition map content profiles (2026-09-13)
+
+- [x] Merkez Sular için dengeli başlangıç karşılaşmaları
+- [x] Doğu Avları için yoğun Tideback sürüleri ve Stormjaw
+- [x] Batı Sınırı için beş gemilik yüksek riskli korsan filosu
+- [x] Spawn noktalarını harita merkezine sabitleme
+- [ ] Bölgesel ödül tabloları ve nadir ganimetler
+- [ ] Haritaya özgü hava, su rengi ve ses kimliği
