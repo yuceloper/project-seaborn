@@ -129,10 +129,11 @@ namespace Seaborn.Ship
                 harpoonId = savedHarpoonId;
             }
 
-            installedCannons = Mathf.Max(
-                1,
-                savedCannonCount
-            );
+            if (savedCannonCount > 0)
+            {
+                installedCannons = savedCannonCount;
+            }
+
             Apply();
         }
 
