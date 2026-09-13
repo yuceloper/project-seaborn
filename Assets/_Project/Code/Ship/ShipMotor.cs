@@ -21,6 +21,12 @@ namespace Seaborn.Ship
         [Header("Water Resistance")]
         [SerializeField, Min(0f)] private float lateralResistance = 2.5f;
 
+        [Header("Collision Stability")]
+        [SerializeField, Min(0f)] private float angularRecovery = 12f;
+        [SerializeField, Min(0f)] private float collisionRecoveryDuration = 0.65f;
+        [SerializeField, Range(0f, 1f)] private float collisionVelocityRetention = 0.45f;
+        [SerializeField, Min(0f)] private float maximumImpactDrift = 3f;
+
         private Rigidbody shipRigidbody;
         private Vector2 moveInput;
         private float speedMultiplier = 1f;
@@ -28,6 +34,8 @@ namespace Seaborn.Ship
         private float turnMultiplier = 1f;
         private float damageSpeedMultiplier = 1f;
         private float damageTurnMultiplier = 1f;
+
+        private float collisionRecoveryUntil;
 
         public float SpeedMultiplier =>
             speedMultiplier * damageSpeedMultiplier;
@@ -85,6 +93,9 @@ namespace Seaborn.Ship
         private void Awake()
         {
             shipRigidbody = GetComponent<Rigidbody>();
+            shipRigidbody.constraints |=
+                RigidbodyConstraints.FreezeRotationX |
+                RigidbodyConstraints.FreezeRotationZ;
         }
 
         private void OnEnable()
@@ -104,9 +115,11 @@ namespace Seaborn.Ship
 
         private void FixedUpdate()
         {
+            ApplyCollisionStability();
             ApplyForwardMovement();
             ApplySteering();
             ApplyLateralResistance();
+            ClampPlanarVelocity();
         }
 
         private void ApplyForwardMovement()
@@ -161,9 +174,73 @@ namespace Seaborn.Ship
                     shipRigidbody.linearVelocity,
                     transform.right);
 
+            float recoveryBoost =
+                Time.time < collisionRecoveryUntil ? 2.5f : 1f;
+
             shipRigidbody.AddForce(
-                -lateralVelocity * lateralResistance,
+                -lateralVelocity *
+                lateralResistance *
+                recoveryBoost,
                 ForceMode.Acceleration);
+        }
+
+        private void ApplyCollisionStability()
+        {
+            Vector3 angularVelocity =
+                shipRigidbody.angularVelocity;
+
+            angularVelocity.x = 0f;
+            angularVelocity.z = 0f;
+            angularVelocity.y = Mathf.MoveTowards(
+                angularVelocity.y,
+                0f,
+                angularRecovery * Time.fixedDeltaTime
+            );
+
+            if (Time.time < collisionRecoveryUntil)
+            {
+                angularVelocity.y *= 0.2f;
+            }
+
+            shipRigidbody.angularVelocity = angularVelocity;
+        }
+
+        private void ClampPlanarVelocity()
+        {
+            Vector3 velocity = shipRigidbody.linearVelocity;
+            Vector3 planarVelocity =
+                Vector3.ProjectOnPlane(velocity, Vector3.up);
+
+            float maximumPlanarSpeed =
+                maxForwardSpeed * SpeedMultiplier +
+                maximumImpactDrift;
+
+            if (planarVelocity.sqrMagnitude >
+                maximumPlanarSpeed * maximumPlanarSpeed)
+            {
+                planarVelocity = planarVelocity.normalized *
+                    maximumPlanarSpeed;
+                shipRigidbody.linearVelocity =
+                    planarVelocity +
+                    Vector3.up * velocity.y;
+            }
+        }
+
+        private void OnCollisionEnter(Collision collision)
+        {
+            if (collision.contactCount <= 0) return;
+
+            collisionRecoveryUntil =
+                Time.time + collisionRecoveryDuration;
+
+            Vector3 velocity = shipRigidbody.linearVelocity;
+            Vector3 planarVelocity =
+                Vector3.ProjectOnPlane(velocity, Vector3.up) *
+                collisionVelocityRetention;
+
+            shipRigidbody.linearVelocity =
+                planarVelocity + Vector3.up * velocity.y;
+            shipRigidbody.angularVelocity = Vector3.zero;
         }
     }
 }
