@@ -449,7 +449,8 @@ namespace Seaborn.UI
                     : "Zıpkın";
             harpoonText.text =
                 $"{harpoonName}   " +
-                $"{(harpoons != null ? harpoons.HarpoonStock : 0)}";
+                $"2KG {harpoons?.LightHarpoonStock ?? 0}  •  " +
+                $"4KG {harpoons?.HeavyHarpoonStock ?? 0}";
             SetBar(harpoonFill, reload);
             bool locked = broadside != null && broadside.IsBlockedBySafeHarbor;
             harborLockText.gameObject.SetActive(locked);
