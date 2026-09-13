@@ -272,7 +272,7 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Create data-driven ship catalogue and starter ship definitions
 - [x] Create cannon, ammunition, harpoon, sail and consumable catalogues
 - [x] Replace prototype broadside constants with equipped-cannon salvo calculation
-- [~] Add ship inventory, equipment slots and loadout validation
+- [x] Add equipment inventory, ship loadout validation and shipyard equipment market
 - [ ] Add Silver-based harbor ship market and ship switching
 - [ ] Add captain EXP, levels, unlock gates and skill-point earning
 - [ ] Add first cannon, harpoon and ship skill branches
@@ -280,3 +280,16 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [ ] Add interruptible sea-sparkle collection and weighted rewards
 - [ ] Add map-tier and map-quality modifiers
 - [ ] Add player-to-player Silver market after server authority exists
+
+
+### Shipyard equipment market (2026-09-13)
+
+- [x] Silver ile adet bazlı top satın alma
+- [x] Sahip olunan top sayısını gemi yuvasıyla doğrulama
+- [x] Başlangıç ve Rat Sails yelken envanteri
+- [x] Tersaneye yanaşma şartlı satın alma ve ekipman takma
+- [x] Top, yelken ve loadout'un yerel kayıtta korunması
+- [x] Loadout için bağımsız tersane paneli
+- [x] Kurulu top hasarı/dolumu ve yelken hareket çarpanlarını uygulama
+- [ ] Gemi satın alma, gemi envanteri ve aktif gemi değiştirme
+- [ ] Karma top bataryası ve tekil ekipman dayanıklılığı
