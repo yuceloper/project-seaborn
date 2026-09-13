@@ -275,7 +275,7 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Add equipment inventory, ship loadout validation and shipyard equipment market
 - [x] Add Silver-based harbor ship market and ship switching
 - [x] Add captain EXP, levels, unlock gates and skill-point earning
-- [ ] Add first cannon, harpoon and ship skill branches
+- [x] Add first cannon, harpoon and ship skill branches
 - [ ] Add timed repair, tonic and special-item cooldown categories
 - [ ] Add interruptible sea-sparkle collection and weighted rewards
 - [ ] Add map-tier and map-quality modifiers
@@ -319,7 +319,7 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] HUD seviye bilgisi ve seviye atlama bildirimi
 - [x] Kaptan EXP'sini yerel kayıtta koruma
 - [x] Harita geçitlerinde tier erişimini uygulama
-- [ ] Skill puanı harcama ve ilk skill ağacı
+- [x] Skill puanı harcama ve ilk skill ağacı
 
 
 ### Map tier access gates (2026-09-13)
@@ -331,3 +331,15 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Kilitli geçitte hareket hızını sıfırlama
 - [x] HUD kilit bildirimi ve mini harita seviye etiketleri
 - [ ] Tier 4–8 harita sahneleri ve bağlantı ağı
+
+
+### İlk kaptan yetenek ağacı
+
+- [x] Yetenek puanlarını yalnızca Liman İdaresi'nde harcama
+- [x] Top Ustalığı ve Menzil Hesabı dalı
+- [x] Zıpkın Ustalığı ve Hızlı Donanım dalı
+- [x] Güçlendirilmiş Omurga ve İnce Yelkenler dalı
+- [x] Yeteneklerin gerçek savaş, av, gövde ve hareket değerlerine uygulanması
+- [x] Yetenek seviyelerini yerel prototip kaydında koruma
+- [ ] Silver karşılığı yetenek sıfırlama / yeniden dağıtma
+- [ ] İkinci kademe dallanma, kritik isabet ve özel yetenekler
