@@ -263,3 +263,13 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 - Doğu Avları altı Tideback, seyrek korsan tehdidi ve Stormjaw ile av ekonomisi rotasıdır.
 - Batı Sınırı beş korsan, tek Tideback ve daha yüksek çatışma yoğunluğuyla savaş rotasıdır.
 - Karşılaşmalar oyuncunun giriş noktasına göre değil haritanın sabit merkezine göre üretilir.
+
+
+## 2026-09-13 — Bölgesel atmosfer oynanış rotasını anlatır
+
+- Seaborn Limanı sıcak, sakin ve açık görüşlü güvenli merkezdir.
+- Merkez Sular mevcut fırtına öncesi altın saat dengesini korur.
+- Doğu Avları daha berrak, turkuaz ve aydınlık bir av rotasıdır.
+- Batı Sınırı daha soğuk, karanlık ve puslu bir savaş rotasıdır.
+- Farklılıklar yeni köpük veya hız çizgileriyle değil; su paleti, dalga şiddeti, sis, güneş ve kontrollü post-processing ile kurulur.
+- Okyanus asseti sahneler arasında değiştirilmez; her sahne kendi çalışma zamanı materyal örneğini kullanır.
