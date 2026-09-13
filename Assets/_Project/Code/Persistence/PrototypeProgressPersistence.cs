@@ -27,12 +27,17 @@ namespace Seaborn.Persistence
             public int hullLevel;
             public int cannonLevel;
             public int harpoonLevel;
+            public int tideOil;
+            public int stormjawScales;
+            public int corsairIron;
+            public int lostChartFragments;
         }
 
         private PrototypeSilverWallet wallet;
         private BroadsideController broadside;
         private HarpoonHuntingController harpoons;
         private PrototypeShipEquipment equipment;
+        private PrototypeRegionalLootInventory materials;
         private SaveData lastSnapshot;
         private float nextScanTime;
         private bool loaded;
@@ -82,9 +87,15 @@ namespace Seaborn.Persistence
                     PrototypeShipEquipment>();
             }
 
+            if (materials == null)
+            {
+                materials = player.GetComponentInChildren<
+                    PrototypeRegionalLootInventory>();
+            }
+
             if (!loaded && wallet != null &&
                 broadside != null && harpoons != null &&
-                equipment != null)
+                equipment != null && materials != null)
             {
                 Load();
                 loaded = true;
@@ -154,6 +165,12 @@ namespace Seaborn.Persistence
                     data.cannonLevel,
                     data.harpoonLevel
                 );
+                materials.Restore(
+                    data.tideOil,
+                    data.stormjawScales,
+                    data.corsairIron,
+                    data.lostChartFragments
+                );
 
                 Debug.Log(
                     $"Kaptan kaydı yüklendi: {data.silver} silver.",
@@ -194,6 +211,18 @@ namespace Seaborn.Persistence
                     : 0,
                 harpoonLevel = equipment != null
                     ? equipment.HarpoonLevel
+                    : 0,
+                tideOil = materials != null
+                    ? materials.TideOil
+                    : 0,
+                stormjawScales = materials != null
+                    ? materials.StormjawScales
+                    : 0,
+                corsairIron = materials != null
+                    ? materials.CorsairIron
+                    : 0,
+                lostChartFragments = materials != null
+                    ? materials.LostChartFragments
                     : 0
             };
         }
@@ -248,7 +277,13 @@ namespace Seaborn.Persistence
                     second.harpoonStock &&
                 first.hullLevel == second.hullLevel &&
                 first.cannonLevel == second.cannonLevel &&
-                first.harpoonLevel == second.harpoonLevel;
+                first.harpoonLevel == second.harpoonLevel &&
+                first.tideOil == second.tideOil &&
+                first.stormjawScales ==
+                    second.stormjawScales &&
+                first.corsairIron == second.corsairIron &&
+                first.lostChartFragments ==
+                    second.lostChartFragments;
         }
 
         private void SaveNow()
