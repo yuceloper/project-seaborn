@@ -39,7 +39,6 @@ namespace Seaborn.Ship
                     player.gameObject.AddComponent<ShipLoadout>();
             }
 
-            loadout.Apply();
             return loadout;
         }
 
