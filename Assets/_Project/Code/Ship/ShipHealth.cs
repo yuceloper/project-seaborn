@@ -143,6 +143,29 @@ namespace Seaborn.Ship
             );
         }
 
+        public float RestoreHealth(float amount)
+        {
+            if (IsSunk || amount <= 0f)
+            {
+                return 0f;
+            }
+
+            float before = CurrentHealth;
+            CurrentHealth = Mathf.Min(
+                MaximumHealth,
+                CurrentHealth + amount
+            );
+            float restored = CurrentHealth - before;
+            if (restored > 0f)
+            {
+                HealthChanged?.Invoke(
+                    CurrentHealth,
+                    MaximumHealth
+                );
+            }
+            return restored;
+        }
+
         [ContextMenu("Reset Health")]
         public void RestoreToFullHealth()
         {
