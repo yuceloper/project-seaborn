@@ -349,12 +349,20 @@ namespace Seaborn.Harbor.UI
                     silver >= definition.silverPrice;
             }
 
-            row.EquipLabel.text =
-                equipped
-                    ? $"TAKILI {installed}/{capacity}"
-                    : "TAK";
+            int targetInstalled =
+                Mathf.Min(owned, capacity);
+            bool canCompleteBattery =
+                equipped &&
+                installed < targetInstalled;
+
+            row.EquipLabel.text = equipped
+                ? canCompleteBattery
+                    ? $"TAMAMLA {targetInstalled}/{capacity}"
+                    : $"TAKILI {installed}/{capacity}"
+                : "TAK";
             row.Equip.interactable =
-                owned > 0 && !equipped;
+                owned > 0 &&
+                (!equipped || canCompleteBattery);
         }
 
         private void RefreshSailRow(
