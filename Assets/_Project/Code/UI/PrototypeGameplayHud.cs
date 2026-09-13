@@ -29,6 +29,7 @@ namespace Seaborn.UI
         private PrototypeHuntCargo cargo;
         private PrototypeSilverWallet wallet;
         private PrototypeCaptainProgression captainProgression;
+        private PrototypeExpeditionRegionDirector worldMap;
 
         private Text shipNameText;
         private Text hullText;
@@ -125,6 +126,8 @@ namespace Seaborn.UI
             captainProgression =
                 player.GetComponentInChildren<
                     PrototypeCaptainProgression>();
+            worldMap =
+                PrototypeExpeditionRegionDirector.Instance;
             if (health != null)
             {
                 health.HealthChanged += HandleHealthChanged;
@@ -140,6 +143,11 @@ namespace Seaborn.UI
             {
                 captainProgression.LevelChanged +=
                     HandleCaptainLevelChanged;
+            }
+            if (worldMap != null)
+            {
+                worldMap.TravelBlocked +=
+                    HandleTravelBlocked;
             }
             Refresh();
         }
@@ -482,6 +490,19 @@ namespace Seaborn.UI
             harborLockText.gameObject.SetActive(locked);
         }
 
+        private void HandleTravelBlocked(
+            string regionName,
+            int requiredLevel)
+        {
+            ShowNotification(
+                "BÖLGE KİLİTLİ",
+                $"{regionName} için Kaptan SV. " +
+                $"{requiredLevel} gerekir",
+                Danger,
+                4f
+            );
+        }
+
         private void HandleCaptainLevelChanged(int level)
         {
             ShowNotification(
@@ -623,6 +644,11 @@ namespace Seaborn.UI
             {
                 captainProgression.LevelChanged -=
                     HandleCaptainLevelChanged;
+            }
+            if (worldMap != null)
+            {
+                worldMap.TravelBlocked -=
+                    HandleTravelBlocked;
             }
         }
 
