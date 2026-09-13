@@ -260,9 +260,27 @@ namespace Seaborn.Harbor.UI
             int silver = wallet != null ? wallet.Silver : 0;
             silverText.text = $"{silver} SILVER";
 
+            ShipProfileController shipProfile =
+                player != null
+                    ? player.GetComponent<ShipProfileController>()
+                    : null;
+            int cannonCapacity =
+                shipProfile?.Definition != null
+                    ? shipProfile.Definition.cannonSlots
+                    : 0;
+            int storedCannons =
+                loadout != null && inventory != null
+                    ? Mathf.Max(
+                        0,
+                        inventory.GetOwnedCannons(
+                            loadout.CannonId) -
+                        loadout.InstalledCannons)
+                    : 0;
+
             currentText.text = loadout != null
                 ? $"Kurulu: {loadout.Cannon?.displayName ?? loadout.CannonId}" +
-                  $" x{loadout.InstalledCannons}\n" +
+                  $"  {loadout.InstalledCannons}/{cannonCapacity}" +
+                  $"  •  Depoda {storedCannons}\n" +
                   $"Yelken: {loadout.Sail?.displayName ?? loadout.SailId}"
                 : "Loadout hazırlanıyor";
 
@@ -308,9 +326,21 @@ namespace Seaborn.Harbor.UI
                 loadout != null &&
                 loadout.CannonId == id;
 
-            row.Detail.text =
-                $"Sahip: {owned}  •  " +
-                $"{definition.damage:0} hasar";
+            ShipProfileController profile =
+                player != null
+                    ? player.GetComponent<ShipProfileController>()
+                    : null;
+            int capacity = profile?.Definition != null
+                ? profile.Definition.cannonSlots
+                : 0;
+            int installed = equipped && loadout != null
+                ? loadout.InstalledCannons
+                : 0;
+            int stored = Mathf.Max(0, owned - installed);
+
+            row.Detail.text = equipped
+                ? $"Sahip {owned} • Kurulu {installed}/{capacity} • Depo {stored}"
+                : $"Sahip {owned}  •  {definition.damage:0} hasar";
             if (row.Buy != null)
             {
                 row.BuyLabel.text =
@@ -320,7 +350,9 @@ namespace Seaborn.Harbor.UI
             }
 
             row.EquipLabel.text =
-                equipped ? "TAKILI" : "TAK";
+                equipped
+                    ? $"TAKILI {installed}/{capacity}"
+                    : "TAK";
             row.Equip.interactable =
                 owned > 0 && !equipped;
         }
