@@ -205,4 +205,6 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Yakınlık tabanlı dünya işareti ve E etkileşimi
 - [x] Tersane panelini batı rıhtımına bağlama
 - [x] Hazırlık ve kontrat panelini doğu/güney istasyonlarına bağlama
-- [ ] Yanaşma animasyonu, halat ve rıhtım sesleri
+- [x] Kısa yanaşma hizalama animasyonu ve motor kilidi
+- [x] Dinamik baş/kıç halat görselleri
+- [ ] Rıhtım sesleri ve suya temas geri bildirimi

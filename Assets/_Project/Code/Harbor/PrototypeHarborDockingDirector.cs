@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using Seaborn.Ship;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -36,9 +38,13 @@ namespace Seaborn.Harbor
 
         private Transform player;
         private Rigidbody playerBody;
+        private ShipMotor shipMotor;
         private Vector3 origin;
         private Material markerMaterial;
         private bool initialized;
+        private bool isDocking;
+        private LineRenderer forwardRope;
+        private LineRenderer aftRope;
 
         public bool IsDockedAt(
             PrototypeHarborStation station)
@@ -72,6 +78,7 @@ namespace Seaborn.Harbor
         {
             player = value;
             playerBody = player.GetComponent<Rigidbody>();
+            shipMotor = player.GetComponent<ShipMotor>();
             if (initialized) return;
 
             initialized = true;
@@ -98,6 +105,13 @@ namespace Seaborn.Harbor
         {
             if (player == null) return;
 
+            if (DockedStation !=
+                PrototypeHarborStation.None)
+            {
+                StopShip();
+                UpdateMooringLines();
+            }
+
             PrototypeHarborStation nearest =
                 FindNearbyStation();
 
@@ -117,7 +131,8 @@ namespace Seaborn.Harbor
                 DockingChanged?.Invoke();
             }
 
-            if (NearbyStation ==
+            if (isDocking ||
+                NearbyStation ==
                     PrototypeHarborStation.None ||
                 Keyboard.current == null ||
                 !Keyboard.current.eKey.wasPressedThisFrame)
@@ -164,23 +179,220 @@ namespace Seaborn.Harbor
             PrototypeHarborStation station)
         {
             if (DockedStation == station) return;
-            DockedStation = station;
 
-            if (station !=
-                    PrototypeHarborStation.None &&
-                playerBody != null)
+            if (station ==
+                PrototypeHarborStation.None)
             {
-                playerBody.linearVelocity = Vector3.zero;
-                playerBody.angularVelocity = Vector3.zero;
+                DockedStation = station;
+                ReleaseMooringLines();
+                SetMotorEnabled(true);
+                DockingChanged?.Invoke();
+                Debug.Log(
+                    "Liman istasyonundan ayrıldın.",
+                    this
+                );
+                return;
             }
 
+            DockedStation = station;
+            SetMotorEnabled(false);
+            StopShip();
+            StartCoroutine(SnapToStation(station));
             DockingChanged?.Invoke();
             Debug.Log(
-                station == PrototypeHarborStation.None
-                    ? "Liman istasyonundan ayrıldın."
-                    : $"{StationLabel(station)} istasyonuna yanaştın.",
+                $"{StationLabel(station)} " +
+                "istasyonuna yanaşılıyor.",
                 this
             );
+        }
+
+        private IEnumerator SnapToStation(
+            PrototypeHarborStation station)
+        {
+            isDocking = true;
+            Vector3 startPosition = player.position;
+            Quaternion startRotation = player.rotation;
+            Vector3 targetPosition =
+                StationPosition(station);
+            targetPosition.y = startPosition.y;
+            Quaternion targetRotation =
+                StationRotation(station);
+
+            const float duration = 0.7f;
+            float elapsed = 0f;
+            while (elapsed < duration &&
+                   DockedStation == station)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float progress = Mathf.SmoothStep(
+                    0f,
+                    1f,
+                    Mathf.Clamp01(elapsed / duration)
+                );
+                player.SetPositionAndRotation(
+                    Vector3.Lerp(
+                        startPosition,
+                        targetPosition,
+                        progress
+                    ),
+                    Quaternion.Slerp(
+                        startRotation,
+                        targetRotation,
+                        progress
+                    )
+                );
+                StopShip();
+                yield return null;
+            }
+
+            if (DockedStation == station)
+            {
+                player.SetPositionAndRotation(
+                    targetPosition,
+                    targetRotation
+                );
+                StopShip();
+                CreateMooringLines();
+                Debug.Log(
+                    $"{StationLabel(station)} " +
+                    "istasyonuna yanaşıldı.",
+                    this
+                );
+            }
+            isDocking = false;
+        }
+
+        private void StopShip()
+        {
+            if (playerBody == null) return;
+            playerBody.linearVelocity = Vector3.zero;
+            playerBody.angularVelocity = Vector3.zero;
+        }
+
+        private void SetMotorEnabled(bool enabled)
+        {
+            if (shipMotor == null) return;
+            shipMotor.enabled = enabled;
+            if (enabled)
+            {
+                shipMotor.RefreshInputBindings();
+            }
+        }
+
+        private static Quaternion StationRotation(
+            PrototypeHarborStation station)
+        {
+            return station ==
+                PrototypeHarborStation.HarborOffice
+                ? Quaternion.Euler(0f, 180f, 0f)
+                : Quaternion.identity;
+        }
+
+        private void CreateMooringLines()
+        {
+            ReleaseMooringLines();
+            forwardRope = CreateRope(
+                "Forward Mooring Line");
+            aftRope = CreateRope(
+                "Aft Mooring Line");
+            UpdateMooringLines();
+        }
+
+        private LineRenderer CreateRope(
+            string ropeName)
+        {
+            GameObject rope = new(ropeName);
+            rope.transform.SetParent(transform, false);
+            LineRenderer line =
+                rope.AddComponent<LineRenderer>();
+            line.useWorldSpace = true;
+            line.positionCount = 2;
+            line.widthMultiplier = 0.055f;
+            line.startColor =
+                new Color(0.18f, 0.12f, 0.06f, 1f);
+            line.endColor = line.startColor;
+            line.shadowCastingMode =
+                UnityEngine.Rendering
+                    .ShadowCastingMode.Off;
+            line.receiveShadows = false;
+            if (markerMaterial != null)
+            {
+                line.sharedMaterial = markerMaterial;
+            }
+            return line;
+        }
+
+        private void UpdateMooringLines()
+        {
+            if (player == null ||
+                forwardRope == null ||
+                aftRope == null)
+            {
+                return;
+            }
+
+            Vector3 right = player.right;
+            Vector3 forward = player.forward;
+            float dockSide =
+                DockedStation ==
+                    PrototypeHarborStation.Shipyard
+                    ? -1f
+                    : DockedStation ==
+                        PrototypeHarborStation.Trade
+                        ? 1f
+                        : 0f;
+
+            Vector3 forwardShip =
+                player.position +
+                forward * 1.6f +
+                right * dockSide * 1.05f +
+                Vector3.up * 0.35f;
+            Vector3 aftShip =
+                player.position -
+                forward * 1.6f +
+                right * dockSide * 1.05f +
+                Vector3.up * 0.35f;
+
+            Vector3 forwardDock;
+            Vector3 aftDock;
+            if (DockedStation ==
+                PrototypeHarborStation.HarborOffice)
+            {
+                forwardDock =
+                    player.position +
+                    new Vector3(-2f, 0.3f, -3.5f);
+                aftDock =
+                    player.position +
+                    new Vector3(2f, 0.3f, -3.5f);
+            }
+            else
+            {
+                forwardDock =
+                    forwardShip +
+                    right * dockSide * 2.7f;
+                aftDock =
+                    aftShip +
+                    right * dockSide * 2.7f;
+            }
+
+            forwardRope.SetPosition(0, forwardShip);
+            forwardRope.SetPosition(1, forwardDock);
+            aftRope.SetPosition(0, aftShip);
+            aftRope.SetPosition(1, aftDock);
+        }
+
+        private void ReleaseMooringLines()
+        {
+            if (forwardRope != null)
+            {
+                Destroy(forwardRope.gameObject);
+                forwardRope = null;
+            }
+            if (aftRope != null)
+            {
+                Destroy(aftRope.gameObject);
+                aftRope = null;
+            }
         }
 
         private Vector3 StationPosition(
@@ -318,6 +530,8 @@ namespace Seaborn.Harbor
 
         private void OnDestroy()
         {
+            ReleaseMooringLines();
+            SetMotorEnabled(true);
             if (Instance == this) Instance = null;
             if (markerMaterial != null)
             {
