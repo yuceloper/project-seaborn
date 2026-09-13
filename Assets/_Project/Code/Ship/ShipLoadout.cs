@@ -184,6 +184,16 @@ namespace Seaborn.Ship
                     PrototypeCannonDamageScale
             );
 
+            ShipMotor motor =
+                GetComponentInChildren<ShipMotor>();
+            motor?.SetRuntimePerformance(
+                ship.speedMultiplier *
+                    sail.speedMultiplier,
+                sail.speedMultiplier,
+                ship.maneuverMultiplier *
+                    sail.maneuverMultiplier
+            );
+
             HarpoonHuntingController harpoons =
                 GetComponentInChildren<
                     HarpoonHuntingController>();
