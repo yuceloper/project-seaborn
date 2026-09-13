@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using Seaborn.Combat;
 using Seaborn.Expeditions;
 using Seaborn.Equipment;
@@ -6,6 +7,7 @@ using Seaborn.Harbor;
 using Seaborn.Recovery;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 namespace Seaborn.Hunting
 {
@@ -399,6 +401,35 @@ namespace Seaborn.Hunting
         private void Awake()
         {
             DontDestroyOnLoad(gameObject);
+            SceneManager.sceneLoaded += HandleSceneLoaded;
+        }
+
+        private void HandleSceneLoaded(
+            Scene scene,
+            LoadSceneMode mode)
+        {
+            StartCoroutine(RefreshAfterSceneLoad());
+        }
+
+        private IEnumerator RefreshAfterSceneLoad()
+        {
+            // Scene player duplicates and their OnDisable calls
+            // settle before harbor services bind to the persistent ship.
+            yield return null;
+            yield return null;
+
+            nextScanTime = 0f;
+            ManualBroadsideAimController player =
+                FindFirstObjectByType<
+                    ManualBroadsideAimController>();
+            if (player == null) yield break;
+
+            if (Seaborn.World
+                    .PrototypeExpeditionRegionDirector
+                    .IsHarborScene)
+            {
+                EnsureHarborRuntime(player.transform);
+            }
         }
 
         [RuntimeInitializeOnLoadMethod(
@@ -491,39 +522,7 @@ namespace Seaborn.Hunting
 
             if (isHarbor)
             {
-                Seaborn.Harbor
-                    .PrototypeHarborVisualDirector
-                    .EnsureCreated(player.transform.position);
-                Seaborn.Harbor
-                    .PrototypeHarborDockingDirector
-                    .EnsureCreated(player.transform);
-                PrototypeHarborDeliveryZone.EnsureCreated(
-                    player.transform
-                );
-                PrototypeHarborServices.EnsureAttached(
-                    player.transform
-                );
-                PrototypeContractBoard.EnsureCreated(
-                    player.transform
-                );
-                PrototypeHarborPreparationPanel.EnsureCreated(
-                    player.transform
-                );
-                Seaborn.Harbor.UI
-                    .PrototypeShipyardUpgradePanel
-                    .EnsureCreated(player.transform);
-                Seaborn.Harbor.UI
-                    .PrototypeShipyardLoadoutPanel
-                    .EnsureCreated(player.transform);
-                Seaborn.Harbor.UI
-                    .PrototypeShipMarketPanel
-                    .EnsureCreated(player.transform);
-                Seaborn.Harbor.UI
-                    .PrototypeHarborContractPanel
-                    .EnsureCreated(player.transform);
-                Seaborn.Harbor.UI
-                    .PrototypeCaptainSkillPanel
-                    .EnsureCreated(player.transform);
+                EnsureHarborRuntime(player.transform);
             }
             else
             {
@@ -544,6 +543,41 @@ namespace Seaborn.Hunting
             Seaborn.UI.PrototypeGameplayHud.EnsureCreated(
                 player.transform
             );
+        }
+
+        private static void EnsureHarborRuntime(
+            Transform player)
+        {
+            Seaborn.Harbor
+                .PrototypeHarborVisualDirector
+                .EnsureCreated(player.position);
+            Seaborn.Harbor
+                .PrototypeHarborDockingDirector
+                .EnsureCreated(player);
+            PrototypeHarborDeliveryZone.EnsureCreated(player);
+            PrototypeHarborServices.EnsureAttached(player);
+            PrototypeContractBoard.EnsureCreated(player);
+            PrototypeHarborPreparationPanel.EnsureCreated(player);
+            Seaborn.Harbor.UI
+                .PrototypeShipyardUpgradePanel
+                .EnsureCreated(player);
+            Seaborn.Harbor.UI
+                .PrototypeShipyardLoadoutPanel
+                .EnsureCreated(player);
+            Seaborn.Harbor.UI
+                .PrototypeShipMarketPanel
+                .EnsureCreated(player);
+            Seaborn.Harbor.UI
+                .PrototypeHarborContractPanel
+                .EnsureCreated(player);
+            Seaborn.Harbor.UI
+                .PrototypeCaptainSkillPanel
+                .EnsureCreated(player);
+        }
+
+        private void OnDestroy()
+        {
+            SceneManager.sceneLoaded -= HandleSceneLoaded;
         }
     }
 }
