@@ -31,6 +31,8 @@ namespace Seaborn.Combat
         [SerializeField, Min(1)] private int cannonSlotCapacity = 6;
         [SerializeField, Min(1)] private int installedCannons = 6;
 
+        [SerializeField, Min(0f)] private float cannonHitDamage = 25f;
+
         private float nextPortFireTime;
         private float nextStarboardFireTime;
         private float portReloadDuration;
@@ -100,6 +102,26 @@ namespace Seaborn.Combat
             cannonSlotCapacity = Mathf.Max(1, slotCapacity);
             installedCannons = Mathf.Clamp(cannonCount, 1, cannonSlotCapacity);
             projectileRange = Mathf.Max(0.1f, range);
+            AmmunitionStateChanged?.Invoke();
+        }
+
+        public void SetCannonLoadout(
+            int slotCapacity,
+            int cannonCount,
+            float range,
+            float reloadDuration,
+            float hitDamage)
+        {
+            SetShipConfiguration(
+                slotCapacity,
+                cannonCount,
+                range
+            );
+            broadsideCooldown = Mathf.Max(
+                0.1f,
+                reloadDuration
+            );
+            cannonHitDamage = Mathf.Max(0f, hitDamage);
             AmmunitionStateChanged?.Invoke();
         }
 
@@ -284,9 +306,10 @@ namespace Seaborn.Combat
                 muzzle.position,
                 Quaternion.LookRotation(toTarget.normalized, Vector3.up)
             );
-            projectile.Configure(
+            projectile.ConfigureAbsoluteDamage(
                 ammunitionType,
-                profile.DamageMultiplier *
+                cannonHitDamage *
+                    profile.DamageMultiplier *
                     equipmentDamageMultiplier,
                 profile.ProjectileScale
             );
