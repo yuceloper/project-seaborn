@@ -31,6 +31,10 @@ namespace Seaborn.Persistence
             public string cannonId;
             public int installedCannons;
             public string sailId;
+            public int iron6LbCannons;
+            public int iron12LbCannons;
+            public int patchedCanvasSails;
+            public int ratSails;
             public int hullLevel;
             public int cannonLevel;
             public int harpoonLevel;
@@ -46,6 +50,7 @@ namespace Seaborn.Persistence
         private PrototypeShipEquipment equipment;
         private PrototypeRegionalLootInventory materials;
         private ShipLoadout loadout;
+        private PrototypeEquipmentInventory inventory;
         private SaveData lastSnapshot;
         private float nextScanTime;
         private bool loaded;
@@ -107,10 +112,16 @@ namespace Seaborn.Persistence
                     ShipLoadout>();
             }
 
+            if (inventory == null)
+            {
+                inventory = player.GetComponentInChildren<
+                    PrototypeEquipmentInventory>();
+            }
+
             if (!loaded && wallet != null &&
                 broadside != null && harpoons != null &&
                 equipment != null && materials != null &&
-                loadout != null)
+                loadout != null && inventory != null)
             {
                 Load();
                 loaded = true;
@@ -191,6 +202,12 @@ namespace Seaborn.Persistence
                     );
                 }
 
+                inventory.Restore(
+                    data.iron6LbCannons,
+                    data.iron12LbCannons,
+                    data.patchedCanvasSails,
+                    data.ratSails
+                );
                 loadout.Restore(
                     data.cannonId,
                     data.installedCannons,
@@ -258,6 +275,18 @@ namespace Seaborn.Persistence
                 sailId = loadout != null
                     ? loadout.SailId
                     : "patched_canvas",
+                iron6LbCannons = inventory != null
+                    ? inventory.Iron6LbCannons
+                    : 6,
+                iron12LbCannons = inventory != null
+                    ? inventory.Iron12LbCannons
+                    : 0,
+                patchedCanvasSails = inventory != null
+                    ? inventory.PatchedCanvasSails
+                    : 1,
+                ratSails = inventory != null
+                    ? inventory.RatSails
+                    : 0,
                 hullLevel = equipment != null
                     ? equipment.HullLevel
                     : 0,
@@ -348,6 +377,13 @@ namespace Seaborn.Persistence
                     first.sailId,
                     second.sailId,
                     StringComparison.Ordinal) &&
+                first.iron6LbCannons ==
+                    second.iron6LbCannons &&
+                first.iron12LbCannons ==
+                    second.iron12LbCannons &&
+                first.patchedCanvasSails ==
+                    second.patchedCanvasSails &&
+                first.ratSails == second.ratSails &&
                 first.hullLevel == second.hullLevel &&
                 first.cannonLevel == second.cannonLevel &&
                 first.harpoonLevel == second.harpoonLevel &&
