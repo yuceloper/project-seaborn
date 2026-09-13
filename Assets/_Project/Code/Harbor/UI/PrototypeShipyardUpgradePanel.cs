@@ -258,14 +258,9 @@ namespace Seaborn.Harbor.UI
             if (panel == null) return;
 
             ResolveBindings();
-            PrototypeHarborDockingDirector docking =
-                PrototypeHarborDockingDirector.Instance;
             bool visible =
                 equipment != null &&
-                equipment.CanUseShipyard &&
-                docking != null &&
-                docking.IsDockedAt(
-                    PrototypeHarborStation.Shipyard);
+                equipment.CanUseShipyard;
             panel.SetActive(visible);
             if (!visible) return;
 
