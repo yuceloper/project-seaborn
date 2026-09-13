@@ -270,7 +270,7 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 #### Implementation sequence
 
 - [x] Create data-driven ship catalogue and starter ship definitions
-- [ ] Create cannon, ammunition, harpoon, sail and consumable catalogues
+- [x] Create cannon, ammunition, harpoon, sail and consumable catalogues
 - [ ] Replace prototype broadside constants with equipped-cannon salvo calculation
 - [ ] Add ship inventory, equipment slots and loadout validation
 - [ ] Add Silver-based harbor ship market and ship switching
