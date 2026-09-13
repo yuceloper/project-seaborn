@@ -230,3 +230,12 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Sahne geçişlerinde atmosfer profilini yeniden uygulama
 - [x] Paylaşılan okyanus assetini değiştirmeden çalışma zamanı materyal kopyası
 - [ ] Bölgesel ambiyans döngüleri ve uzamsal çevre sesleri
+
+
+### Harbor station UI repair (2026-09-13)
+
+- [x] Tersane panelini ekipman sistemi kurulduktan sonra bağlama
+- [x] Eksik UI bağlarını çalışma anında yeniden çözme
+- [x] Yanaşma noktalarını oyuncu girişinden bağımsız sabit harita koordinatlarına alma
+- [x] Liman İdaresi için günlük görev seçim paneli
+- [x] Aylık seyir defteri ilerlemesini Liman İdaresi'nde gösterme
