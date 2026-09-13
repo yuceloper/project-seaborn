@@ -251,3 +251,32 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Bölgesel malzemeleri yerel prototip kaydında koruma
 - [ ] Malzemeler için üretim kalitesinde ikon ve envanter ekranı
 - [ ] Sunucu otoriteli düşüş tablosu ve ekonomi telemetrisi
+
+
+### Product backbone plan (2026-09-13)
+
+#### Decisions locked
+
+- [x] Ship is the player's primary character and progression object
+- [x] Silver is the gameplay economy; Gold is cosmetic/premium only
+- [x] Captain EXP unlocks access and skill points instead of granting large direct stat bonuses
+- [x] Ship data model includes cannon, sail, range, speed, durability, repair, defense, cargo and extension limits
+- [x] Broadside damage scales with installed cannons up to the ship's cannon-slot limit
+- [x] Cannon and harpoon ammunition have distinct tactical weight classes
+- [x] Extended Deck is rare, tradeable and limited by ship class
+- [x] Directional map network, map tiers and variable map quality define world progression
+- [x] Hotbar, contextual actions and collectible sea sparkles have a documented interaction direction
+
+#### Implementation sequence
+
+- [ ] Create data-driven ship catalogue and starter ship definitions
+- [ ] Create cannon, ammunition, harpoon, sail and consumable catalogues
+- [ ] Replace prototype broadside constants with equipped-cannon salvo calculation
+- [ ] Add ship inventory, equipment slots and loadout validation
+- [ ] Add Silver-based harbor ship market and ship switching
+- [ ] Add captain EXP, levels, unlock gates and skill-point earning
+- [ ] Add first cannon, harpoon and ship skill branches
+- [ ] Add timed repair, tonic and special-item cooldown categories
+- [ ] Add interruptible sea-sparkle collection and weighted rewards
+- [ ] Add map-tier and map-quality modifiers
+- [ ] Add player-to-player Silver market after server authority exists
