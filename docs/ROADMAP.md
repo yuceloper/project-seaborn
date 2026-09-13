@@ -274,7 +274,7 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Replace prototype broadside constants with equipped-cannon salvo calculation
 - [x] Add equipment inventory, ship loadout validation and shipyard equipment market
 - [x] Add Silver-based harbor ship market and ship switching
-- [ ] Add captain EXP, levels, unlock gates and skill-point earning
+- [x] Add captain EXP, levels, unlock gates and skill-point earning
 - [ ] Add first cannon, harpoon and ship skill branches
 - [ ] Add timed repair, tonic and special-item cooldown categories
 - [ ] Add interruptible sea-sparkle collection and weighted rewards
@@ -305,3 +305,18 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Gemi pazarı paneli ve HUD'da aktif gemi adı
 - [ ] Her gemi profiline özgü görsel prefab
 - [ ] Gemiler arasında ayrı hasar ve onarım durumu
+
+
+### Captain progression foundation (2026-09-13)
+
+- [x] 30 seviyeli kaptan EXP modeli
+- [x] Güvenceye alınan sefer değerinden EXP kazanımı
+- [x] Batışta kaybedilen yük için EXP vermeme
+- [x] Her iki seviyede bir skill puanı kazanımı
+- [x] Dört seviyede bir harita tier erişimi
+- [x] Rat Sails için seviye 5 gemi lisansı
+- [x] Dreadwake için seviye 25 gemi lisansı
+- [x] HUD seviye bilgisi ve seviye atlama bildirimi
+- [x] Kaptan EXP'sini yerel kayıtta koruma
+- [ ] Harita geçitlerinde tier erişimini uygulama
+- [ ] Skill puanı harcama ve ilk skill ağacı
