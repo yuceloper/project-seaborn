@@ -34,13 +34,23 @@ namespace Seaborn.Progression
         public int CannonLevel { get; private set; }
         public int HarpoonLevel { get; private set; }
 
-        public bool CanUseShipyard =>
-            harborServices != null &&
-            harborServices.CanUseServices;
+        public bool CanUseShipyard
+        {
+            get
+            {
+                PrototypeHarborDockingDirector docking =
+                    PrototypeHarborDockingDirector.Instance;
+                return Seaborn.World
+                        .PrototypeExpeditionRegionDirector
+                        .IsHarborScene &&
+                    docking != null &&
+                    docking.IsDockedAt(
+                        PrototypeHarborStation.Shipyard);
+            }
+        }
 
         private Transform boundPlayer;
         private PrototypeSilverWallet wallet;
-        private PrototypeHarborServices harborServices;
         private ShipHealth health;
         private BroadsideController broadside;
         private HarpoonHuntingController harpoons;
@@ -165,8 +175,6 @@ namespace Seaborn.Progression
             boundPlayer = player;
             wallet = player.GetComponentInChildren<
                 PrototypeSilverWallet>();
-            harborServices = player.GetComponentInChildren<
-                PrototypeHarborServices>();
             health = player.GetComponentInChildren<ShipHealth>();
             broadside = player.GetComponentInChildren<
                 BroadsideController>();
