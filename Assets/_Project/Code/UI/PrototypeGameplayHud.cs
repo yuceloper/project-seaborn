@@ -422,6 +422,12 @@ namespace Seaborn.UI
 
         private void RefreshCombat()
         {
+            if (harpoons == null && boundPlayer != null)
+            {
+                harpoons = boundPlayer.GetComponentInChildren<
+                    HarpoonHuntingController>();
+            }
+
             float port = broadside != null ? broadside.GetReloadProgress(BroadsideSide.Port) : 0f;
             float starboard = broadside != null ? broadside.GetReloadProgress(BroadsideSide.Starboard) : 0f;
             SetBar(portFill, port);
