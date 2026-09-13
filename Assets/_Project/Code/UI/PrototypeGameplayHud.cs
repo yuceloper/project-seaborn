@@ -136,6 +136,11 @@ namespace Seaborn.UI
                 cargo.CargoSecured += HandleCargoSecured;
                 cargo.CargoLost += HandleCargoLost;
             }
+            if (captainProgression != null)
+            {
+                captainProgression.LevelChanged +=
+                    HandleCaptainLevelChanged;
+            }
             Refresh();
         }
 
@@ -477,6 +482,17 @@ namespace Seaborn.UI
             harborLockText.gameObject.SetActive(locked);
         }
 
+        private void HandleCaptainLevelChanged(int level)
+        {
+            ShowNotification(
+                $"KAPTAN SEVİYESİ {level}",
+                $"Harita tier sınırı: " +
+                $"{captainProgression.HighestUnlockedMapTier}",
+                Gold,
+                4.5f
+            );
+        }
+
         private void HandleCatchAdded(string source, int value)
         {
             ShowNotification($"+{value} GÜVENCESİZ SILVER", source, Gold);
@@ -602,6 +618,11 @@ namespace Seaborn.UI
                 cargo.CatchAdded -= HandleCatchAdded;
                 cargo.CargoSecured -= HandleCargoSecured;
                 cargo.CargoLost -= HandleCargoLost;
+            }
+            if (captainProgression != null)
+            {
+                captainProgression.LevelChanged -=
+                    HandleCaptainLevelChanged;
             }
         }
 
