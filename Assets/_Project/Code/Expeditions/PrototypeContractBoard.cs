@@ -127,6 +127,13 @@ namespace Seaborn.Expeditions
             private set;
         }
 
+        public PrototypeContractProgress
+            SelectedDailyContract
+        {
+            get;
+            private set;
+        }
+
         public int DailyCompletedCount =>
             CountCompleted(dailyContracts);
         public int MonthlyCompletedCount =>
@@ -231,6 +238,38 @@ namespace Seaborn.Expeditions
 
                 Debug.Log(
                     $"Sefer kontratı seçildi: " +
+                    $"{contract.Definition.Title}",
+                    this
+                );
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool SelectDailyContract(
+            string contractId)
+        {
+            if (!Seaborn.World
+                    .PrototypeExpeditionRegionDirector
+                    .IsHarborScene)
+            {
+                return false;
+            }
+
+            foreach (PrototypeContractProgress contract
+                     in dailyContracts)
+            {
+                if (contract.Definition.Id != contractId ||
+                    contract.RewardClaimed)
+                {
+                    continue;
+                }
+
+                SelectedDailyContract = contract;
+                ContractsChanged?.Invoke();
+                Debug.Log(
+                    $"Günlük kontrat seçildi: " +
                     $"{contract.Definition.Title}",
                     this
                 );
@@ -384,11 +423,15 @@ namespace Seaborn.Expeditions
                 );
             }
 
-            AdvanceMatching(
-                dailyContracts,
-                objective,
-                amount
-            );
+            if (SelectedDailyContract != null &&
+                SelectedDailyContract.Definition.Objective ==
+                    objective)
+            {
+                Advance(
+                    SelectedDailyContract,
+                    amount
+                );
+            }
             AdvanceMatching(
                 monthlyContracts,
                 objective,
@@ -521,6 +564,10 @@ namespace Seaborn.Expeditions
             {
                 dailyPeriodKey = newDaily;
                 ResetContracts(dailyContracts);
+                SelectedDailyContract =
+                    dailyContracts.Count > 0
+                        ? dailyContracts[0]
+                        : null;
                 dailyMainRewardClaimed = false;
             }
 
@@ -640,6 +687,8 @@ namespace Seaborn.Expeditions
 
             SelectedExpeditionContract =
                 expeditionContracts[2];
+            SelectedDailyContract =
+                dailyContracts[0];
         }
 
         private static PrototypeContractProgress Create(
