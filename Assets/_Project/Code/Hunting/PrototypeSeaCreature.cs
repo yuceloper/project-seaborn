@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Seaborn.Hunting
 {
@@ -437,27 +438,74 @@ namespace Seaborn.Hunting
             {
                 return;
             }
+            string scene =
+                SceneManager.GetActiveScene().name;
+
+            if (scene == "PrototypeWesternReach")
+            {
+                Spawn(
+                    "Tideback - Smuggler's Wake",
+                    new Vector3(22f, 0.74f, -18f),
+                    310f
+                );
+                Debug.Log(
+                    "Batı Sınırı av profili: seyrek av, " +
+                    "yoğun korsan riski."
+                );
+                return;
+            }
+
+            if (scene == "PrototypeEasternReach")
+            {
+                Vector3[] positions =
+                {
+                    new(-20f, 0.74f, -15f),
+                    new(-8f, 0.74f, -5f),
+                    new(12f, 0.74f, -12f),
+                    new(22f, 0.74f, 5f),
+                    new(-18f, 0.74f, 18f),
+                    new(8f, 0.74f, 20f)
+                };
+
+                for (int i = 0;
+                     i < positions.Length;
+                     i++)
+                {
+                    Spawn(
+                        $"Tideback - East {i + 1}",
+                        positions[i],
+                        45f + i * 53f
+                    );
+                }
+
+                SpawnLeviathan(
+                    new Vector3(25f, 0.74f, 32f)
+                );
+                Debug.Log(
+                    "Doğu Avları profili: zengin sürüler " +
+                    "ve Stormjaw izi."
+                );
+                return;
+            }
+
             Spawn(
-                "Tideback - North",
-                playerPosition +
-                new Vector3(16f, 0.74f, 14f),
+                "Tideback - Central North",
+                new Vector3(14f, 0.74f, 16f),
                 210f
             );
             Spawn(
-                "Tideback - East",
-                playerPosition +
-                new Vector3(22f, 0.74f, 10f),
+                "Tideback - Central East",
+                new Vector3(23f, 0.74f, -4f),
                 285f
             );
             Spawn(
-                "Tideback - West",
-                playerPosition +
-                new Vector3(12f, 0.74f, 7f),
+                "Tideback - Central West",
+                new Vector3(-17f, 0.74f, 7f),
                 75f
             );
-            SpawnLeviathan(
-                playerPosition +
-                new Vector3(12f, 0.74f, 34f)
+            Debug.Log(
+                "Merkez Sular av profili: dengeli " +
+                "başlangıç karşılaşmaları."
             );
         }
 

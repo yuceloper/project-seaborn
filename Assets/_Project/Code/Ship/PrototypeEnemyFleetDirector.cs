@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Seaborn.Ship
 {
@@ -24,96 +25,147 @@ namespace Seaborn.Ship
 
             if (player != null)
             {
-                director.BuildFleet(player.position);
+                director.BuildFleet();
             }
+
             Seaborn.UI.PrototypeEnemyNameplateOverlay
                 .EnsureCreated();
         }
 
-        private void BuildFleet(Vector3 playerPosition)
+        private void BuildFleet()
         {
             if (initialized) return;
 
-            EnemyShipController[] ships =
+            EnemyShipController[] existing =
                 FindObjectsByType<EnemyShipController>(
                     FindObjectsSortMode.None
                 );
+            if (existing.Length == 0) return;
 
-            if (ships.Length == 0) return;
+            string scene =
+                SceneManager.GetActiveScene().name;
+            EnemyShipArchetype[] archetypes =
+                ProfileArchetypes(scene);
+            Vector3[] positions =
+                ProfilePositions(scene);
 
-            EnemyShipController template = ships[0];
-            if (ships.Length >= 3)
+            EnemyShipController template = existing[0];
+            Quaternion rotation =
+                template.transform.rotation;
+
+            for (int i = 0;
+                 i < archetypes.Length;
+                 i++)
             {
-                ConfigureExisting(
-                    ships,
-                    playerPosition
-                );
-                initialized = true;
-                return;
+                EnemyShipController ship;
+                if (i < existing.Length)
+                {
+                    ship = existing[i];
+                }
+                else
+                {
+                    ship = Instantiate(
+                        template.gameObject,
+                        positions[i],
+                        rotation
+                    ).GetComponent<
+                        EnemyShipController>();
+                }
+
+                Vector3 position = positions[i];
+                position.y = ship.transform.position.y;
+                ship.transform.position = position;
+                ship.ConfigureArchetype(archetypes[i]);
+                ship.name =
+                    $"{ship.name} #{i + 1}";
             }
 
-            Vector3 origin = playerPosition +
-                new Vector3(-18f, 0f, 22f);
-            origin.y = template.transform.position.y;
-            Quaternion rotation = template.transform.rotation;
-            template.transform.position = origin;
-
-            template.ConfigureArchetype(
-                EnemyShipArchetype.Marauder
-            );
-
-            EnemyShipController skirmisher =
-                Instantiate(
-                    template.gameObject,
-                    origin + new Vector3(6f, 0f, -4f),
-                    rotation
-                ).GetComponent<EnemyShipController>();
-            skirmisher.ConfigureArchetype(
-                EnemyShipArchetype.Skirmisher
-            );
-
-            EnemyShipController gunship =
-                Instantiate(
-                    template.gameObject,
-                    origin + new Vector3(-6f, 0f, 3f),
-                    rotation
-                ).GetComponent<EnemyShipController>();
-            gunship.ConfigureArchetype(
-                EnemyShipArchetype.Gunship
-            );
+            for (int i = archetypes.Length;
+                 i < existing.Length;
+                 i++)
+            {
+                existing[i].gameObject.SetActive(false);
+                Destroy(existing[i].gameObject);
+            }
 
             initialized = true;
             Debug.Log(
-                "Düşman filosu hazır: Saltfang, " +
-                "Razorwind ve Ironwake.",
+                $"{MapLabel(scene)} filosu hazır: " +
+                $"{archetypes.Length} düşman gemisi.",
                 this
             );
         }
 
-        private static void ConfigureExisting(
-            EnemyShipController[] ships,
-            Vector3 playerPosition)
+        private static EnemyShipArchetype[]
+            ProfileArchetypes(string scene)
         {
-            Vector3 center = playerPosition +
-                new Vector3(-18f, 0f, 22f);
-            Vector3 first = center;
-            Vector3 second = center +
-                new Vector3(6f, 0f, -4f);
-            Vector3 third = center +
-                new Vector3(-6f, 0f, 3f);
-            first.y = ships[0].transform.position.y;
-            second.y = ships[1].transform.position.y;
-            third.y = ships[2].transform.position.y;
-            ships[0].transform.position = first;
-            ships[1].transform.position = second;
-            ships[2].transform.position = third;
+            if (scene == "PrototypeWesternReach")
+            {
+                return new[]
+                {
+                    EnemyShipArchetype.Marauder,
+                    EnemyShipArchetype.Gunship,
+                    EnemyShipArchetype.Skirmisher,
+                    EnemyShipArchetype.Gunship,
+                    EnemyShipArchetype.Marauder
+                };
+            }
 
-            ships[0].ConfigureArchetype(
-                EnemyShipArchetype.Marauder);
-            ships[1].ConfigureArchetype(
-                EnemyShipArchetype.Skirmisher);
-            ships[2].ConfigureArchetype(
-                EnemyShipArchetype.Gunship);
+            if (scene == "PrototypeEasternReach")
+            {
+                return new[]
+                {
+                    EnemyShipArchetype.Skirmisher
+                };
+            }
+
+            return new[]
+            {
+                EnemyShipArchetype.Skirmisher,
+                EnemyShipArchetype.Marauder
+            };
+        }
+
+        private static Vector3[]
+            ProfilePositions(string scene)
+        {
+            if (scene == "PrototypeWesternReach")
+            {
+                return new[]
+                {
+                    new Vector3(-25f, 0.5f, -15f),
+                    new Vector3(-10f, 0.5f, 10f),
+                    new Vector3(15f, 0.5f, -5f),
+                    new Vector3(25f, 0.5f, 20f),
+                    new Vector3(-20f, 0.5f, 28f)
+                };
+            }
+
+            if (scene == "PrototypeEasternReach")
+            {
+                return new[]
+                {
+                    new Vector3(-25f, 0.5f, 24f)
+                };
+            }
+
+            return new[]
+            {
+                new Vector3(-18f, 0.5f, 16f),
+                new Vector3(18f, 0.5f, 23f)
+            };
+        }
+
+        private static string MapLabel(string scene)
+        {
+            return scene switch
+            {
+                "PrototypeWesternReach" =>
+                    "Batı Sınırı",
+                "PrototypeEasternReach" =>
+                    "Doğu Avları",
+                _ => "Merkez Sular"
+            };
         }
     }
 }
