@@ -229,3 +229,29 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 **Karar:** Her düşman gemisinin yalnızca adı, ekran uzayında gemi silüetinin altında gösterilir. HUD aynı anda yalnızca bir düşmanın ayrıntılı bilgi panelini gösterir. Saldırgan gemi 30 metreye kadar önceliklidir; pasif gemi yalnızca 14 metre içinde aday olur. Kartta arketip, ad, çatışma durumu, gövde, yelken ve mürettebat bulunur.
 
 **Neden:** Alt sistem mühimmatlarının sonucunu oyuncuya görünür kılmak, hedef önceliğini desteklemek ve üç gemilik karşılaşmayı ekranı çok sayıda dünya can çubuğuyla kaplamadan okunabilir tutmak.
+
+
+## 2026-09-12 — Liman ve sefer denizleri ayrı haritalardır
+
+- Seaborn Limanı savaşsız ve bağımsız bir merkez sahnesidir.
+- Ticaret, tersane, görev panosu ve ileride sosyal özellikler limanda büyütülür.
+- Sefer denizleri yönsel bir ağ oluşturur: merkez denizin batı ve doğu kenarları farklı haritalara açılır.
+- Harita geçişi mevcut oyuncu gemisini korur; hasar ve güvencesiz yük sahne değiştirerek sıfırlanmaz.
+- Harita isimleri ve tehlike seviyeleri HUD'da gösterilir.
+- İlk sahneler aynı prototip deniz temelini paylaşabilir; sanat ve içerik kimlikleri ayrı iterasyonlarda farklılaştırılır.
+
+
+## 2026-09-12 — Limanın ilk görsel yerleşimi işlevlere göre ayrılır
+
+- Oyuncu gemisi korunaklı koyun merkezinde doğar ve kuzeye, açık deniz çıkışına yönelir.
+- Tersane batı rıhtımında, ticaret doğu rıhtımında, liman idaresi güney kıyısında konumlanır.
+- Mendirekler ve kuzeydoğu deniz feneri güvenli merkezin siluetini oluşturur.
+- Prototip geometri yerleşim doğrulaması içindir; ileride aynı kök nesneler gerçek liman assetleriyle değiştirilecektir.
+
+
+## 2026-09-12 — Liman servisleri konuma bağlı yanaşma etkileşimidir
+
+- Liman panelleri güvenli bölgede otomatik olarak her yerde açılmaz.
+- Oyuncu ilgili rıhtımın yaklaşma alanına girip E ile yanaşır.
+- Tersane batı istasyonunda; ikmal ve hazırlık doğu ticaret istasyonunda; kontratlar ayrıca liman idaresinde kullanılabilir.
+- Bu durum ileride gemiden inme ve yürünebilir kaptan akışına dönüştürülebilir.

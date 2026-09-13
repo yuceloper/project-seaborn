@@ -370,6 +370,11 @@ namespace Seaborn.Combat.Loot
         private float nextScanTime;
         private Transform player;
 
+        private void Awake()
+        {
+            DontDestroyOnLoad(gameObject);
+        }
+
         [RuntimeInitializeOnLoadMethod(
             RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Create()

@@ -253,6 +253,11 @@ namespace Seaborn.Hunting
         private const float ScanInterval = 0.5f;
         private float nextScanTime;
 
+        private void Awake()
+        {
+            DontDestroyOnLoad(gameObject);
+        }
+
         [RuntimeInitializeOnLoadMethod(
             RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Create()
@@ -287,7 +292,14 @@ namespace Seaborn.Hunting
                 return;
             }
 
-            if (player.GetComponent<
+            Seaborn.World.PrototypeExpeditionRegionDirector
+                .EnsureCreated(player.transform);
+            bool isHarbor =
+                Seaborn.World.PrototypeExpeditionRegionDirector
+                    .IsHarborScene;
+
+            if (!isHarbor &&
+                player.GetComponent<
                     HarpoonHuntingController>() == null)
             {
                 player.gameObject.AddComponent<
@@ -302,41 +314,64 @@ namespace Seaborn.Hunting
             }
 
             if (player.GetComponent<
+                    PrototypeHuntCargo>() == null)
+            {
+                player.gameObject.AddComponent<
+                    PrototypeHuntCargo>();
+            }
+
+            if (player.GetComponent<
                     HuntCargoLossOnSinking>() == null)
             {
                 player.gameObject.AddComponent<
                     HuntCargoLossOnSinking>();
             }
 
-            PrototypeSeaCreatureSpawner.EnsureSpawned(
-                player.transform.position
-            );
-            Seaborn.Ship.PrototypeEnemyFleetDirector
-                .EnsureCreated();
-            PrototypeHarborDeliveryZone.EnsureCreated(
-                player.transform
-            );
-            PrototypeExpeditionDirector.EnsureCreated(
-                player.transform
-            );
-            PrototypeHarborServices.EnsureAttached(
-                player.transform
-            );
-            PrototypeContractBoard.EnsureCreated(
-                player.transform
-            );
-            PrototypeHarborPreparationPanel.EnsureCreated(
-                player.transform
-            );
+            if (isHarbor)
+            {
+                Seaborn.Harbor
+                    .PrototypeHarborVisualDirector
+                    .EnsureCreated(player.transform.position);
+                Seaborn.Harbor
+                    .PrototypeHarborDockingDirector
+                    .EnsureCreated(player.transform);
+                PrototypeHarborDeliveryZone.EnsureCreated(
+                    player.transform
+                );
+                PrototypeHarborServices.EnsureAttached(
+                    player.transform
+                );
+                PrototypeContractBoard.EnsureCreated(
+                    player.transform
+                );
+                PrototypeHarborPreparationPanel.EnsureCreated(
+                    player.transform
+                );
+                Seaborn.Harbor.UI
+                    .PrototypeShipyardUpgradePanel
+                    .EnsureCreated(player.transform);
+            }
+            else
+            {
+                PrototypeSeaCreatureSpawner.EnsureSpawned(
+                    player.transform.position
+                );
+                Seaborn.Ship.PrototypeEnemyFleetDirector
+                    .EnsureCreated(player.transform);
+                PrototypeExpeditionDirector.EnsureCreated(
+                    player.transform
+                );
+            }
             PrototypeShipRecoveryDirector.EnsureCreated(
                 player.transform
             );
             Seaborn.Progression.PrototypeShipEquipment
                 .EnsureAttached(player.transform);
-            Seaborn.Harbor.UI.PrototypeShipyardUpgradePanel
-                .EnsureCreated(player.transform);
             Seaborn.Persistence.PrototypeProgressPersistence
                 .EnsureAttached(player.transform);
+            Seaborn.UI.PrototypeGameplayHud.EnsureCreated(
+                player.transform
+            );
         }
     }
 }

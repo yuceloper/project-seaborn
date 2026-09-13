@@ -173,3 +173,36 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - Sezon sistemi
 - Üretim ekonomisinin tamamı
 - Gerçek para mağazası
+
+
+### Multi-map expedition foundation (2026-09-12)
+
+- [x] Güvenli limanı bağımsız merkez sahnesine ayırma
+- [x] Merkez deniz, batı sınırı ve doğu avları için ayrı sahne omurgası
+- [x] Harita kenarı geçitleri ve yönsel bağlantılar
+- [x] Harita geçişinde oyuncu gemisi, hasar ve güvencesiz yükü koruma
+- [x] Mevcut harita ve tehlike seviyesini HUD'da gösterme
+- [x] Yönleri, çıkışları ve gemi konumunu gösteren taktik mini harita
+- [x] Düşman AI, loot ve liman teslim sistemlerini haritalar arasında yeniden kurma
+- [ ] Her haritaya özgü çevre sanatı, ses katmanı ve içerik tabloları
+- [ ] Limanı ticaret, tersane, görev ve sosyal merkez olarak görsel üretime alma
+
+
+### Harbor identity pass (2026-09-12)
+
+- [x] Güvenli koy ve yönlü açık deniz koridoru
+- [x] Batı tersane rıhtımı ve prototip vinç
+- [x] Doğu ticaret rıhtımı ve depo alanı
+- [x] Liman idaresi, mendirekler ve deniz feneri
+- [x] Tersane, ticaret ve açık deniz dünya etiketleri
+- [ ] Prototip geometrileri üretim kalitesinde liman assetleriyle değiştirme
+- [ ] Yürünebilir liman ve görünür kaptan katmanı
+
+
+### Harbor docking interactions (2026-09-12)
+
+- [x] Tersane, ticaret/ikmal ve liman idaresi yanaşma alanları
+- [x] Yakınlık tabanlı dünya işareti ve E etkileşimi
+- [x] Tersane panelini batı rıhtımına bağlama
+- [x] Hazırlık ve kontrat panelini doğu/güney istasyonlarına bağlama
+- [ ] Yanaşma animasyonu, halat ve rıhtım sesleri

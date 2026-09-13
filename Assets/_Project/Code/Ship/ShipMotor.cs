@@ -34,6 +34,26 @@ namespace Seaborn.Ship
         public float TurnMultiplier =>
             turnMultiplier * damageTurnMultiplier;
 
+        public void RefreshInputBindings()
+        {
+            if (moveAction == null ||
+                moveAction.action == null)
+            {
+                return;
+            }
+
+            InputActionAsset actions =
+                moveAction.action.actionMap?.asset;
+            if (actions != null)
+            {
+                actions.Enable();
+            }
+            else
+            {
+                moveAction.action.Enable();
+            }
+        }
+
         public void SetRuntimePerformance(
             float speed,
             float accelerationRate,

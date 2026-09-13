@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Seaborn.Combat;
 using Seaborn.Expeditions;
 using Seaborn.Hunting;
+using Seaborn.Harbor;
 using Seaborn.Ship;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -92,9 +93,16 @@ namespace Seaborn.Harbor
 
         private void Update()
         {
+            PrototypeHarborDockingDirector docking =
+                PrototypeHarborDockingDirector.Instance;
             bool shouldShow =
                 protection != null &&
-                protection.IsProtected;
+                protection.IsProtected &&
+                docking != null &&
+                (docking.IsDockedAt(
+                    PrototypeHarborStation.Trade) ||
+                 docking.IsDockedAt(
+                    PrototypeHarborStation.HarborOffice));
 
             if (panel.activeSelf != shouldShow)
             {

@@ -404,11 +404,27 @@ namespace Seaborn.Ship
 
         private void HandleDamaged(DamageInfo damageInfo)
         {
-            if (IsAggressive ||
-                damageInfo.Instigator == null ||
+            if (damageInfo.Instigator == null)
+            {
+                return;
+            }
+
+            ManualBroadsideAimController attacker =
                 damageInfo.Instigator.transform.root
                     .GetComponentInChildren<
-                        ManualBroadsideAimController>() == null)
+                        ManualBroadsideAimController>();
+            if (attacker == null)
+            {
+                return;
+            }
+
+            // Scene copies hold a serialized reference to
+            // their local PlayerShip. Map transitions remove
+            // that duplicate, so always bind the living ship
+            // that actually caused the damage.
+            target = attacker.transform;
+
+            if (IsAggressive)
             {
                 return;
             }
