@@ -369,8 +369,7 @@ namespace Seaborn.Hunting
                 Seaborn.World.PrototypeExpeditionRegionDirector
                     .IsHarborScene;
 
-            if (!isHarbor &&
-                player.GetComponent<
+            if (player.GetComponent<
                     HarpoonHuntingController>() == null)
             {
                 player.gameObject.AddComponent<
