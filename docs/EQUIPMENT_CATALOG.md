@@ -42,3 +42,14 @@ Bu kontrol üretim hotbar'ı değildir. Loadout ve UI tamamlandığında ortak a
 - Topların temel hasarı gerçek loadout/salvo aşamasında bağlanacak.
 - Yelkenler gemi hareket profiline loadout aşamasında bağlanacak.
 - İksir ve özel eşyalar cooldown/etki sistemi tamamlandığında etkinleşecek.
+
+
+## İlk tersane marketi
+
+- 6 lb ve 12 lb toplar adet bazlı satın alınır.
+- Bir top grubu takıldığında kurulu adet, sahip olunan adet ile geminin top yuvasından düşük olanıdır.
+- İlk sürümde aynı bataryada tek top türü kullanılır; karma batarya sonraki iterasyondur.
+- Patched Canvas başlangıçta oyuncuya aittir.
+- Rat Sails Silver ile satın alınır ve gerçek hız/manevra çarpanlarını uygular.
+- Satın alma ve takma işlemi yalnızca güvenli limandaki tersaneye yanaşınca yapılabilir.
+- Envanter ve aktif loadout yerel prototip kaydında korunur.
