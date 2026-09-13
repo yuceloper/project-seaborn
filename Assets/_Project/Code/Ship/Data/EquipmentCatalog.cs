@@ -168,7 +168,7 @@ namespace Seaborn.Equipment
 
             foreach (T item in items)
             {
-                if (item == null) continue;
+                if (ReferenceEquals(item, null)) continue;
                 string id = getId(item);
                 if (string.IsNullOrWhiteSpace(id))
                 {
