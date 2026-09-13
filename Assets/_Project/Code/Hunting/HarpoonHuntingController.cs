@@ -488,6 +488,9 @@ namespace Seaborn.Hunting
                     .PrototypeShipyardUpgradePanel
                     .EnsureCreated(player.transform);
                 Seaborn.Harbor.UI
+                    .PrototypeShipyardLoadoutPanel
+                    .EnsureCreated(player.transform);
+                Seaborn.Harbor.UI
                     .PrototypeHarborContractPanel
                     .EnsureCreated(player.transform);
             }
