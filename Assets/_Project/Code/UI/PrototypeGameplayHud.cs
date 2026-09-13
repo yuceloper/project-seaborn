@@ -434,7 +434,16 @@ namespace Seaborn.UI
             ammoStockText.text = broadside == null ? "1: 0   2: 0   3: 0" : $"1: {broadside.GetAmmunitionStock(AmmunitionType.Standard)}   2: {broadside.GetAmmunitionStock(AmmunitionType.Chain)}   3: {broadside.GetAmmunitionStock(AmmunitionType.Grapeshot)}";
 
             float reload = harpoons != null ? harpoons.ReloadProgress : 0f;
-            harpoonText.text = $"Zıpkın   {(harpoons != null ? harpoons.HarpoonStock : 0)}";
+            string harpoonName =
+                harpoons?.SelectedHarpoon != null
+                    ? $"{harpoons.SelectedHarpoon.weightKg:0} KG " +
+                      (harpoons.SelectedHarpoon.weightKg >= 4f
+                          ? "AĞIR"
+                          : "HAFİF")
+                    : "Zıpkın";
+            harpoonText.text =
+                $"{harpoonName}   " +
+                $"{(harpoons != null ? harpoons.HarpoonStock : 0)}";
             SetBar(harpoonFill, reload);
             bool locked = broadside != null && broadside.IsBlockedBySafeHarbor;
             harborLockText.gameObject.SetActive(locked);
