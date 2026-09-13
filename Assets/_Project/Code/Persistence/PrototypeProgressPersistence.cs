@@ -3,6 +3,7 @@ using System.IO;
 using Seaborn.Combat;
 using Seaborn.Hunting;
 using Seaborn.Progression;
+using Seaborn.Ship;
 using UnityEngine;
 
 namespace Seaborn.Persistence
@@ -24,6 +25,12 @@ namespace Seaborn.Persistence
             public int chainStock;
             public int grapeshotStock;
             public int harpoonStock;
+            public int lightHarpoonStock;
+            public int heavyHarpoonStock;
+            public string selectedHarpoonId;
+            public string cannonId;
+            public int installedCannons;
+            public string sailId;
             public int hullLevel;
             public int cannonLevel;
             public int harpoonLevel;
@@ -38,6 +45,7 @@ namespace Seaborn.Persistence
         private HarpoonHuntingController harpoons;
         private PrototypeShipEquipment equipment;
         private PrototypeRegionalLootInventory materials;
+        private ShipLoadout loadout;
         private SaveData lastSnapshot;
         private float nextScanTime;
         private bool loaded;
@@ -93,9 +101,16 @@ namespace Seaborn.Persistence
                     PrototypeRegionalLootInventory>();
             }
 
+            if (loadout == null)
+            {
+                loadout = player.GetComponentInChildren<
+                    ShipLoadout>();
+            }
+
             if (!loaded && wallet != null &&
                 broadside != null && harpoons != null &&
-                equipment != null && materials != null)
+                equipment != null && materials != null &&
+                loadout != null)
             {
                 Load();
                 loaded = true;
@@ -157,8 +172,30 @@ namespace Seaborn.Persistence
                     data.chainStock,
                     data.grapeshotStock
                 );
-                harpoons.RestoreHarpoonStock(
-                    data.harpoonStock
+                bool legacyHarpoonStock =
+                    data.lightHarpoonStock == 0 &&
+                    data.heavyHarpoonStock == 0 &&
+                    data.harpoonStock > 0;
+                if (legacyHarpoonStock)
+                {
+                    harpoons.RestoreHarpoonStock(
+                        data.harpoonStock
+                    );
+                }
+                else
+                {
+                    harpoons.RestoreHarpoonStocks(
+                        data.lightHarpoonStock,
+                        data.heavyHarpoonStock,
+                        data.selectedHarpoonId
+                    );
+                }
+
+                loadout.Restore(
+                    data.cannonId,
+                    data.installedCannons,
+                    data.sailId,
+                    data.selectedHarpoonId
                 );
                 equipment.RestoreLevels(
                     data.hullLevel,
@@ -201,8 +238,26 @@ namespace Seaborn.Persistence
                 grapeshotStock = GetStock(
                     AmmunitionType.Grapeshot),
                 harpoonStock = harpoons != null
-                    ? harpoons.HarpoonStock
+                    ? harpoons.TotalHarpoonStock
                     : 0,
+                lightHarpoonStock = harpoons != null
+                    ? harpoons.LightHarpoonStock
+                    : 0,
+                heavyHarpoonStock = harpoons != null
+                    ? harpoons.HeavyHarpoonStock
+                    : 0,
+                selectedHarpoonId = harpoons != null
+                    ? harpoons.SelectedHarpoonId
+                    : "light_2kg",
+                cannonId = loadout != null
+                    ? loadout.CannonId
+                    : "iron_6lb",
+                installedCannons = loadout != null
+                    ? loadout.InstalledCannons
+                    : 6,
+                sailId = loadout != null
+                    ? loadout.SailId
+                    : "patched_canvas",
                 hullLevel = equipment != null
                     ? equipment.HullLevel
                     : 0,
@@ -275,6 +330,24 @@ namespace Seaborn.Persistence
                     second.grapeshotStock &&
                 first.harpoonStock ==
                     second.harpoonStock &&
+                first.lightHarpoonStock ==
+                    second.lightHarpoonStock &&
+                first.heavyHarpoonStock ==
+                    second.heavyHarpoonStock &&
+                string.Equals(
+                    first.selectedHarpoonId,
+                    second.selectedHarpoonId,
+                    StringComparison.Ordinal) &&
+                string.Equals(
+                    first.cannonId,
+                    second.cannonId,
+                    StringComparison.Ordinal) &&
+                first.installedCannons ==
+                    second.installedCannons &&
+                string.Equals(
+                    first.sailId,
+                    second.sailId,
+                    StringComparison.Ordinal) &&
                 first.hullLevel == second.hullLevel &&
                 first.cannonLevel == second.cannonLevel &&
                 first.harpoonLevel == second.harpoonLevel &&
