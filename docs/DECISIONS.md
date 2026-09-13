@@ -255,3 +255,11 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 - Oyuncu ilgili rıhtımın yaklaşma alanına girip E ile yanaşır.
 - Tersane batı istasyonunda; ikmal ve hazırlık doğu ticaret istasyonunda; kontratlar ayrıca liman idaresinde kullanılabilir.
 - Bu durum ileride gemiden inme ve yürünebilir kaptan akışına dönüştürülebilir.
+
+
+## 2026-09-13 — Sefer haritaları farklı risk ve faaliyet profillerine sahiptir
+
+- Merkez Sular iki korsan ve üç Tideback ile dengeli başlangıç alanıdır; Leviathan içermez.
+- Doğu Avları altı Tideback, seyrek korsan tehdidi ve Stormjaw ile av ekonomisi rotasıdır.
+- Batı Sınırı beş korsan, tek Tideback ve daha yüksek çatışma yoğunluğuyla savaş rotasıdır.
+- Karşılaşmalar oyuncunun giriş noktasına göre değil haritanın sabit merkezine göre üretilir.
