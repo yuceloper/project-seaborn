@@ -172,6 +172,7 @@ namespace Seaborn.Progression
         private PrototypeCaptainProgression progression;
         private ShipProfileController profile;
         private ShipLoadout loadout;
+        private PrototypeEquipmentInventory equipmentInventory;
 
         private void Bind(Transform player)
         {
@@ -183,6 +184,9 @@ namespace Seaborn.Progression
                 ShipProfileController>();
             loadout = player.GetComponentInChildren<
                 ShipLoadout>();
+            equipmentInventory =
+                player.GetComponentInChildren<
+                    PrototypeEquipmentInventory>();
 
             if (profile != null &&
                 !string.Equals(
@@ -218,6 +222,16 @@ namespace Seaborn.Progression
             }
 
             loadout?.Apply();
+
+            if (equipmentInventory != null &&
+                loadout != null &&
+                equipmentInventory.CanUseShipyard)
+            {
+                equipmentInventory.TryEquipCannons(
+                    loadout.CannonId
+                );
+            }
+
             return true;
         }
 
