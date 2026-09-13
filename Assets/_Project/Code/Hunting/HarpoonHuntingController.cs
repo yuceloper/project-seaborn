@@ -483,6 +483,9 @@ namespace Seaborn.Hunting
                 .PrototypeCaptainProgression
                 .EnsureAttached(player.transform);
             Seaborn.Progression
+                .PrototypeCaptainSkills
+                .EnsureAttached(player.transform);
+            Seaborn.Progression
                 .PrototypeFleetInventory
                 .EnsureAttached(player.transform);
 
