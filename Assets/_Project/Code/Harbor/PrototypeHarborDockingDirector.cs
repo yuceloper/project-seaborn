@@ -82,11 +82,9 @@ namespace Seaborn.Harbor
             if (initialized) return;
 
             initialized = true;
-            origin = new Vector3(
-                player.position.x,
-                0f,
-                player.position.z
-            );
+            // Harbor stations belong to the harbor map,
+            // not to the player's scene-entry position.
+            origin = Vector3.zero;
             CreateMarker(
                 PrototypeHarborStation.Shipyard,
                 new Color(0.9f, 0.57f, 0.2f, 0.82f)
