@@ -36,6 +36,7 @@ namespace Seaborn.Harbor.UI
         private Transform player;
         private PrototypeFleetInventory fleet;
         private PrototypeSilverWallet wallet;
+        private PrototypeCaptainProgression progression;
         private GameObject panel;
         private Text silverText;
         private Text statusText;
@@ -82,6 +83,8 @@ namespace Seaborn.Harbor.UI
                 PrototypeFleetInventory>();
             wallet = player.GetComponentInChildren<
                 PrototypeSilverWallet>();
+            progression = player.GetComponentInChildren<
+                PrototypeCaptainProgression>();
         }
 
         private void Update()
@@ -253,7 +256,7 @@ namespace Seaborn.Harbor.UI
                 $"Menzil {definition.cannonRange:0.#}  •  " +
                 $"Hız {definition.speedMultiplier:0.##}\n" +
                 $"Gövde {definition.maximumHealth:0}  •  " +
-                $"Savunma {definition.defense:0}";
+                $"Lisans SV. {definition.requiredCaptainLevel}";
 
             if (active)
             {
@@ -267,9 +270,15 @@ namespace Seaborn.Harbor.UI
             }
             else
             {
-                row.ActionLabel.text =
-                    $"{definition.basePrice} S";
+                bool levelUnlocked =
+                    progression != null &&
+                    progression.MeetsLevel(
+                        definition.requiredCaptainLevel);
+                row.ActionLabel.text = levelUnlocked
+                    ? $"{definition.basePrice} S"
+                    : $"SV. {definition.requiredCaptainLevel}";
                 row.Action.interactable =
+                    levelUnlocked &&
                     silver >= definition.basePrice;
             }
         }
@@ -292,6 +301,12 @@ namespace Seaborn.Harbor.UI
                     break;
                 case ShipMarketResult.InsufficientSilver:
                     ShowStatus("Yeterli silver yok.", Danger);
+                    break;
+                case ShipMarketResult.LevelLocked:
+                    ShowStatus(
+                        "Kaptan seviyesi bu gemi lisansı için yetersiz.",
+                        Danger
+                    );
                     break;
                 case ShipMarketResult.AlreadyOwned:
                     ShowStatus("Bu gemi zaten filonda.", Muted);
