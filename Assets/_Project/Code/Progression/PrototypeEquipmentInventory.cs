@@ -25,6 +25,11 @@ namespace Seaborn.Progression
 
         public event Action InventoryChanged;
 
+        public int Iron6LbCannons => iron6LbCannons;
+        public int Iron12LbCannons => iron12LbCannons;
+        public int PatchedCanvasSails => patchedCanvasSails;
+        public int RatSails => ratSails;
+
         public static PrototypeEquipmentInventory EnsureAttached(
             Transform player)
         {
