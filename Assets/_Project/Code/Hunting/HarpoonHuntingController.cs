@@ -521,6 +521,9 @@ namespace Seaborn.Hunting
                 Seaborn.Harbor.UI
                     .PrototypeHarborContractPanel
                     .EnsureCreated(player.transform);
+                Seaborn.Harbor.UI
+                    .PrototypeCaptainSkillPanel
+                    .EnsureCreated(player.transform);
             }
             else
             {
