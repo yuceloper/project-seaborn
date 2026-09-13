@@ -460,6 +460,9 @@ namespace Seaborn.Hunting
                 .EnsureAttached(player.transform);
             Seaborn.Ship.ShipLoadout
                 .EnsureAttached(player.transform);
+            Seaborn.Progression
+                .PrototypeEquipmentInventory
+                .EnsureAttached(player.transform);
 
             if (isHarbor)
             {
