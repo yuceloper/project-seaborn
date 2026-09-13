@@ -1,6 +1,7 @@
 using System;
 using Seaborn.Combat;
 using Seaborn.Expeditions;
+using Seaborn.Equipment;
 using Seaborn.Harbor;
 using Seaborn.Recovery;
 using UnityEngine;
@@ -12,6 +13,10 @@ namespace Seaborn.Hunting
     public sealed class HarpoonHuntingController :
         MonoBehaviour
     {
+        [Header("Harpoon profile")]
+        [SerializeField]
+        private string selectedHarpoonId = "light_2kg";
+
         [SerializeField, Min(1f)]
         private float maximumRange = 12f;
 
@@ -37,6 +42,9 @@ namespace Seaborn.Hunting
         private float equipmentReloadMultiplier = 1f;
 
         public event Action HuntingStateChanged;
+
+        public string SelectedHarpoonId => selectedHarpoonId;
+        public HarpoonDefinition SelectedHarpoon { get; private set; }
 
         public bool IsAiming { get; private set; }
         public Vector3 AimPoint { get; private set; }
@@ -70,6 +78,7 @@ namespace Seaborn.Hunting
 
         private void Awake()
         {
+            ApplyHarpoonProfile();
             aimCamera = UnityEngine.Camera.main;
             CreateAimLine();
         }
@@ -115,6 +124,21 @@ namespace Seaborn.Hunting
             {
                 Fire();
             }
+        }
+
+        public bool TrySelectHarpoon(string harpoonId)
+        {
+            if (!EquipmentCatalog.TryGetHarpoon(
+                    harpoonId,
+                    out HarpoonDefinition definition))
+            {
+                return false;
+            }
+
+            selectedHarpoonId = harpoonId;
+            ApplyHarpoonProfile(definition);
+            HuntingStateChanged?.Invoke();
+            return true;
         }
 
         public void AddHarpoons(int amount)
@@ -213,6 +237,39 @@ namespace Seaborn.Hunting
             nextFireTime =
                 Time.time + EffectiveReloadDuration;
             HuntingStateChanged?.Invoke();
+        }
+
+        private void ApplyHarpoonProfile()
+        {
+            if (EquipmentCatalog.TryGetHarpoon(
+                    selectedHarpoonId,
+                    out HarpoonDefinition definition))
+            {
+                ApplyHarpoonProfile(definition);
+                return;
+            }
+
+            Debug.LogWarning(
+                $"Unknown harpoon profile: {selectedHarpoonId}",
+                this
+            );
+        }
+
+        private void ApplyHarpoonProfile(
+            HarpoonDefinition definition)
+        {
+            SelectedHarpoon = definition;
+            harpoonDamage = Mathf.Max(0f, definition.damage);
+            maximumRange = Mathf.Max(1f, definition.range);
+            reloadDuration = Mathf.Max(
+                0.1f,
+                definition.reloadDuration
+            );
+            flightDuration = Mathf.Max(
+                0.1f,
+                definition.flightDuration
+            );
+            arcHeight = Mathf.Max(0f, definition.arcHeight);
         }
 
         private void CreateAimLine()
