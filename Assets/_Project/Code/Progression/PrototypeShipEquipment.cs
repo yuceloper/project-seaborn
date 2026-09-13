@@ -20,6 +20,7 @@ namespace Seaborn.Progression
         NotAtHarbor,
         MaximumLevel,
         InsufficientSilver,
+        InsufficientMaterials,
         Unavailable
     }
 
@@ -51,6 +52,7 @@ namespace Seaborn.Progression
 
         private Transform boundPlayer;
         private PrototypeSilverWallet wallet;
+        private PrototypeRegionalLootInventory materials;
         private ShipHealth health;
         private BroadsideController broadside;
         private HarpoonHuntingController harpoons;
@@ -113,6 +115,12 @@ namespace Seaborn.Progression
                 return ShipUpgradeResult.MaximumLevel;
             }
 
+            if (!CanAffordUpgradeMaterials(track))
+            {
+                return ShipUpgradeResult
+                    .InsufficientMaterials;
+            }
+
             int cost = GetUpgradeCost(track);
             if (wallet == null ||
                 !wallet.TrySpendSilver(
@@ -122,6 +130,7 @@ namespace Seaborn.Progression
                 return ShipUpgradeResult.InsufficientSilver;
             }
 
+            SpendUpgradeMaterials(track);
             SetLevel(track, level + 1);
             ApplyModifiers(true);
             EquipmentChanged?.Invoke();
@@ -175,12 +184,111 @@ namespace Seaborn.Progression
             boundPlayer = player;
             wallet = player.GetComponentInChildren<
                 PrototypeSilverWallet>();
+            materials = player.GetComponentInChildren<
+                PrototypeRegionalLootInventory>();
             health = player.GetComponentInChildren<ShipHealth>();
             broadside = player.GetComponentInChildren<
                 BroadsideController>();
             harpoons = player.GetComponentInChildren<
                 HarpoonHuntingController>();
             ApplyModifiers(false);
+        }
+
+        public bool CanAffordUpgradeMaterials(
+            ShipUpgradeTrack track)
+        {
+            if (materials == null)
+            {
+                return false;
+            }
+
+            int level = GetLevel(track);
+            if (level >= MaximumLevel)
+            {
+                return true;
+            }
+
+            RegionalMaterialType primary =
+                PrimaryMaterial(track);
+            int primaryCost = level + 1;
+            if (!materials.CanAfford(
+                    primary,
+                    primaryCost))
+            {
+                return false;
+            }
+
+            if (level < 2)
+            {
+                return true;
+            }
+
+            RegionalMaterialType rare =
+                track == ShipUpgradeTrack.HarpoonGear
+                    ? RegionalMaterialType.StormjawScale
+                    : RegionalMaterialType
+                        .LostChartFragment;
+            return materials.CanAfford(rare, 1);
+        }
+
+        public string UpgradeRequirementDescription(
+            ShipUpgradeTrack track)
+        {
+            int level = GetLevel(track);
+            if (level >= MaximumLevel)
+            {
+                return "Azami seviye";
+            }
+
+            RegionalMaterialType primary =
+                PrimaryMaterial(track);
+            string result =
+                $"{level + 1} " +
+                $"{PrototypeRegionalLootInventory.DisplayName(primary)}";
+
+            if (level >= 2)
+            {
+                RegionalMaterialType rare =
+                    track == ShipUpgradeTrack.HarpoonGear
+                        ? RegionalMaterialType.StormjawScale
+                        : RegionalMaterialType
+                            .LostChartFragment;
+                result +=
+                    $" + 1 " +
+                    PrototypeRegionalLootInventory
+                        .DisplayName(rare);
+            }
+
+            return result;
+        }
+
+        private void SpendUpgradeMaterials(
+            ShipUpgradeTrack track)
+        {
+            int level = GetLevel(track);
+            RegionalMaterialType primary =
+                PrimaryMaterial(track);
+            materials.TrySpend(primary, level + 1);
+
+            if (level < 2)
+            {
+                return;
+            }
+
+            RegionalMaterialType rare =
+                track == ShipUpgradeTrack.HarpoonGear
+                    ? RegionalMaterialType.StormjawScale
+                    : RegionalMaterialType
+                        .LostChartFragment;
+            materials.TrySpend(rare, 1);
+        }
+
+        private static RegionalMaterialType
+            PrimaryMaterial(ShipUpgradeTrack track)
+        {
+            return track == ShipUpgradeTrack.HarpoonGear
+                ? RegionalMaterialType.TideOil
+                : RegionalMaterialType.CorsairIron;
         }
 
         private void SetLevel(
