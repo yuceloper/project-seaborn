@@ -366,7 +366,7 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Korsan ve Stormjaw hedeflemesinin görünmezlik sırasında durması
 - [x] Stokların HUD ve yerel kayda bağlanması
 - [x] Ticaret rıhtımında sarf malzemesi satın alma ve ikmal
-- [ ] Süreli saldırı, savunma, hız ve doldurma güçlendirmeleri
+- [x] Süreli saldırı, savunma, hız ve doldurma güçlendirmeleri
 
 
 ### Tortuga tedarikçisi
@@ -379,3 +379,16 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Satın alınan stokları mevcut kalıcı kayıt akışına bağlama
 - [ ] Fiyatları 15–25 dakikalık gerçek sefer verisiyle dengeleme
 - [ ] Oyuncular arası sarf malzemesi ticareti ve pazar vergisi
+
+
+### Süreli sefer güçlendirmeleri
+
+- [x] 6 tuşunda Corsair Rum: top hasarı ve doldurma
+- [x] 7 tuşunda Gale Elixir: hız ve manevra
+- [x] 8 tuşunda Ironbark Brew: alınan hasar azaltma
+- [x] 90 saniyelik hızlandırılmış prototip süresi
+- [x] Aynı etkinin birikmemesi, yeniden kullanımda sürenin yenilenmesi
+- [x] Aktif sürelerin ve stokların HUD'da gösterilmesi
+- [x] Yeni ürünlerin Tortuga tedarikçisine bağlanması
+- [x] Stokların yerel kayıtta korunması; aktif sürelerin oturumluk kalması
+- [ ] Nihai 10 dakikalık süre ve fiyatların sefer telemetrisiyle dengelenmesi

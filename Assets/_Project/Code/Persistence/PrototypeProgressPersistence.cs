@@ -23,6 +23,9 @@ namespace Seaborn.Persistence
             public int gold;
             public int tortugaTonics = 3;
             public int lightsOfTortuga = 1;
+            public int corsairRum = 2;
+            public int galeElixirs = 2;
+            public int ironbarkBrews = 2;
             public int selectedAmmunition;
             public int standardStock;
             public int chainStock;
@@ -236,7 +239,10 @@ namespace Seaborn.Persistence
                 goldWallet.RestoreGold(data.gold);
                 consumables.RestoreStocks(
                     data.tortugaTonics,
-                    data.lightsOfTortuga
+                    data.lightsOfTortuga,
+                    data.corsairRum,
+                    data.galeElixirs,
+                    data.ironbarkBrews
                 );
                 broadside.RestorePersistentState(
                     selected,
@@ -329,6 +335,15 @@ namespace Seaborn.Persistence
                     : 0,
                 lightsOfTortuga = consumables != null
                     ? consumables.LightsOfTortuga
+                    : 0,
+                corsairRum = consumables != null
+                    ? consumables.CorsairRum
+                    : 0,
+                galeElixirs = consumables != null
+                    ? consumables.GaleElixirs
+                    : 0,
+                ironbarkBrews = consumables != null
+                    ? consumables.IronbarkBrews
                     : 0,
                 selectedAmmunition = broadside != null
                     ? (int)broadside.SelectedAmmunition
@@ -476,6 +491,10 @@ namespace Seaborn.Persistence
                     second.tortugaTonics &&
                 first.lightsOfTortuga ==
                     second.lightsOfTortuga &&
+                first.corsairRum == second.corsairRum &&
+                first.galeElixirs == second.galeElixirs &&
+                first.ironbarkBrews ==
+                    second.ironbarkBrews &&
                 first.selectedAmmunition ==
                     second.selectedAmmunition &&
                 first.standardStock ==

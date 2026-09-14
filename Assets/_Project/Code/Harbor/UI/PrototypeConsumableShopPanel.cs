@@ -125,7 +125,7 @@ namespace Seaborn.Harbor.UI
             rect.pivot = new Vector2(1f, 1f);
             rect.anchoredPosition =
                 new Vector2(-24f, -24f);
-            rect.sizeDelta = new Vector2(500f, 470f);
+            rect.sizeDelta = new Vector2(500f, 730f);
 
             GameObject accent =
                 CreateBlock(rect, "Accent", Gold);
@@ -194,13 +194,34 @@ namespace Seaborn.Harbor.UI
                 "7 sn görünmezlik  •  ateşle bozulur",
                 328f
             );
+            AddOffer(
+                rect,
+                ConsumableOffer.CorsairRum,
+                "CORSAIR RUM",
+                "90 sn  •  +%10 top hasarı ve doldurma",
+                414f
+            );
+            AddOffer(
+                rect,
+                ConsumableOffer.GaleElixir,
+                "GALE ELIXIR",
+                "90 sn  •  +%12 hız ve manevra",
+                500f
+            );
+            AddOffer(
+                rect,
+                ConsumableOffer.IronbarkBrew,
+                "IRONBARK BREW",
+                "90 sn  •  -%15 alınan hasar",
+                586f
+            );
 
             CreateText(
                 rect,
                 "Satın alımlar kalıcı filona eklenir.  •  E ile ayrıl",
                 12,
                 Muted,
-                new Vector2(22f, -432f),
+                new Vector2(22f, -692f),
                 new Vector2(456f, 22f),
                 FontStyle.Normal,
                 TextAnchor.MiddleCenter

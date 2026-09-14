@@ -195,9 +195,9 @@ namespace Seaborn.UI
             targetCrewFill = CreateBar(target, "Target Crew", new Vector2(230f, -80f), new Vector2(196f, 7f), out _);
             targetPanel.SetActive(false);
 
-            RectTransform resources = CreateCard("Resources", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-24f, -24f), new Vector2(310f, 124f));
+            RectTransform resources = CreateCard("Resources", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-24f, -24f), new Vector2(310f, 150f));
             silverText = CreateText(resources, font, "SILVER  0", 16, Gold, FontStyle.Bold, new Vector2(16f, -12f), new Vector2(278f, 24f), TextAnchor.UpperRight);
-            cargoText = CreateText(resources, font, "GÜVENCESİZ YÜK  0", 13, Cream, FontStyle.Normal, new Vector2(16f, -45f), new Vector2(278f, 68f), TextAnchor.UpperRight);
+            cargoText = CreateText(resources, font, "GÜVENCESİZ YÜK  0", 13, Cream, FontStyle.Normal, new Vector2(16f, -45f), new Vector2(278f, 96f), TextAnchor.UpperRight);
 
             RectTransform minimap = CreateCard(
                 "Navigation",
@@ -456,18 +456,34 @@ namespace Seaborn.UI
             int value = cargo != null ? cargo.UnsecuredSilverValue : 0;
             string capacity = cargo == null || cargo.MaximumSilverValue == int.MaxValue ? "SINIRSIZ" : cargo.MaximumSilverValue.ToString();
             string special = consumables != null
-                ? $"4 TONIC x{consumables.TortugaTonics}  •  " +
-                  $"5 LIGHT x{consumables.LightsOfTortuga}"
-                : "4 TONIC x0  •  5 LIGHT x0";
-            if (consumables != null &&
-                consumables.IsConcealed)
+                ? $"4 T:{consumables.TortugaTonics}  " +
+                  $"5 L:{consumables.LightsOfTortuga}  " +
+                  $"6 R:{consumables.CorsairRum}  " +
+                  $"7 G:{consumables.GaleElixirs}  " +
+                  $"8 I:{consumables.IronbarkBrews}"
+                : "4 T:0  5 L:0  6 R:0  7 G:0  8 I:0";
+            string active = "";
+            if (consumables != null)
             {
-                special =
-                    $"GÖRÜNMEZLİK  {consumables.ConcealmentRemaining:0.0} sn";
+                if (consumables.IsConcealed)
+                    active +=
+                        $"LIGHT {consumables.ConcealmentRemaining:0}s  ";
+                if (consumables.CorsairRumRemaining > 0f)
+                    active +=
+                        $"RUM {consumables.CorsairRumRemaining:0}s  ";
+                if (consumables.GaleElixirRemaining > 0f)
+                    active +=
+                        $"GALE {consumables.GaleElixirRemaining:0}s  ";
+                if (consumables.IronbarkBrewRemaining > 0f)
+                    active +=
+                        $"IRON {consumables.IronbarkBrewRemaining:0}s";
             }
             cargoText.text =
                 $"GÜVENCESİZ YÜK   {value} / {capacity}\n" +
-                $"BATIŞTA KAYBEDİLİR\n{special}";
+                $"BATIŞTA KAYBEDİLİR\n{special}" +
+                (string.IsNullOrEmpty(active)
+                    ? ""
+                    : $"\n{active}");
         }
 
         private void RefreshCombat()

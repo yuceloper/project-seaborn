@@ -9,7 +9,10 @@ namespace Seaborn.Harbor
     {
         TortugaTonic,
         TortugaTonicCrate,
-        LightOfTortuga
+        LightOfTortuga,
+        CorsairRum,
+        GaleElixir,
+        IronbarkBrew
     }
 
     public enum ConsumablePurchaseResult
@@ -52,6 +55,9 @@ namespace Seaborn.Harbor
                 ConsumableOffer.TortugaTonic => 90,
                 ConsumableOffer.TortugaTonicCrate => 240,
                 ConsumableOffer.LightOfTortuga => 650,
+                ConsumableOffer.CorsairRum => 180,
+                ConsumableOffer.GaleElixir => 160,
+                ConsumableOffer.IronbarkBrew => 200,
                 _ => 0
             };
         }
@@ -95,6 +101,15 @@ namespace Seaborn.Harbor
                 case ConsumableOffer.LightOfTortuga:
                     consumables.AddLightsOfTortuga(1);
                     break;
+                case ConsumableOffer.CorsairRum:
+                    consumables.AddCorsairRum(1);
+                    break;
+                case ConsumableOffer.GaleElixir:
+                    consumables.AddGaleElixirs(1);
+                    break;
+                case ConsumableOffer.IronbarkBrew:
+                    consumables.AddIronbarkBrews(1);
+                    break;
             }
 
             ShopChanged?.Invoke();
@@ -116,6 +131,12 @@ namespace Seaborn.Harbor
                     "Tortuga Tonic Sandığı",
                 ConsumableOffer.LightOfTortuga =>
                     "Light of Tortuga",
+                ConsumableOffer.CorsairRum =>
+                    "Corsair Rum",
+                ConsumableOffer.GaleElixir =>
+                    "Gale Elixir",
+                ConsumableOffer.IronbarkBrew =>
+                    "Ironbark Brew",
                 _ => "Sarf Malzemesi"
             };
         }
