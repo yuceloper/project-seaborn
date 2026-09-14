@@ -530,6 +530,9 @@ namespace Seaborn.Hunting
             Seaborn.Progression
                 .PrototypeFleetInventory
                 .EnsureAttached(player.transform);
+            Seaborn.Progression
+                .PrototypeDeckExtensionInventory
+                .EnsureAttached(player.transform);
 
             if (isHarbor)
             {
@@ -590,6 +593,9 @@ namespace Seaborn.Hunting
                 .EnsureCreated(player);
             Seaborn.Harbor.UI
                 .PrototypeConsumableShopPanel
+                .EnsureCreated(player);
+            Seaborn.Harbor.UI
+                .PrototypeExtendedDeckPanel
                 .EnsureCreated(player);
         }
 

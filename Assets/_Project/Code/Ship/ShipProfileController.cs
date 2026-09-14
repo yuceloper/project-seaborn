@@ -21,6 +21,12 @@ namespace Seaborn.Ship
 
         public string ShipId => shipId;
         public ShipDefinition Definition { get; private set; }
+        public int InstalledDeckExtensions { get; private set; }
+        public int EffectiveCannonSlots =>
+            Definition != null
+                ? Definition.cannonSlots +
+                  InstalledDeckExtensions
+                : 1;
 
         [RuntimeInitializeOnLoadMethod(
             RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -61,19 +67,52 @@ namespace Seaborn.Ship
 
             ShipHealth health = GetComponentInChildren<ShipHealth>();
             health?.SetBaseMaximumHealth(
-                definition.maximumHealth * PrototypeHealthScale,
+                (definition.maximumHealth +
+                 InstalledDeckExtensions * 250f) *
+                PrototypeHealthScale,
                 restoreHealthWhenApplied
             );
 
             BroadsideController broadside =
                 GetComponentInChildren<BroadsideController>();
             broadside?.SetShipConfiguration(
-                definition.cannonSlots,
+                EffectiveCannonSlots,
                 definition.startingCannons,
                 definition.cannonRange
             );
 
             ProfileApplied?.Invoke(definition);
+        }
+
+        public void SetDeckExtensions(
+            int installed,
+            bool restoreHealth)
+        {
+            int limit = Definition != null
+                ? Mathf.Max(
+                    0,
+                    Definition.deckExtensionLimit)
+                : 0;
+            int nextInstalled =
+                Mathf.Clamp(installed, 0, limit);
+            if (InstalledDeckExtensions == nextInstalled)
+                return;
+
+            InstalledDeckExtensions = nextInstalled;
+            if (Definition == null) return;
+
+            ShipHealth health =
+                GetComponentInChildren<ShipHealth>();
+            health?.SetBaseMaximumHealth(
+                (Definition.maximumHealth +
+                 InstalledDeckExtensions * 250f) *
+                PrototypeHealthScale,
+                restoreHealth
+            );
+
+            ShipLoadout loadout =
+                GetComponentInChildren<ShipLoadout>();
+            loadout?.Apply();
         }
 
         public bool TrySelectProfile(string nextShipId, bool restoreHealth)

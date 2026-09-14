@@ -26,6 +26,10 @@ namespace Seaborn.Persistence
             public int corsairRum = 2;
             public int galeElixirs = 2;
             public int ironbarkBrews = 2;
+            public int availableDeckExtensions = 1;
+            public int starterDeckExtensions;
+            public int ratDeckExtensions;
+            public int dreadwakeDeckExtensions;
             public int selectedAmmunition;
             public int standardStock;
             public int chainStock;
@@ -73,6 +77,7 @@ namespace Seaborn.Persistence
         private PrototypeFleetInventory fleet;
         private PrototypeCaptainProgression captainProgression;
         private PrototypeCaptainSkills captainSkills;
+        private PrototypeDeckExtensionInventory deckExtensions;
         private SaveData lastSnapshot;
         private float nextScanTime;
         private bool loaded;
@@ -172,6 +177,13 @@ namespace Seaborn.Persistence
                         PrototypeCaptainSkills>();
             }
 
+            if (deckExtensions == null)
+            {
+                deckExtensions =
+                    player.GetComponentInChildren<
+                        PrototypeDeckExtensionInventory>();
+            }
+
             if (!loaded && wallet != null &&
                 goldWallet != null &&
                 consumables != null &&
@@ -180,7 +192,8 @@ namespace Seaborn.Persistence
                 loadout != null && inventory != null &&
                 fleet != null &&
                 captainProgression != null &&
-                captainSkills != null)
+                captainSkills != null &&
+                deckExtensions != null)
             {
                 Load();
                 loaded = true;
@@ -279,6 +292,12 @@ namespace Seaborn.Persistence
                     data.harpoonRiggingRank,
                     data.reinforcedHullRank,
                     data.fineSailsRank
+                );
+                deckExtensions.Restore(
+                    data.availableDeckExtensions,
+                    data.starterDeckExtensions,
+                    data.ratDeckExtensions,
+                    data.dreadwakeDeckExtensions
                 );
                 fleet.Restore(
                     data.ownsStarterSloop,
@@ -396,6 +415,22 @@ namespace Seaborn.Persistence
                 activeShipId = fleet != null
                     ? fleet.ActiveShipId
                     : "starter_sloop",
+                availableDeckExtensions =
+                    deckExtensions != null
+                        ? deckExtensions.AvailableExtensions
+                        : 0,
+                starterDeckExtensions =
+                    deckExtensions != null
+                        ? deckExtensions.StarterSloopExtensions
+                        : 0,
+                ratDeckExtensions =
+                    deckExtensions != null
+                        ? deckExtensions.RatSailsExtensions
+                        : 0,
+                dreadwakeDeckExtensions =
+                    deckExtensions != null
+                        ? deckExtensions.DreadwakeExtensions
+                        : 0,
                 captainExperience =
                     captainProgression != null
                         ? captainProgression.TotalExperience
@@ -540,6 +575,14 @@ namespace Seaborn.Persistence
                     first.activeShipId,
                     second.activeShipId,
                     StringComparison.Ordinal) &&
+                first.availableDeckExtensions ==
+                    second.availableDeckExtensions &&
+                first.starterDeckExtensions ==
+                    second.starterDeckExtensions &&
+                first.ratDeckExtensions ==
+                    second.ratDeckExtensions &&
+                first.dreadwakeDeckExtensions ==
+                    second.dreadwakeDeckExtensions &&
                 first.captainExperience ==
                     second.captainExperience &&
                 first.cannonMasteryRank ==

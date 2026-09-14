@@ -405,3 +405,17 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] HUD'da tamir döngüsü, miktarı ve kilit süresi
 - [ ] Tamir verimliliği ekipmanları ve kaptan yetenekleri
 - [ ] Üretim ölçeğinde tahta, bez ve mürettebat kaynağı tüketimi
+
+
+### Extended Deck ilerlemesi
+
+- [x] Hesap envanterinde nadir Extended Deck stoğu
+- [x] Tersanede aktif gemiye kalıcı kurulum
+- [x] Her kurulumda +1 top yuvası ve +250 taban gövde
+- [x] Gemi sınıfının deckExtensionLimit sınırını uygulama
+- [x] Kurulumların Starter Sloop, Rat Sails ve Dreadwake için ayrı tutulması
+- [x] Top ekipman panelinin genişletilmiş kapasiteyi kullanması
+- [x] Stormjaw avından yüzde 25 nadir düşüş
+- [x] Stok ve gemiye kurulu miktarların yerel kaydı
+- [ ] Genişletme sökme ve oyuncular arası ticaret
+- [ ] Güverte ağırlığına bağlı hız/manevra bedelini dengeleme

@@ -266,7 +266,7 @@ namespace Seaborn.Harbor.UI
                     : null;
             int cannonCapacity =
                 shipProfile?.Definition != null
-                    ? shipProfile.Definition.cannonSlots
+                    ? shipProfile.EffectiveCannonSlots
                     : 0;
             int storedCannons =
                 loadout != null && inventory != null

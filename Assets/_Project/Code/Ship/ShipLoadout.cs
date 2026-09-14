@@ -60,7 +60,12 @@ namespace Seaborn.Ship
             }
 
             ShipDefinition ship = GetShipDefinition();
-            if (ship == null || count > ship.cannonSlots)
+            ShipProfileController profile =
+                GetComponent<ShipProfileController>();
+            int capacity = profile != null
+                ? profile.EffectiveCannonSlots
+                : ship != null ? ship.cannonSlots : 0;
+            if (ship == null || count > capacity)
             {
                 return false;
             }
@@ -166,17 +171,22 @@ namespace Seaborn.Ship
 
             Cannon = cannon;
             Sail = sail;
+            ShipProfileController profile =
+                GetComponent<ShipProfileController>();
+            int cannonCapacity = profile != null
+                ? profile.EffectiveCannonSlots
+                : ship.cannonSlots;
             installedCannons = Mathf.Clamp(
                 installedCannons,
                 1,
-                ship.cannonSlots
+                cannonCapacity
             );
 
             BroadsideController broadside =
                 GetComponentInChildren<
                     BroadsideController>();
             broadside?.SetCannonLoadout(
-                ship.cannonSlots,
+                cannonCapacity,
                 installedCannons,
                 Mathf.Min(ship.cannonRange, cannon.range),
                 cannon.reloadDuration,
