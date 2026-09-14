@@ -390,3 +390,14 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 **Karar:** Saha tamiri ilk prototipte ayrı malzeme tüketmez. Bedeli zaman, düşük hareket kabiliyeti ve çatışmada kolay kesilmesidir. Tortuga Tonic hızlı ve pahalı acil onarım rolünü korur.
 
 **Neden:** Gemi profillerindeki periyodik tamir değerini gerçek bir taktik karara dönüştürmek; oyuncunun çatışmadan uzaklaşma, güvenli rota bulma ve ne zaman tekrar ateş edeceği kararlarını güçlendirmek.
+
+
+## 2026-09-14 — Extended Deck gemiye kalıcı ve sınırlı kurulur
+
+**Karar:** Extended Deck hesap envanterinde nadir eşya olarak tutulur, yalnızca Tersane'ye yanaşıldığında aktif gemiye kurulur ve gemiler arasında otomatik taşınmaz. Her kurulum geminin top kapasitesine bir yuva ve taban gövdesine 250 ekler. Starter Sloop bir, Rat Sails iki, Dreadwake sekiz genişletmeyle sınırlıdır.
+
+**Karar:** Prototip testi için kaptan başlangıçta bir Extended Deck taşır. Stormjaw Leviathan tamamlandığında yüzde 25 ihtimalle bir tane daha düşer. Eşya ve her gemiye kurulu miktar yerel kayıtta korunur. İlk sürümde sökme, yeniden satış ve oyuncular arası ticaret yoktur.
+
+**Karar:** Genişletilmiş top yuvası yalnızca kapasite açar; bedava top üretmez. Oyuncu sahip olduğu topları tersane yükleme panelinden yeni yuvaya ayrıca kurmalıdır.
+
+**Neden:** Nadir ganimeti doğrudan Silver'a dönüşen tek kullanımlık ödül olmaktan çıkarıp belirli bir gemiye bağlanan uzun vadeli değer üretmek; güçlü gemilerin sınırsız büyümesini sınıf bazlı tavanla engellemek.
