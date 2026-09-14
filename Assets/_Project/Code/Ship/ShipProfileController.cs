@@ -95,21 +95,20 @@ namespace Seaborn.Ship
                 : 0;
             InstalledDeckExtensions =
                 Mathf.Clamp(installed, 0, limit);
-            if (Definition != null)
-            {
-                ApplyProfile();
-                if (!restoreHealth)
-                {
-                    ShipHealth health =
-                        GetComponentInChildren<ShipHealth>();
-                    health?.SetBaseMaximumHealth(
-                        (Definition.maximumHealth +
-                         InstalledDeckExtensions * 250f) *
-                        PrototypeHealthScale,
-                        false
-                    );
-                }
-            }
+            if (Definition == null) return;
+
+            ShipHealth health =
+                GetComponentInChildren<ShipHealth>();
+            health?.SetBaseMaximumHealth(
+                (Definition.maximumHealth +
+                 InstalledDeckExtensions * 250f) *
+                PrototypeHealthScale,
+                restoreHealth
+            );
+
+            ShipLoadout loadout =
+                GetComponentInChildren<ShipLoadout>();
+            loadout?.Apply();
         }
 
         public bool TrySelectProfile(string nextShipId, bool restoreHealth)
