@@ -361,3 +361,12 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 **Karar:** Prototip başlangıç stoğu üç Tortuga Tonic ve bir Light of Tortuga'dır. Stoklar kalıcı kayda yazılır ve HUD'da gösterilir. Yeniden ikmal, Ticaret rıhtımı ekonomisiyle ayrı iterasyonda bağlanacaktır.
 
 **Neden:** Hotbar'ı yalnızca mühimmat seçimi olmaktan çıkarıp oyuncuya acil dayanıklılık ve taktik kaçış kararı vermek; görünmezliği ücretsiz çatışma sıfırlama yerine saldırıyla bozulan sınırlı bir konumlanma aracı olarak tutmak.
+
+
+## 2026-09-14 — Tortuga sarf malzemesi ticareti
+
+**Karar:** İlk sarf malzemesi mağazası yalnızca güvenli limandaki Ticaret ve İkmal iskelesine yanaşıldığında açılır. Tek Tortuga Tonic 90 Silver, üçlü sandık 240 Silver ve Light of Tortuga 650 Silver'dır. Satın alma kalıcı Silver harcar ve ürünü kaptanın kalıcı stoğuna ekler.
+
+**Karar:** Üçlü Tonic sandığı 30 Silver hacim indirimi sağlar. Light of Tortuga'nın fiyatı acil iyileştirmeden belirgin biçimde yüksektir; görünmezlik sıradan her savaşta kullanılacak bir tüketim değil, hazırlanılan riskli sefer için değerli bir kaçış aracı olarak konumlanır.
+
+**Neden:** Güvenceye alınan Silver için mühimmat ve tersane dışında tekrarlanabilir bir gider oluşturmak; sarf malzemelerini bedava yenilenen hotbar yetenekleri yerine sefer öncesi ekonomi kararına bağlamak. Fiyatlar telemetri oluşana kadar prototip değeridir.
