@@ -379,3 +379,14 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 **Karar:** Başlangıçta her süreli üründen iki adet bulunur. Corsair Rum 180, Gale Elixir 160 ve Ironbark Brew 200 Silver karşılığında Ticaret iskelesinden alınır. Stoklar kalıcıdır; aktif güçlendirme süreleri sahne geçişinde devam eder ancak oyun kapatıldığında kaydedilmez.
 
 **Neden:** Oyuncuya sefer öncesinde av, çatışma veya kaçış odağı seçtirmek; güçlendirmeleri sonsuz birikim yerine sınırlı ve okunabilir yüzde farklarında tutmak. Doksan saniye prototip test süresidir; üretimde hedeflenen yaklaşık on dakikalık değer sefer ekonomisi ölçüldükten sonra belirlenecektir.
+
+
+## 2026-09-14 — Saha tamiri savunmasız bir duruştur
+
+**Karar:** Oyuncu açık denizde R tuşuyla saha tamirini açıp kapatır. Her gemi katalogdaki repairAmount ve repairInterval değerini kullanır; prototip can ölçeğine yüzde 5 katsayısı uygulanır. Tamir sırasında gemi normal hızının yüzde 45'iyle, normal dönüşünün yüzde 70'iyle hareket eder.
+
+**Karar:** Top veya zıpkın ateşi tamiri anında keser. Hasar almak tamiri keser ve yeniden başlatmayı sekiz saniye kilitler. Tam canla, batmış gemiyle veya güvenli limanda saha tamiri başlatılamaz; limanda mevcut tersane onarımı kullanılır.
+
+**Karar:** Saha tamiri ilk prototipte ayrı malzeme tüketmez. Bedeli zaman, düşük hareket kabiliyeti ve çatışmada kolay kesilmesidir. Tortuga Tonic hızlı ve pahalı acil onarım rolünü korur.
+
+**Neden:** Gemi profillerindeki periyodik tamir değerini gerçek bir taktik karara dönüştürmek; oyuncunun çatışmadan uzaklaşma, güvenli rota bulma ve ne zaman tekrar ateş edeceği kararlarını güçlendirmek.
