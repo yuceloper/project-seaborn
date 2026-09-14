@@ -20,6 +20,7 @@ namespace Seaborn.Persistence
         {
             public int version = CurrentVersion;
             public int silver;
+            public int gold;
             public int selectedAmmunition;
             public int standardStock;
             public int chainStock;
@@ -56,6 +57,7 @@ namespace Seaborn.Persistence
         }
 
         private PrototypeSilverWallet wallet;
+        private PrototypeGoldWallet goldWallet;
         private BroadsideController broadside;
         private HarpoonHuntingController harpoons;
         private PrototypeShipEquipment equipment;
@@ -94,6 +96,12 @@ namespace Seaborn.Persistence
             {
                 wallet = player.GetComponentInChildren<
                     PrototypeSilverWallet>();
+            }
+
+            if (goldWallet == null)
+            {
+                goldWallet = player.GetComponentInChildren<
+                    PrototypeGoldWallet>();
             }
 
             if (broadside == null)
@@ -153,6 +161,7 @@ namespace Seaborn.Persistence
             }
 
             if (!loaded && wallet != null &&
+                goldWallet != null &&
                 broadside != null && harpoons != null &&
                 equipment != null && materials != null &&
                 loadout != null && inventory != null &&
@@ -214,6 +223,7 @@ namespace Seaborn.Persistence
                         : AmmunitionType.Standard;
 
                 wallet.RestoreSilver(data.silver);
+                goldWallet.RestoreGold(data.gold);
                 broadside.RestorePersistentState(
                     selected,
                     data.standardStock,
@@ -299,6 +309,7 @@ namespace Seaborn.Persistence
             return new SaveData
             {
                 silver = wallet != null ? wallet.Silver : 0,
+                gold = goldWallet != null ? goldWallet.Gold : 0,
                 selectedAmmunition = broadside != null
                     ? (int)broadside.SelectedAmmunition
                     : (int)AmmunitionType.Standard,
@@ -440,6 +451,7 @@ namespace Seaborn.Persistence
             return first != null &&
                 second != null &&
                 first.silver == second.silver &&
+                first.gold == second.gold &&
                 first.selectedAmmunition ==
                     second.selectedAmmunition &&
                 first.standardStock ==
