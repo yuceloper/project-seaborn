@@ -200,6 +200,17 @@ namespace Seaborn.Ship
                 return;
             }
 
+            PrototypeShipConsumables consumables =
+                target.root.GetComponent<
+                    PrototypeShipConsumables>();
+            if (consumables != null &&
+                consumables.IsConcealed)
+            {
+                aimPreparation = 0f;
+                StopMoving();
+                return;
+            }
+
             Vector3 toTarget =
                 target.position - transform.position;
             toTarget.y = 0f;
