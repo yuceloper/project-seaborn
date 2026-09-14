@@ -29,6 +29,7 @@ namespace Seaborn.UI
         private PrototypeHuntCargo cargo;
         private PrototypeSilverWallet wallet;
         private PrototypeGoldWallet goldWallet;
+        private PrototypeShipConsumables consumables;
         private PrototypeCaptainProgression captainProgression;
         private PrototypeExpeditionRegionDirector worldMap;
 
@@ -125,6 +126,7 @@ namespace Seaborn.UI
             cargo = player.GetComponentInChildren<PrototypeHuntCargo>();
             wallet = player.GetComponentInChildren<PrototypeSilverWallet>();
             goldWallet = player.GetComponentInChildren<PrototypeGoldWallet>();
+            consumables = player.GetComponentInChildren<PrototypeShipConsumables>();
             captainProgression =
                 player.GetComponentInChildren<
                     PrototypeCaptainProgression>();
@@ -193,9 +195,9 @@ namespace Seaborn.UI
             targetCrewFill = CreateBar(target, "Target Crew", new Vector2(230f, -80f), new Vector2(196f, 7f), out _);
             targetPanel.SetActive(false);
 
-            RectTransform resources = CreateCard("Resources", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-24f, -24f), new Vector2(310f, 98f));
+            RectTransform resources = CreateCard("Resources", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-24f, -24f), new Vector2(310f, 124f));
             silverText = CreateText(resources, font, "SILVER  0", 16, Gold, FontStyle.Bold, new Vector2(16f, -12f), new Vector2(278f, 24f), TextAnchor.UpperRight);
-            cargoText = CreateText(resources, font, "GÜVENCESİZ YÜK  0", 13, Cream, FontStyle.Normal, new Vector2(16f, -45f), new Vector2(278f, 40f), TextAnchor.UpperRight);
+            cargoText = CreateText(resources, font, "GÜVENCESİZ YÜK  0", 13, Cream, FontStyle.Normal, new Vector2(16f, -45f), new Vector2(278f, 68f), TextAnchor.UpperRight);
 
             RectTransform minimap = CreateCard(
                 "Navigation",
@@ -453,7 +455,19 @@ namespace Seaborn.UI
             silverText.text = $"SILVER   {(wallet != null ? wallet.Silver : 0)}  •  GOLD   {(goldWallet != null ? goldWallet.Gold : 0)}";
             int value = cargo != null ? cargo.UnsecuredSilverValue : 0;
             string capacity = cargo == null || cargo.MaximumSilverValue == int.MaxValue ? "SINIRSIZ" : cargo.MaximumSilverValue.ToString();
-            cargoText.text = $"GÜVENCESİZ YÜK   {value} / {capacity}\nBATIŞTA KAYBEDİLİR";
+            string special = consumables != null
+                ? $"4 TONIC x{consumables.TortugaTonics}  •  " +
+                  $"5 LIGHT x{consumables.LightsOfTortuga}"
+                : "4 TONIC x0  •  5 LIGHT x0";
+            if (consumables != null &&
+                consumables.IsConcealed)
+            {
+                special =
+                    $"GÖRÜNMEZLİK  {consumables.ConcealmentRemaining:0.0} sn";
+            }
+            cargoText.text =
+                $"GÜVENCESİZ YÜK   {value} / {capacity}\n" +
+                $"BATIŞTA KAYBEDİLİR\n{special}";
         }
 
         private void RefreshCombat()
