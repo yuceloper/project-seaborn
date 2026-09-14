@@ -370,3 +370,12 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 **Karar:** Üçlü Tonic sandığı 30 Silver hacim indirimi sağlar. Light of Tortuga'nın fiyatı acil iyileştirmeden belirgin biçimde yüksektir; görünmezlik sıradan her savaşta kullanılacak bir tüketim değil, hazırlanılan riskli sefer için değerli bir kaçış aracı olarak konumlanır.
 
 **Neden:** Güvenceye alınan Silver için mühimmat ve tersane dışında tekrarlanabilir bir gider oluşturmak; sarf malzemelerini bedava yenilenen hotbar yetenekleri yerine sefer öncesi ekonomi kararına bağlamak. Fiyatlar telemetri oluşana kadar prototip değeridir.
+
+
+## 2026-09-14 — Süreli sefer güçlendirmeleri
+
+**Karar:** Corsair Rum 6 tuşuyla 90 saniye boyunca top hasarını yüzde 10 artırır ve doldurma süresini yüzde 10 azaltır. Gale Elixir 7 tuşuyla hız ve manevrayı yüzde 12 artırır. Ironbark Brew 8 tuşuyla alınan hasarı yüzde 15 azaltır. Aynı ürün tekrar kullanıldığında etki birikmez; süre 90 saniyeye yenilenir.
+
+**Karar:** Başlangıçta her süreli üründen iki adet bulunur. Corsair Rum 180, Gale Elixir 160 ve Ironbark Brew 200 Silver karşılığında Ticaret iskelesinden alınır. Stoklar kalıcıdır; aktif güçlendirme süreleri sahne geçişinde devam eder ancak oyun kapatıldığında kaydedilmez.
+
+**Neden:** Oyuncuya sefer öncesinde av, çatışma veya kaçış odağı seçtirmek; güçlendirmeleri sonsuz birikim yerine sınırlı ve okunabilir yüzde farklarında tutmak. Doksan saniye prototip test süresidir; üretimde hedeflenen yaklaşık on dakikalık değer sefer ekonomisi ölçüldükten sonra belirlenecektir.
