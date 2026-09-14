@@ -28,6 +28,7 @@ namespace Seaborn.Ship
         private float maximumHealthMultiplier = 1f;
         private float equipmentHealthMultiplier = 1f;
         private float skillHealthMultiplier = 1f;
+        private float consumableDamageTakenMultiplier = 1f;
         private ShipSubsystemController subsystems;
 
         public bool IsSunk { get; private set; }
@@ -56,7 +57,8 @@ namespace Seaborn.Ship
 
             CurrentHealth = Mathf.Max(
                 0f,
-                CurrentHealth - damageInfo.Amount
+                CurrentHealth - damageInfo.Amount *
+                consumableDamageTakenMultiplier
             );
 
             Damaged?.Invoke(damageInfo);
@@ -72,6 +74,13 @@ namespace Seaborn.Ship
 
             IsSunk = true;
             Sunk?.Invoke();
+        }
+
+        public void SetConsumableDamageTakenMultiplier(
+            float multiplier)
+        {
+            consumableDamageTakenMultiplier =
+                Mathf.Clamp(multiplier, 0.1f, 1f);
         }
 
         public void SetBaseMaximumHealth(
