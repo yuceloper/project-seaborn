@@ -274,8 +274,8 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Replace prototype broadside constants with equipped-cannon salvo calculation
 - [x] Add equipment inventory, ship loadout validation and shipyard equipment market
 - [x] Add Silver-based harbor ship market and ship switching
-- [ ] Add captain EXP, levels, unlock gates and skill-point earning
-- [ ] Add first cannon, harpoon and ship skill branches
+- [x] Add captain EXP, levels, unlock gates and skill-point earning
+- [x] Add first cannon, harpoon and ship skill branches
 - [ ] Add timed repair, tonic and special-item cooldown categories
 - [ ] Add interruptible sea-sparkle collection and weighted rewards
 - [ ] Add map-tier and map-quality modifiers
@@ -305,3 +305,41 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Gemi pazarı paneli ve HUD'da aktif gemi adı
 - [ ] Her gemi profiline özgü görsel prefab
 - [ ] Gemiler arasında ayrı hasar ve onarım durumu
+
+
+### Captain progression foundation (2026-09-13)
+
+- [x] 30 seviyeli kaptan EXP modeli
+- [x] Güvenceye alınan sefer değerinden EXP kazanımı
+- [x] Batışta kaybedilen yük için EXP vermeme
+- [x] Her iki seviyede bir skill puanı kazanımı
+- [x] Dört seviyede bir harita tier erişimi
+- [x] Rat Sails için seviye 5 gemi lisansı
+- [x] Dreadwake için seviye 25 gemi lisansı
+- [x] HUD seviye bilgisi ve seviye atlama bildirimi
+- [x] Kaptan EXP'sini yerel kayıtta koruma
+- [x] Harita geçitlerinde tier erişimini uygulama
+- [x] Skill puanı harcama ve ilk skill ağacı
+
+
+### Map tier access gates (2026-09-13)
+
+- [x] Liman ve Merkez Sular tier 1
+- [x] Doğu Avları tier 2 / Kaptan seviye 5
+- [x] Batı Sınırı tier 3 / Kaptan seviye 9
+- [x] Kilitli sınırda gemiyi güvenli biçimde harita içine geri alma
+- [x] Kilitli geçitte hareket hızını sıfırlama
+- [x] HUD kilit bildirimi ve mini harita seviye etiketleri
+- [ ] Tier 4–8 harita sahneleri ve bağlantı ağı
+
+
+### İlk kaptan yetenek ağacı
+
+- [x] Yetenek puanlarını yalnızca Liman İdaresi'nde harcama
+- [x] Top Ustalığı ve Menzil Hesabı dalı
+- [x] Zıpkın Ustalığı ve Hızlı Donanım dalı
+- [x] Güçlendirilmiş Omurga ve İnce Yelkenler dalı
+- [x] Yeteneklerin gerçek savaş, av, gövde ve hareket değerlerine uygulanması
+- [x] Yetenek seviyelerini yerel prototip kaydında koruma
+- [ ] Silver karşılığı yetenek sıfırlama / yeniden dağıtma
+- [ ] İkinci kademe dallanma, kritik isabet ve özel yetenekler

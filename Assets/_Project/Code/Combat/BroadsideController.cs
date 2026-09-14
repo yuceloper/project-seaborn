@@ -39,6 +39,9 @@ namespace Seaborn.Combat
         private float starboardReloadDuration;
         private float equipmentDamageMultiplier = 1f;
         private float equipmentReloadMultiplier = 1f;
+        private float skillDamageMultiplier = 1f;
+        private float skillRangeMultiplier = 1f;
+        private float skillReloadMultiplier = 1f;
         private float crewReloadMultiplier = 1f;
 
         public event Action AmmunitionStateChanged;
@@ -47,11 +50,15 @@ namespace Seaborn.Combat
         public AmmunitionType SelectedAmmunition => selectedAmmunition;
         public int CannonSlotCapacity => cannonSlotCapacity;
         public int InstalledCannons => Mathf.Min(installedCannons, cannonSlotCapacity);
-        public float MaximumRange => projectileRange * AmmunitionProfile.Get(selectedAmmunition).RangeMultiplier;
+        public float MaximumRange =>
+            projectileRange *
+            AmmunitionProfile.Get(selectedAmmunition).RangeMultiplier *
+            skillRangeMultiplier;
         public float CooldownDuration =>
             broadsideCooldown *
             AmmunitionProfile.Get(selectedAmmunition).ReloadMultiplier *
             equipmentReloadMultiplier *
+            skillReloadMultiplier *
             crewReloadMultiplier;
         public bool IsBlockedBySafeHarbor =>
             !PrototypeSafeHarborProtection.AllowsWeapons(gameObject);
@@ -122,6 +129,20 @@ namespace Seaborn.Combat
                 reloadDuration
             );
             cannonHitDamage = Mathf.Max(0f, hitDamage);
+            AmmunitionStateChanged?.Invoke();
+        }
+
+        public void SetSkillModifiers(
+            float damageMultiplier,
+            float rangeMultiplier,
+            float reloadMultiplier)
+        {
+            skillDamageMultiplier =
+                Mathf.Max(0.1f, damageMultiplier);
+            skillRangeMultiplier =
+                Mathf.Max(0.1f, rangeMultiplier);
+            skillReloadMultiplier =
+                Mathf.Clamp(reloadMultiplier, 0.35f, 2f);
             AmmunitionStateChanged?.Invoke();
         }
 
@@ -218,7 +239,8 @@ namespace Seaborn.Combat
                 broadsideCooldown *
                 reloadMultiplier *
                 equipmentReloadMultiplier *
-            crewReloadMultiplier;
+                skillReloadMultiplier *
+                crewReloadMultiplier;
             if (side == BroadsideSide.Port)
             {
                 portReloadDuration = duration;
@@ -310,7 +332,8 @@ namespace Seaborn.Combat
                 ammunitionType,
                 cannonHitDamage *
                     profile.DamageMultiplier *
-                    equipmentDamageMultiplier,
+                    equipmentDamageMultiplier *
+                    skillDamageMultiplier,
                 profile.ProjectileScale
             );
             projectile.LaunchAt(transform, clampedTarget, duration, height);

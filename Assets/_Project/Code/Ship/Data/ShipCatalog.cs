@@ -10,6 +10,7 @@ namespace Seaborn.Ship.Data
         public string id;
         public string displayName;
         [Min(0)] public int basePrice;
+        [Min(1)] public int requiredCaptainLevel = 1;
         [Min(1)] public int cannonSlots = 1;
         [Min(1)] public int startingCannons = 1;
         [Min(0.1f)] public float cannonRange = 10f;

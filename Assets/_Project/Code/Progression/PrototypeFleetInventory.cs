@@ -15,7 +15,8 @@ namespace Seaborn.Progression
         NotOwned,
         ActiveShip,
         UnknownShip,
-        InsufficientSilver
+        InsufficientSilver,
+        LevelLocked
     }
 
     [DisallowMultipleComponent]
@@ -103,6 +104,12 @@ namespace Seaborn.Progression
             }
             if (Owns(shipId))
                 return ShipMarketResult.AlreadyOwned;
+            if (progression == null ||
+                !progression.MeetsLevel(
+                    definition.requiredCaptainLevel))
+            {
+                return ShipMarketResult.LevelLocked;
+            }
             if (wallet == null ||
                 !wallet.TrySpendSilver(
                     definition.basePrice,
@@ -162,17 +169,24 @@ namespace Seaborn.Progression
         }
 
         private PrototypeSilverWallet wallet;
+        private PrototypeCaptainProgression progression;
         private ShipProfileController profile;
         private ShipLoadout loadout;
+        private PrototypeEquipmentInventory equipmentInventory;
 
         private void Bind(Transform player)
         {
             wallet = player.GetComponentInChildren<
                 PrototypeSilverWallet>();
+            progression = player.GetComponentInChildren<
+                PrototypeCaptainProgression>();
             profile = player.GetComponent<
                 ShipProfileController>();
             loadout = player.GetComponentInChildren<
                 ShipLoadout>();
+            equipmentInventory =
+                player.GetComponentInChildren<
+                    PrototypeEquipmentInventory>();
 
             if (profile != null &&
                 !string.Equals(
@@ -208,6 +222,16 @@ namespace Seaborn.Progression
             }
 
             loadout?.Apply();
+
+            if (equipmentInventory != null &&
+                loadout != null &&
+                equipmentInventory.CanUseShipyard)
+            {
+                equipmentInventory.TryEquipCannons(
+                    loadout.CannonId
+                );
+            }
+
             return true;
         }
 

@@ -3,6 +3,7 @@ using Seaborn.Combat;
 using Seaborn.Expeditions;
 using Seaborn.Hunting;
 using Seaborn.Recovery;
+using Seaborn.Progression;
 using Seaborn.Ship;
 using Seaborn.World;
 using UnityEngine;
@@ -27,6 +28,8 @@ namespace Seaborn.UI
         private HarpoonHuntingController harpoons;
         private PrototypeHuntCargo cargo;
         private PrototypeSilverWallet wallet;
+        private PrototypeCaptainProgression captainProgression;
+        private PrototypeExpeditionRegionDirector worldMap;
 
         private Text shipNameText;
         private Text hullText;
@@ -120,6 +123,11 @@ namespace Seaborn.UI
             harpoons = player.GetComponentInChildren<HarpoonHuntingController>();
             cargo = player.GetComponentInChildren<PrototypeHuntCargo>();
             wallet = player.GetComponentInChildren<PrototypeSilverWallet>();
+            captainProgression =
+                player.GetComponentInChildren<
+                    PrototypeCaptainProgression>();
+            worldMap =
+                PrototypeExpeditionRegionDirector.Instance;
             if (health != null)
             {
                 health.HealthChanged += HandleHealthChanged;
@@ -130,6 +138,16 @@ namespace Seaborn.UI
                 cargo.CatchAdded += HandleCatchAdded;
                 cargo.CargoSecured += HandleCargoSecured;
                 cargo.CargoLost += HandleCargoLost;
+            }
+            if (captainProgression != null)
+            {
+                captainProgression.LevelChanged +=
+                    HandleCaptainLevelChanged;
+            }
+            if (worldMap != null)
+            {
+                worldMap.TravelBlocked +=
+                    HandleTravelBlocked;
             }
             Refresh();
         }
@@ -353,11 +371,18 @@ namespace Seaborn.UI
                     ? boundPlayer.GetComponent<
                         ShipProfileController>()
                     : null;
-            shipNameText.text = reserve
-                ? "YEDEK GEMİ"
-                : profile?.Definition != null
-                    ? profile.Definition.displayName.ToUpperInvariant()
+            string shipLabel =
+                profile?.Definition != null
+                    ? profile.Definition.displayName
+                        .ToUpperInvariant()
                     : "ANA GEMİ";
+            string captainLabel =
+                captainProgression != null
+                    ? $"  •  KAPTAN SV. {captainProgression.Level}"
+                    : "";
+            shipNameText.text = reserve
+                ? "YEDEK GEMİ" + captainLabel
+                : shipLabel + captainLabel;
 
             float current = health != null ? health.CurrentHealth : 0f;
             float maximum = health != null ? health.MaximumHealth : 1f;
@@ -463,6 +488,30 @@ namespace Seaborn.UI
             SetBar(harpoonFill, reload);
             bool locked = broadside != null && broadside.IsBlockedBySafeHarbor;
             harborLockText.gameObject.SetActive(locked);
+        }
+
+        private void HandleTravelBlocked(
+            string regionName,
+            int requiredLevel)
+        {
+            ShowNotification(
+                "BÖLGE KİLİTLİ",
+                $"{regionName} için Kaptan SV. " +
+                $"{requiredLevel} gerekir",
+                Danger,
+                4f
+            );
+        }
+
+        private void HandleCaptainLevelChanged(int level)
+        {
+            ShowNotification(
+                $"KAPTAN SEVİYESİ {level}",
+                $"Harita tier sınırı: " +
+                $"{captainProgression.HighestUnlockedMapTier}",
+                Gold,
+                4.5f
+            );
         }
 
         private void HandleCatchAdded(string source, int value)
@@ -591,6 +640,16 @@ namespace Seaborn.UI
                 cargo.CargoSecured -= HandleCargoSecured;
                 cargo.CargoLost -= HandleCargoLost;
             }
+            if (captainProgression != null)
+            {
+                captainProgression.LevelChanged -=
+                    HandleCaptainLevelChanged;
+            }
+            if (worldMap != null)
+            {
+                worldMap.TravelBlocked -=
+                    HandleTravelBlocked;
+            }
         }
 
         private void OnDestroy()
@@ -658,7 +717,7 @@ namespace Seaborn.UI
                 PrototypeRegionKind.EasternReach =>
                     "W  •  MERKEZ   S  •  LİMAN",
                 _ =>
-                    "W  •  BATI   E  •  DOĞU   S  •  LİMAN"
+                    "W  •  BATI (SV.9)   E  •  DOĞU (SV.5)   S  •  LİMAN"
             };
         }
 
