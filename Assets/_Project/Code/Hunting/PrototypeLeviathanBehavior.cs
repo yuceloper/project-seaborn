@@ -1,6 +1,7 @@
 using Seaborn.Combat;
 using Seaborn.Combat.Damage;
 using Seaborn.Expeditions;
+using Seaborn.Ship;
 using UnityEngine;
 
 namespace Seaborn.Hunting
