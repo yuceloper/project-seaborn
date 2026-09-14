@@ -276,7 +276,7 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Add Silver-based harbor ship market and ship switching
 - [x] Add captain EXP, levels, unlock gates and skill-point earning
 - [x] Add first cannon, harpoon and ship skill branches
-- [ ] Add timed repair, tonic and special-item cooldown categories
+- [x] Add timed repair, tonic and special-item cooldown categories
 - [x] Add interruptible sea-sparkle collection and weighted rewards
 - [ ] Add map-tier and map-quality modifiers
 - [ ] Add player-to-player Silver market after server authority exists
@@ -392,3 +392,16 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Yeni ürünlerin Tortuga tedarikçisine bağlanması
 - [x] Stokların yerel kayıtta korunması; aktif sürelerin oturumluk kalması
 - [ ] Nihai 10 dakikalık süre ve fiyatların sefer telemetrisiyle dengelenmesi
+
+
+### Saha tamiri
+
+- [x] R tuşuyla açılıp kapanan saha tamir modu
+- [x] Aktif geminin repairAmount ve repairInterval değerlerini kullanma
+- [x] Tamir sırasında hızın yüzde 45, dönüşün yüzde 70 olması
+- [x] Top ve zıpkın ateşinin tamiri kesmesi
+- [x] Alınan hasarın tamiri kesip sekiz saniye kilitlemesi
+- [x] Tam can, batış ve liman durumlarının güvenli kontrolü
+- [x] HUD'da tamir döngüsü, miktarı ve kilit süresi
+- [ ] Tamir verimliliği ekipmanları ve kaptan yetenekleri
+- [ ] Üretim ölçeğinde tahta, bez ve mürettebat kaynağı tüketimi

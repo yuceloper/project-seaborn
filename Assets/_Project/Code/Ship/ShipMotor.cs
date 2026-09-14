@@ -38,6 +38,8 @@ namespace Seaborn.Ship
         private float skillTurnMultiplier = 1f;
         private float consumableSpeedMultiplier = 1f;
         private float consumableTurnMultiplier = 1f;
+        private float repairSpeedMultiplier = 1f;
+        private float repairTurnMultiplier = 1f;
 
         private float collisionRecoveryUntil;
 
@@ -45,12 +47,14 @@ namespace Seaborn.Ship
             speedMultiplier *
             damageSpeedMultiplier *
             skillSpeedMultiplier *
-            consumableSpeedMultiplier;
+            consumableSpeedMultiplier *
+            repairSpeedMultiplier;
         public float TurnMultiplier =>
             turnMultiplier *
             damageTurnMultiplier *
             skillTurnMultiplier *
-            consumableTurnMultiplier;
+            consumableTurnMultiplier *
+            repairTurnMultiplier;
 
         public void RefreshInputBindings()
         {
@@ -101,6 +105,16 @@ namespace Seaborn.Ship
                 Mathf.Max(0.1f, speed);
             consumableTurnMultiplier =
                 Mathf.Max(0.1f, turning);
+        }
+
+        public void SetRepairPerformance(
+            float speed,
+            float turning)
+        {
+            repairSpeedMultiplier =
+                Mathf.Clamp(speed, 0.1f, 1f);
+            repairTurnMultiplier =
+                Mathf.Clamp(turning, 0.1f, 1f);
         }
 
         public void SetDamagePerformance(

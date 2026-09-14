@@ -30,6 +30,7 @@ namespace Seaborn.UI
         private PrototypeSilverWallet wallet;
         private PrototypeGoldWallet goldWallet;
         private PrototypeShipConsumables consumables;
+        private PrototypeFieldRepairController repairs;
         private PrototypeCaptainProgression captainProgression;
         private PrototypeExpeditionRegionDirector worldMap;
 
@@ -127,6 +128,7 @@ namespace Seaborn.UI
             wallet = player.GetComponentInChildren<PrototypeSilverWallet>();
             goldWallet = player.GetComponentInChildren<PrototypeGoldWallet>();
             consumables = player.GetComponentInChildren<PrototypeShipConsumables>();
+            repairs = player.GetComponentInChildren<PrototypeFieldRepairController>();
             captainProgression =
                 player.GetComponentInChildren<
                     PrototypeCaptainProgression>();
@@ -518,8 +520,40 @@ namespace Seaborn.UI
                 $"2KG {harpoons?.LightHarpoonStock ?? 0}  •  " +
                 $"4KG {harpoons?.HeavyHarpoonStock ?? 0}";
             SetBar(harpoonFill, reload);
-            bool locked = broadside != null && broadside.IsBlockedBySafeHarbor;
-            harborLockText.gameObject.SetActive(locked);
+            bool locked =
+                broadside != null &&
+                broadside.IsBlockedBySafeHarbor;
+            harborLockText.gameObject.SetActive(true);
+            if (locked)
+            {
+                harborLockText.text =
+                    "SİLAHLAR LİMANDA KİLİTLİ";
+                harborLockText.color = Gold;
+            }
+            else if (repairs != null &&
+                     repairs.IsRepairing)
+            {
+                harborLockText.text =
+                    $"R  TAMİR EDİLİYOR  " +
+                    $"%{repairs.CycleProgress * 100f:0}  •  " +
+                    $"+{repairs.RepairAmount:0} / " +
+                    $"{repairs.RepairInterval:0.#} sn";
+                harborLockText.color = Success;
+            }
+            else if (repairs != null &&
+                     repairs.LockRemaining > 0f)
+            {
+                harborLockText.text =
+                    $"R  TAMİR KİLİTLİ  " +
+                    $"{repairs.LockRemaining:0.0} sn";
+                harborLockText.color = Danger;
+            }
+            else
+            {
+                harborLockText.text =
+                    "R  SAHA TAMİRİ";
+                harborLockText.color = Muted;
+            }
         }
 
         private void HandleTravelBlocked(

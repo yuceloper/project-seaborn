@@ -524,6 +524,9 @@ namespace Seaborn.Hunting
             Seaborn.Ship
                 .PrototypeShipConsumables
                 .EnsureAttached(player.transform);
+            Seaborn.Ship
+                .PrototypeFieldRepairController
+                .EnsureAttached(player.transform);
             Seaborn.Progression
                 .PrototypeFleetInventory
                 .EnsureAttached(player.transform);
