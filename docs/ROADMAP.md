@@ -216,7 +216,7 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Doğu Avları için yoğun Tideback sürüleri ve Stormjaw
 - [x] Batı Sınırı için beş gemilik yüksek riskli korsan filosu
 - [x] Spawn noktalarını harita merkezine sabitleme
-- [ ] Bölgesel ödül tabloları ve nadir ganimetler
+- [x] Bölgesel ödül tabloları ve nadir ganimetler
 - [x] Haritaya özgü sis, ışık, su rengi ve post-process kimliği
 - [ ] Haritaya özgü çevresel ses kimliği
 
@@ -239,3 +239,44 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Yanaşma noktalarını oyuncu girişinden bağımsız sabit harita koordinatlarına alma
 - [x] Liman İdaresi için günlük görev seçim paneli
 - [x] Aylık seyir defteri ilerlemesini Liman İdaresi'nde gösterme
+
+
+### Regional loot economy (2026-09-13)
+
+- [x] Doğu avları için Tide Yağı ve Stormjaw Pulu
+- [x] Batı korsanları için Korsan Demiri
+- [x] İki risk rotasında nadir Kayıp Harita Parçası
+- [x] Bölgeye göre enkaz silver ve mühimmat miktarı
+- [x] Malzemeleri tersane geliştirme maliyetlerine bağlama
+- [x] Bölgesel malzemeleri yerel prototip kaydında koruma
+- [ ] Malzemeler için üretim kalitesinde ikon ve envanter ekranı
+- [ ] Sunucu otoriteli düşüş tablosu ve ekonomi telemetrisi
+
+
+### Product backbone plan (2026-09-13)
+
+#### Decisions locked
+
+- [x] Ship is the player's primary character and progression object
+- [x] Silver is the gameplay economy; Gold is cosmetic/premium only
+- [x] Captain EXP unlocks access and skill points instead of granting large direct stat bonuses
+- [x] Ship data model includes cannon, sail, range, speed, durability, repair, defense, cargo and extension limits
+- [x] Broadside damage scales with installed cannons up to the ship's cannon-slot limit
+- [x] Cannon and harpoon ammunition have distinct tactical weight classes
+- [x] Extended Deck is rare, tradeable and limited by ship class
+- [x] Directional map network, map tiers and variable map quality define world progression
+- [x] Hotbar, contextual actions and collectible sea sparkles have a documented interaction direction
+
+#### Implementation sequence
+
+- [ ] Create data-driven ship catalogue and starter ship definitions
+- [ ] Create cannon, ammunition, harpoon, sail and consumable catalogues
+- [ ] Replace prototype broadside constants with equipped-cannon salvo calculation
+- [ ] Add ship inventory, equipment slots and loadout validation
+- [ ] Add Silver-based harbor ship market and ship switching
+- [ ] Add captain EXP, levels, unlock gates and skill-point earning
+- [ ] Add first cannon, harpoon and ship skill branches
+- [ ] Add timed repair, tonic and special-item cooldown categories
+- [ ] Add interruptible sea-sparkle collection and weighted rewards
+- [ ] Add map-tier and map-quality modifiers
+- [ ] Add player-to-player Silver market after server authority exists

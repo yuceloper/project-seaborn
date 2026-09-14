@@ -282,3 +282,31 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 - Aynı gün içinde yalnızca seçili günlük görev ilerler; tamamlanıp limana dönüldükten sonra başka bir günlük görev seçilebilir.
 - Günlük ana ödül için iki farklı günlük görevi tamamlama hedefi korunur.
 - Yanaşma noktaları dünya koordinatında sabittir; oyuncunun haritaya giriş konumu istasyonları taşımaz.
+
+
+## 2026-09-13 — Bölgeler farklı geliştirme kaynakları üretir
+
+- Doğu Avları zıpkın ve av ilerlemesini besleyen Tide Yağı ile Stormjaw Pulu üretir.
+- Batı Sınırı gövde ve top ilerlemesini besleyen Korsan Demiri üretir.
+- Kayıp Harita Parçası iki risk rotasının nadir üst seviye kaynağıdır.
+- Tersane geliştirmeleri silver ile birlikte bölgesel malzeme tüketir; böylece rotalar yalnızca farklı renkte aynı silver çiftliği olmaz.
+- Malzemeler batışta kaybolmaz ve yerel prototip kaydında korunur. Güvencesiz silver yükü mevcut risk kuralını sürdürür.
+
+
+## 2026-09-13 — Gemi, ekonomi ve ilerleme ürün omurgası
+
+**Karar:** Oyuncunun ana karakteri gemidir. Gemiler limanda satın alınır, donatılır ve ileride oyuncular arasında Silver ile ticarete konu olabilir. Her gemi; top yuvası, menzil, hız, azami can, yelken yuvası, periyodik tamir, savunma, manevra, ambar, özel yuva ve güverte genişletme sınırı taşıyan veri tabanlı bir profile sahip olur.
+
+**Karar:** Bir borda salvosunun taban gücü, geminin top yuvası sınırını aşmayan kurulu top sayısı ile seçilen top/mühimmat profilinin hasarından hesaplanır. Ekipman farkı önemlidir; menzil, açı, isabet, rota tahmini ve salvo zamanlaması karşı oyun üretmeye devam eder.
+
+**Karar:** Silver tüm oynanış ekonomisinin parasıdır. Gold yalnızca kozmetik görünüm ve güç vermeyen premium hizmetlerde kullanılır; can, hasar, savunma, top yuvası veya zorunlu ilerleme Gold ile satılmaz.
+
+**Karar:** Kaptan EXP ve seviyeleri büyük doğrudan istatistik artışları vermez. Yeni harita tier'ları, gemi lisansları, kontratlar, boss erişimi, ekipman uygunluğu, pazar imkânları ve skill puanları açar. İlk öneri 30 seviye ve iki seviyede bir skill puanıdır; sayılar dengeleme sırasında değişebilir.
+
+**Karar:** Extended Deck nadir ve ticarete açık bir genişletmedir; top yuvası ve dayanıklılık ekleyebilir fakat gemi sınıfının genişletme sınırını aşamaz ve gerektiğinde manevra/hız bedeli taşır. Light of Tortuga yaklaşık yedi saniyelik görünmezlik sağlayan özel eşyadır; ateş etmek, hasar almak veya yakın tespit etkisini bozar.
+
+**Karar:** Başlangıç içerik dili iki zıpkın ağırlığı, iki temel top sınıfı, periyodik tamir, anlık can toniği ve süreli güçlendirmelerle öğretilir. Deniz pırıltıları yaklaşık üç saniyelik, hareket veya hasarla kesilebilen toplama etkileşimidir; Silver, iyileştirme, çok nadir Gold ve nadir eşya verebilir.
+
+**Karar:** Dünya güneyde güvenli liman, kuzeyde sakin PvE, doğuda avcılık ve batıda yüksek risk/PvP anlamını korur. Kalıcı harita tier'ı zorluğu, değişken harita kalitesi ise loot, boss ve çevresel koşulları etkiler.
+
+**Neden:** Tek tek özellik üretmeden önce gemi edinme, ekipman kurma, sefere çıkma, riskli değer toplama, limana dönme ve yeni erişimler açma döngüsünü ortak bir ekonomik ve veri temeline bağlamak. Ayrıntılı formüller ve örnek sayılar `PROGRESSION_AND_SYSTEMS.md` içinde ayarlanabilir tasarım değerleri olarak tutulur.

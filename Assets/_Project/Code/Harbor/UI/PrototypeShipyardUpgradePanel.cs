@@ -28,9 +28,11 @@ namespace Seaborn.Harbor.UI
         private Transform player;
         private PrototypeShipEquipment equipment;
         private PrototypeSilverWallet wallet;
+        private PrototypeRegionalLootInventory materials;
         private GameObject panel;
         private Text silverText;
         private Text statusText;
+        private Text materialText;
         private UpgradeRow hull;
         private UpgradeRow cannons;
         private UpgradeRow harpoon;
@@ -93,6 +95,11 @@ namespace Seaborn.Harbor.UI
                 wallet = player.GetComponentInChildren<
                     PrototypeSilverWallet>();
             }
+            if (materials == null)
+            {
+                materials = player.GetComponentInChildren<
+                    PrototypeRegionalLootInventory>();
+            }
         }
 
         private void Update()
@@ -130,7 +137,7 @@ namespace Seaborn.Harbor.UI
             rect.pivot = new Vector2(1f, 0f);
             rect.anchoredPosition =
                 new Vector2(-24f, 24f);
-            rect.sizeDelta = new Vector2(430f, 366f);
+            rect.sizeDelta = new Vector2(430f, 398f);
             panel.GetComponent<Image>().color = Navy;
 
             CreateAccent(rect);
@@ -156,20 +163,26 @@ namespace Seaborn.Harbor.UI
                 "Kalıcı gemi donanımını geliştir.",
                 12, Muted, FontStyle.Normal,
                 new Vector2(20f, -52f),
-                new Vector2(390f, 22f)
+                new Vector2(390f, 20f)
+            );
+            materialText = CreateText(
+                rect, font, "",
+                11, Gold, FontStyle.Normal,
+                new Vector2(20f, -74f),
+                new Vector2(390f, 20f)
             );
 
             hull = CreateRow(
                 rect, font, "GÜÇLENDİRİLMİŞ GÖVDE",
-                ShipUpgradeTrack.Hull, -88f
+                ShipUpgradeTrack.Hull, -108f
             );
             cannons = CreateRow(
                 rect, font, "TOP TAKIMI",
-                ShipUpgradeTrack.Cannons, -176f
+                ShipUpgradeTrack.Cannons, -196f
             );
             harpoon = CreateRow(
                 rect, font, "ZIPKIN DONANIMI",
-                ShipUpgradeTrack.HarpoonGear, -264f
+                ShipUpgradeTrack.HarpoonGear, -284f
             );
         }
 
@@ -266,6 +279,15 @@ namespace Seaborn.Harbor.UI
 
             silverText.text =
                 $"{(wallet != null ? wallet.Silver : 0)} SILVER";
+            if (materialText != null)
+            {
+                materialText.text = materials != null
+                    ? $"Yağ {materials.TideOil}  •  " +
+                      $"Pul {materials.StormjawScales}  •  " +
+                      $"Demir {materials.CorsairIron}  •  " +
+                      $"Harita {materials.LostChartFragments}"
+                    : "Bölgesel malzeme yok";
+            }
 
             RefreshRow(
                 hull, ShipUpgradeTrack.Hull);
@@ -294,14 +316,18 @@ namespace Seaborn.Harbor.UI
                 $"{TrackName(track)}   SV. {level}/" +
                 $"{PrototypeShipEquipment.MaximumLevel}";
             row.Effect.text =
-                equipment.EffectDescription(track);
+                equipment.EffectDescription(track) +
+                "  •  " +
+                equipment.UpgradeRequirementDescription(
+                    track);
             row.ButtonText.text = maximum
                 ? "AZAMİ"
                 : $"{cost} SILVER";
             row.Button.interactable =
                 !maximum &&
                 wallet != null &&
-                wallet.Silver >= cost;
+                wallet.Silver >= cost &&
+                equipment.CanAffordUpgradeMaterials(track);
         }
 
         private void Upgrade(ShipUpgradeTrack track)
@@ -322,6 +348,13 @@ namespace Seaborn.Harbor.UI
                 case ShipUpgradeResult.InsufficientSilver:
                     ShowStatus(
                         "Yeterli silver yok.",
+                        Danger
+                    );
+                    break;
+                case ShipUpgradeResult
+                    .InsufficientMaterials:
+                    ShowStatus(
+                        "Gerekli bölgesel malzeme eksik.",
                         Danger
                     );
                     break;

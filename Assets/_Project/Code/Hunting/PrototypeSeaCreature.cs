@@ -263,6 +263,13 @@ namespace Seaborn.Hunting
                         silverReward
                     );
                 }
+
+                Seaborn.Progression
+                    .PrototypeRegionalLootInventory inventory =
+                    Seaborn.Progression
+                        .PrototypeRegionalLootInventory
+                        .EnsureAttached(hunter.transform);
+                inventory?.AwardHunt(name);
             }
 
             StartCoroutine(SinkAndDestroy());

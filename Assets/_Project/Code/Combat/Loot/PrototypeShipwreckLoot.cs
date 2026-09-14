@@ -1,8 +1,10 @@
 using Seaborn.Combat;
 using Seaborn.Hunting;
 using Seaborn.Ship;
+using Seaborn.Progression;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 namespace Seaborn.Combat.Loot
 {
@@ -66,10 +68,10 @@ namespace Seaborn.Combat.Loot
     {
         private const float InteractionRadius = 2.8f;
         private const float Lifetime = 120f;
-        private const int SilverReward = 35;
-        private const int AmmunitionReward = 6;
-
         private Transform player;
+        private string sourceScene;
+        private int silverReward;
+        private int ammunitionReward;
         private PrototypeHuntCargo cargo;
         private BroadsideController broadside;
         private LineRenderer ring;
@@ -93,20 +95,28 @@ namespace Seaborn.Combat.Loot
             PrototypeShipwreckLootPickup component =
                 pickup.AddComponent<
                     PrototypeShipwreckLootPickup>();
-            component.Initialize(playerTransform);
+            component.Initialize(
+                playerTransform,
+                SceneManager.GetActiveScene().name
+            );
         }
 
-        private void Initialize(Transform playerTransform)
+        private void Initialize(
+            Transform playerTransform,
+            string sceneName)
         {
             player = playerTransform;
+            sourceScene = sceneName;
+            ConfigureRewards(sceneName);
             expiresAt = Time.time + Lifetime;
             baseHeight = transform.position.y;
             ResolvePlayerComponents();
             BuildVisual();
 
             Debug.Log(
-                "Düşman enkazı yüzeye çıktı: " +
-                "35 güvencesiz silver, 6 standart gülle.",
+                $"Düşman enkazı yüzeye çıktı: " +
+                $"{silverReward} güvencesiz silver, " +
+                $"{ammunitionReward} standart gülle.",
                 this
             );
         }
@@ -167,23 +177,49 @@ namespace Seaborn.Combat.Loot
             collected = true;
             cargo.AddCatch(
                 "Düşman gemisi enkazı",
-                SilverReward
+                silverReward
             );
             broadside.AddAmmunition(
                 AmmunitionType.Standard,
-                AmmunitionReward
+                ammunitionReward
             );
+
+            PrototypeRegionalLootInventory inventory =
+                PrototypeRegionalLootInventory
+                    .EnsureAttached(player);
+            inventory?.AwardShipwreck(sourceScene);
 
             PrototypeCombatVfx.PlayWaterSplash(
                 transform.position
             );
 
             Debug.Log(
-                "Enkaz toplandı: +35 güvencesiz silver, " +
-                "+6 standart gülle.",
+                $"Enkaz toplandı: +{silverReward} " +
+                $"güvencesiz silver, " +
+                $"+{ammunitionReward} standart gülle.",
                 this
             );
             Destroy(gameObject);
+        }
+
+        private void ConfigureRewards(string sceneName)
+        {
+            if (sceneName == "PrototypeWesternReach")
+            {
+                silverReward = 55;
+                ammunitionReward = 8;
+                return;
+            }
+
+            if (sceneName == "PrototypeEasternReach")
+            {
+                silverReward = 30;
+                ammunitionReward = 4;
+                return;
+            }
+
+            silverReward = 35;
+            ammunitionReward = 6;
         }
 
         private void ResolvePlayer()

@@ -74,3 +74,67 @@ Bu sistem batışı anlamlı kılar fakat tek yenilgiyi hesap veya karakter sile
 - Tek seferlik satın alma
 - İsteğe bağlı kozmetik/premium hizmetler
 - Güç satan zorunlu ödeme modeli yok
+
+
+## Ürün vizyonunun kalıcı sütunları
+
+### Gemi oyuncunun karakteridir
+
+- Oyuncu gemi satın alır, donatır, geliştirir ve uzmanlaştırır.
+- Geminin top, yelken, özel ekipman, ambar ve güverte sınırları kendi oynanış kimliğini oluşturur.
+- Aynı gemi her rolü en iyi biçimde yapamaz; avcı, savaşçı, kaçış ve yük gemisi gibi farklı roller korunur.
+- Oyuncu gemileri ve nadir geliştirme parçaları ileride güvenli liman pazarında satılabilir.
+
+### Güç değerlidir, taktik sonucu değiştirebilir
+
+- Ekipman ve gemi ilerlemesi hissedilir avantaj sağlar.
+- Benzer güçte savaşlarda rota, menzil, borda açısı, mühimmat ve salvo zamanlaması sonucu belirler.
+- Makul güç farkı iyi taktikle aşılabilir.
+- Büyük tier farkları başlangıç bölgelerinde zorunlu PvP eşleşmesine dönüşmez.
+
+### Her sefer bir risk kararıdır
+
+- Oyuncu istediği an limana dönebilir veya daha fazla ödül için riskini büyütebilir.
+- Güvencesiz yük batışa kadar değerli ve görünür kalır.
+- Pırıltı, av, enkaz, boss ve PvP aynı dönüş kararını besler.
+- Batış ilerlemeyi tamamen silmez; yeni kurtarma veya toparlanma oynanışı üretir.
+
+### Dünya yönlere göre anlam taşır
+
+- Güney güvenli limandır.
+- Kuzey sakin PvE ve başlangıç görevlerine açılır.
+- Doğu avcılık, yaratık sürüleri ve leviathan rotasıdır.
+- Batı korsan, yüksek risk, PvP ve savaş ganimeti rotasıdır.
+- Harita tier'ı kalıcı zorluk katmanıdır; değişken harita kalitesi loot, boss ve çevre koşullarını etkileyebilir.
+
+## Ekonomi sınırları
+
+- Silver gemi, ekipman, mühimmat, tamir, ikmal, pazar ve tersane için ana oynanış parasıdır.
+- Gold kostüm, yelken görünümü, ateş/batış efekti, isim plakası ve güç vermeyen premium hizmetler içindir.
+- Gold ile HP, hasar, savunma, top yuvası veya zorunlu ilerleme satılmaz.
+- Oyuncudan oyuncuya pazarın temel parası Silver'dır.
+- Rare eşyalar ve Extended Deck gibi genişletmeler oynanıştan kazanılır ve ticarete konu olabilir.
+
+## Arayüz ve görsel referans ilkesi
+
+Paylaşılan klasik deniz MMO'su görsellerinden şu düzen ilkeleri alınır:
+
+- Sağ üstte güçlü mini harita ve koordinat hissi
+- Alt merkezde savaş hotbar'ı
+- Harita üzerinde oyuncu, yaratık ve yapı okunabilirliği
+- Limanda market, skill, görev ve sosyal merkezlere hızlı erişim
+- Büyük sistemler için açılır paneller
+
+Arayüz, ikonlar ve görsel varlıklar birebir kopyalanmaz. Modern sürüm daha az kalıcı ekran kalabalığı, bağlamsal liman panelleri, manuel nişan okunabilirliği ve güçlü görsel hiyerarşi kullanır.
+
+## İlk ürün kapsamı dışında
+
+- Yürüyen kaptan ve kara savaşı
+- Sekiz tier'ın tamamı
+- Tam üretim lonca savaşı
+- Gerçek para oyuncu pazarı
+- Karmaşık crafting zincirleri
+- Çok sayıda gemi sınıfı
+- Tam sezon ekonomisi
+
+Önce gemi–ekipman–sefer–liman döngüsü doğrulanır.

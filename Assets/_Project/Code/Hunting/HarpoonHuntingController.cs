@@ -327,6 +327,9 @@ namespace Seaborn.Hunting
                     HuntCargoLossOnSinking>();
             }
 
+            Seaborn.Progression
+                .PrototypeRegionalLootInventory
+                .EnsureAttached(player.transform);
             Seaborn.Progression.PrototypeShipEquipment
                 .EnsureAttached(player.transform);
 
