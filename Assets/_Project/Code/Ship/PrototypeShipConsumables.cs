@@ -223,6 +223,32 @@ namespace Seaborn.Ship
             Debug.Log(message, this);
         }
 
+        private void OnGUI()
+        {
+            if (string.IsNullOrEmpty(LastStatus) ||
+                Time.unscaledTime >= LastStatusExpiresAt)
+                return;
+
+            const float width = 410f;
+            Rect rect = new(
+                (Screen.width - width) * 0.5f,
+                Screen.height - 224f,
+                width,
+                38f
+            );
+            GUI.Box(rect, GUIContent.none);
+            GUIStyle style =
+                new(GUI.skin.label)
+                {
+                    alignment = TextAnchor.MiddleCenter,
+                    fontStyle = FontStyle.Bold,
+                    fontSize = 14
+                };
+            style.normal.textColor =
+                new Color(0.91f, 0.78f, 0.46f);
+            GUI.Label(rect, LastStatus, style);
+        }
+
         private void Unsubscribe()
         {
             if (health != null)
