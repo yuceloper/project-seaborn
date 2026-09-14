@@ -42,6 +42,8 @@ namespace Seaborn.Combat
         private float skillDamageMultiplier = 1f;
         private float skillRangeMultiplier = 1f;
         private float skillReloadMultiplier = 1f;
+        private float consumableDamageMultiplier = 1f;
+        private float consumableReloadMultiplier = 1f;
         private float crewReloadMultiplier = 1f;
 
         public event Action AmmunitionStateChanged;
@@ -59,6 +61,7 @@ namespace Seaborn.Combat
             AmmunitionProfile.Get(selectedAmmunition).ReloadMultiplier *
             equipmentReloadMultiplier *
             skillReloadMultiplier *
+            consumableReloadMultiplier *
             crewReloadMultiplier;
         public bool IsBlockedBySafeHarbor =>
             !PrototypeSafeHarborProtection.AllowsWeapons(gameObject);
@@ -142,6 +145,17 @@ namespace Seaborn.Combat
             skillRangeMultiplier =
                 Mathf.Max(0.1f, rangeMultiplier);
             skillReloadMultiplier =
+                Mathf.Clamp(reloadMultiplier, 0.35f, 2f);
+            AmmunitionStateChanged?.Invoke();
+        }
+
+        public void SetConsumableModifiers(
+            float damageMultiplier,
+            float reloadMultiplier)
+        {
+            consumableDamageMultiplier =
+                Mathf.Max(0.1f, damageMultiplier);
+            consumableReloadMultiplier =
                 Mathf.Clamp(reloadMultiplier, 0.35f, 2f);
             AmmunitionStateChanged?.Invoke();
         }
@@ -333,7 +347,8 @@ namespace Seaborn.Combat
                 cannonHitDamage *
                     profile.DamageMultiplier *
                     equipmentDamageMultiplier *
-                    skillDamageMultiplier,
+                    skillDamageMultiplier *
+                    consumableDamageMultiplier,
                 profile.ProjectileScale
             );
             projectile.LaunchAt(transform, clampedTarget, duration, height);
