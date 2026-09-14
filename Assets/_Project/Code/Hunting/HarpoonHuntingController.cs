@@ -594,6 +594,9 @@ namespace Seaborn.Hunting
             Seaborn.Harbor.UI
                 .PrototypeConsumableShopPanel
                 .EnsureCreated(player);
+            Seaborn.Harbor.UI
+                .PrototypeExtendedDeckPanel
+                .EnsureCreated(player);
         }
 
         private void OnDestroy()
