@@ -339,3 +339,14 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 **Karar:** İlk prototipte puan dağıtımı kalıcıdır. Silver karşılığı yeniden dağıtım ayrı bir ekonomi ve kullanılabilirlik iterasyonunda eklenecektir.
 
 **Neden:** Kaptan seviyesini doğrudan otomatik güç artışına çevirmeden oyuncuya uzmanlaşma kararı vermek; seferden başarılı dönüş, seviye, liman hazırlığı ve geminin sahadaki davranışı arasında görünür bir bağ kurmak.
+
+
+## 2026-09-14 — Deniz pırıltıları riskli sefer ödülüdür
+
+**Karar:** Deniz pırıltıları yalnızca sefer haritalarında oluşur. Oyuncu 3,2 metre içine girip E tuşuna üç saniye basılı tutarak toplar. Toplama başladıktan sonra 0,75 metreden fazla hareket etmek veya hasar almak ilerlemeyi sıfırlar.
+
+**Karar:** Ağırlıklı ödül tablosu yüzde 58 güvencesiz Silver, yüzde 20 kısmi gövde onarımı, yüzde 20 bölgesel geliştirme malzemesi ve yüzde 2 oranında 1 Gold üretir. Tam canlı gemiye gelen onarım ödülü güvencesiz Silver'a dönüşür. Denizde bulunan Silver doğrudan kalıcı cüzdana değil batışta kaybedilen ambara girer.
+
+**Karar:** Gold oynanış gücü satın almayan kalıcı kozmetik para birimidir. İlk prototipte yalnızca çok nadir pırıltı ödülü olarak elde edilir, HUD'da Silver yanında gösterilir ve yerel kayıtta korunur.
+
+**Neden:** Harita boyunca küçük rota sapmaları ve kısa savunmasızlık anları üretmek; keşif ödülünü mevcut riskli yük ve limana dönüş döngüsüne bağlarken premium para biriminin güç ekonomisinden ayrılığını erken doğrulamak.
