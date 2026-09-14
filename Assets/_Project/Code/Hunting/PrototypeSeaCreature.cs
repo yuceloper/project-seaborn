@@ -270,6 +270,10 @@ namespace Seaborn.Hunting
                         .PrototypeRegionalLootInventory
                         .EnsureAttached(hunter.transform);
                 inventory?.AwardHunt(name);
+                Seaborn.Progression
+                    .PrototypeDeckExtensionInventory
+                    .EnsureAttached(hunter.transform)
+                    ?.AwardLeviathan(name);
             }
 
             StartCoroutine(SinkAndDestroy());
