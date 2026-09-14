@@ -130,7 +130,9 @@ namespace Seaborn.Harbor
                     .GrapeshotAmmunition:
                     return grapeshotBundleSize;
                 case PrototypeHarborServiceType.Harpoons:
-                    return harpoonBundleSize;
+                    return harpoons?.SelectedHarpoon != null
+                        ? harpoons.SelectedHarpoon.bundleSize
+                        : harpoonBundleSize;
                 default:
                     return 0;
             }
@@ -153,7 +155,10 @@ namespace Seaborn.Harbor
                     .GrapeshotAmmunition:
                     return grapeshotBundleCost;
                 case PrototypeHarborServiceType.Harpoons:
-                    return harpoonBundleCost;
+                    return harpoons?.SelectedHarpoon != null
+                        ? harpoons.SelectedHarpoon
+                            .silverPricePerBundle
+                        : harpoonBundleCost;
                 default:
                     return 0;
             }
@@ -245,7 +250,11 @@ namespace Seaborn.Harbor
                     .InsufficientSilver;
             }
 
-            harpoons.AddHarpoons(harpoonBundleSize);
+            harpoons.AddHarpoons(
+                GetBundleSize(
+                    PrototypeHarborServiceType.Harpoons
+                )
+            );
             Complete(
                 PrototypeHarborServiceType.Harpoons,
                 cost

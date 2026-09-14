@@ -27,6 +27,12 @@ namespace Seaborn.Combat
         [SerializeField, Min(0)] private int chainStock = 36;
         [SerializeField, Min(0)] private int grapeshotStock = 48;
 
+        [Header("Ship configuration")]
+        [SerializeField, Min(1)] private int cannonSlotCapacity = 6;
+        [SerializeField, Min(1)] private int installedCannons = 6;
+
+        [SerializeField, Min(0f)] private float cannonHitDamage = 25f;
+
         private float nextPortFireTime;
         private float nextStarboardFireTime;
         private float portReloadDuration;
@@ -39,6 +45,8 @@ namespace Seaborn.Combat
         public event Action<BroadsideSide> BroadsideFired;
 
         public AmmunitionType SelectedAmmunition => selectedAmmunition;
+        public int CannonSlotCapacity => cannonSlotCapacity;
+        public int InstalledCannons => Mathf.Min(installedCannons, cannonSlotCapacity);
         public float MaximumRange => projectileRange * AmmunitionProfile.Get(selectedAmmunition).RangeMultiplier;
         public float CooldownDuration =>
             broadsideCooldown *
@@ -86,6 +94,37 @@ namespace Seaborn.Combat
             AmmunitionStateChanged?.Invoke();
         }
 
+        public void SetShipConfiguration(
+            int slotCapacity,
+            int cannonCount,
+            float range)
+        {
+            cannonSlotCapacity = Mathf.Max(1, slotCapacity);
+            installedCannons = Mathf.Clamp(cannonCount, 1, cannonSlotCapacity);
+            projectileRange = Mathf.Max(0.1f, range);
+            AmmunitionStateChanged?.Invoke();
+        }
+
+        public void SetCannonLoadout(
+            int slotCapacity,
+            int cannonCount,
+            float range,
+            float reloadDuration,
+            float hitDamage)
+        {
+            SetShipConfiguration(
+                slotCapacity,
+                cannonCount,
+                range
+            );
+            broadsideCooldown = Mathf.Max(
+                0.1f,
+                reloadDuration
+            );
+            cannonHitDamage = Mathf.Max(0f, hitDamage);
+            AmmunitionStateChanged?.Invoke();
+        }
+
         public void SetEquipmentModifiers(
             float damageMultiplier,
             float reloadMultiplier)
@@ -118,7 +157,10 @@ namespace Seaborn.Combat
             Transform[] muzzles = GetMuzzles(side);
             if (cannonballPrefab == null || muzzles == null || muzzles.Length == 0) return false;
 
-            int loadedCannons = Mathf.Min(CountValidMuzzles(muzzles), GetAmmunitionStock(selectedAmmunition));
+            int loadedCannons = Mathf.Min(
+                InstalledCannons,
+                GetAmmunitionStock(selectedAmmunition)
+            );
             if (loadedCannons <= 0) return false;
 
             AmmunitionType firedType = selectedAmmunition;
@@ -200,9 +242,16 @@ namespace Seaborn.Combat
             float spreadRadius = Mathf.Lerp(1.8f, 0.12f, accuracy) * profile.SpreadMultiplier;
             int firedCannons = 0;
 
-            foreach (Transform muzzle in muzzles)
+            int validMuzzleCount = CountValidMuzzles(muzzles);
+            if (validMuzzleCount <= 0) yield break;
+
+            for (int cannonIndex = 0; cannonIndex < loadedCannons; cannonIndex++)
             {
-                if (muzzle == null || firedCannons >= loadedCannons) continue;
+                Transform muzzle = GetValidMuzzle(
+                    muzzles,
+                    cannonIndex % validMuzzleCount
+                );
+                if (muzzle == null) continue;
 
                 Vector3 baseDirection = targetPoint - muzzle.position;
                 baseDirection.y = 0f;
@@ -211,9 +260,17 @@ namespace Seaborn.Combat
                 PrototypeCombatVfx.PlayMuzzleBurst(muzzle.position, baseDirection.normalized);
                 PrototypeCameraShake.Request(0.06f, 0.08f);
 
-                for (int index = 0; index < profile.ProjectilesPerCannon; index++)
+                for (int projectileIndex = 0;
+                     projectileIndex < profile.ProjectilesPerCannon;
+                     projectileIndex++)
                 {
-                    SpawnProjectile(muzzle, targetPoint, spreadRadius, ammunitionType, profile);
+                    SpawnProjectile(
+                        muzzle,
+                        targetPoint,
+                        spreadRadius,
+                        ammunitionType,
+                        profile
+                    );
                 }
 
                 firedCannons++;
@@ -249,13 +306,29 @@ namespace Seaborn.Combat
                 muzzle.position,
                 Quaternion.LookRotation(toTarget.normalized, Vector3.up)
             );
-            projectile.Configure(
+            projectile.ConfigureAbsoluteDamage(
                 ammunitionType,
-                profile.DamageMultiplier *
+                cannonHitDamage *
+                    profile.DamageMultiplier *
                     equipmentDamageMultiplier,
                 profile.ProjectileScale
             );
             projectile.LaunchAt(transform, clampedTarget, duration, height);
+        }
+
+        private static Transform GetValidMuzzle(
+            Transform[] muzzles,
+            int validIndex)
+        {
+            int current = 0;
+            foreach (Transform muzzle in muzzles)
+            {
+                if (muzzle == null) continue;
+                if (current == validIndex) return muzzle;
+                current++;
+            }
+
+            return null;
         }
 
         private static int CountValidMuzzles(Transform[] muzzles)

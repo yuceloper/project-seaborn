@@ -310,3 +310,12 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 **Karar:** Dünya güneyde güvenli liman, kuzeyde sakin PvE, doğuda avcılık ve batıda yüksek risk/PvP anlamını korur. Kalıcı harita tier'ı zorluğu, değişken harita kalitesi ise loot, boss ve çevresel koşulları etkiler.
 
 **Neden:** Tek tek özellik üretmeden önce gemi edinme, ekipman kurma, sefere çıkma, riskli değer toplama, limana dönme ve yeni erişimler açma döngüsünü ortak bir ekonomik ve veri temeline bağlamak. Ayrıntılı formüller ve örnek sayılar `PROGRESSION_AND_SYSTEMS.md` içinde ayarlanabilir tasarım değerleri olarak tutulur.
+
+
+## 2026-09-13 — İlk filo ve gemi pazarı kuralı
+
+**Karar:** Satın alınan gemiler hesabın kalıcı filosuna eklenir; aktif gemi yalnızca güvenli limandaki tersaneye yanaşınca değiştirilebilir. Gemi değişimi profilin can, top yuvası, menzil, hız ve manevra sınırlarını yeniden uygular. Mevcut ekipman yeni kapasiteye sığmıyorsa fazla adet silinmez, depoda kalır.
+
+**Karar:** İlk prototipte farklı gemi profilleri aynı blockout görselini kullanabilir. HUD ve tersane aktif mekanik profili adıyla gösterir. Üretim gemi prefabları ayrı sanat geçişinde bağlanacaktır.
+
+**Neden:** Gemi satın almayı yalnızca bir istatistik yükseltmesi değil, oyuncunun koruduğu ve roller arasında değiştirdiği filo ilerlemesine dönüştürmek; düşük kapasiteli gemiye dönüşte kazanılmış ekipmanı yok etmemek.

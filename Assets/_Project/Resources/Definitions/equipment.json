@@ -1,0 +1,139 @@
+{
+  "cannons": [
+    {
+      "id": "iron_6lb",
+      "displayName": "6 lb Iron Cannon",
+      "caliberPounds": 6,
+      "damage": 100.0,
+      "reloadDuration": 2.5,
+      "range": 10.0,
+      "accuracy": 0.82,
+      "silverPrice": 320
+    },
+    {
+      "id": "iron_12lb",
+      "displayName": "12 lb Iron Cannon",
+      "caliberPounds": 12,
+      "damage": 200.0,
+      "reloadDuration": 3.4,
+      "range": 11.5,
+      "accuracy": 0.76,
+      "silverPrice": 900
+    }
+  ],
+  "ammunition": [
+    {
+      "id": "standard",
+      "displayName": "Standard Round Shot",
+      "damageMultiplier": 1.0,
+      "rangeMultiplier": 1.0,
+      "spreadMultiplier": 1.0,
+      "reloadMultiplier": 1.0,
+      "projectilesPerCannon": 1,
+      "projectileScale": 1.0,
+      "silverPricePerBundle": 20,
+      "bundleSize": 40
+    },
+    {
+      "id": "chain",
+      "displayName": "Chain Shot",
+      "damageMultiplier": 0.68,
+      "rangeMultiplier": 0.82,
+      "spreadMultiplier": 1.2,
+      "reloadMultiplier": 1.18,
+      "projectilesPerCannon": 1,
+      "projectileScale": 1.08,
+      "silverPricePerBundle": 18,
+      "bundleSize": 12
+    },
+    {
+      "id": "grapeshot",
+      "displayName": "Grapeshot",
+      "damageMultiplier": 0.28,
+      "rangeMultiplier": 0.56,
+      "spreadMultiplier": 1.65,
+      "reloadMultiplier": 0.88,
+      "projectilesPerCannon": 3,
+      "projectileScale": 0.62,
+      "silverPricePerBundle": 18,
+      "bundleSize": 16
+    }
+  ],
+  "harpoons": [
+    {
+      "id": "light_2kg",
+      "displayName": "2 kg Light Harpoon",
+      "weightKg": 2.0,
+      "damage": 50.0,
+      "range": 12.0,
+      "reloadDuration": 1.45,
+      "flightDuration": 0.68,
+      "arcHeight": 0.58,
+      "silverPricePerBundle": 15,
+      "bundleSize": 10
+    },
+    {
+      "id": "heavy_4kg",
+      "displayName": "4 kg Heavy Harpoon",
+      "weightKg": 4.0,
+      "damage": 100.0,
+      "range": 10.0,
+      "reloadDuration": 2.35,
+      "flightDuration": 0.82,
+      "arcHeight": 0.78,
+      "silverPricePerBundle": 28,
+      "bundleSize": 8
+    }
+  ],
+  "sails": [
+    {
+      "id": "patched_canvas",
+      "displayName": "Patched Canvas",
+      "speedMultiplier": 1.0,
+      "maneuverMultiplier": 1.0,
+      "silverPrice": 0
+    },
+    {
+      "id": "rat_sails",
+      "displayName": "Rat Sails",
+      "speedMultiplier": 1.08,
+      "maneuverMultiplier": 1.04,
+      "silverPrice": 1800
+    }
+  ],
+  "consumables": [
+    {
+      "id": "tortuga_tonic",
+      "displayName": "Tortuga Tonic",
+      "effectType": "instant_heal",
+      "cooldownGroup": "repair",
+      "magnitude": 250.0,
+      "duration": 0.0,
+      "cooldown": 45.0,
+      "silverPrice": 120,
+      "goldPrice": 0
+    },
+    {
+      "id": "gun_crews_grog",
+      "displayName": "Gun Crew's Grog",
+      "effectType": "reload_speed",
+      "cooldownGroup": "combat_boost",
+      "magnitude": 0.1,
+      "duration": 600.0,
+      "cooldown": 900.0,
+      "silverPrice": 260,
+      "goldPrice": 0
+    },
+    {
+      "id": "light_of_tortuga",
+      "displayName": "Light of Tortuga",
+      "effectType": "stealth",
+      "cooldownGroup": "special",
+      "magnitude": 1.0,
+      "duration": 7.0,
+      "cooldown": 180.0,
+      "silverPrice": 0,
+      "goldPrice": 0
+    }
+  ]
+}

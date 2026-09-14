@@ -105,6 +105,9 @@ namespace Seaborn.Combat
         {
             if (broadsideController == null || Keyboard.current == null) return;
 
+            // Shift + number belongs to the harpoon family.
+            if (Keyboard.current.leftShiftKey.isPressed) return;
+
             if (Keyboard.current.digit1Key.wasPressedThisFrame)
                 broadsideController.TrySelectAmmunition(AmmunitionType.Standard);
             else if (Keyboard.current.digit2Key.wasPressedThisFrame)

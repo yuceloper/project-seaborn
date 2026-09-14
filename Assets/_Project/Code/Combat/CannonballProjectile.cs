@@ -44,6 +44,20 @@ namespace Seaborn.Combat
             transform.localScale *= Mathf.Max(0.1f, projectileScale);
         }
 
+        public void ConfigureAbsoluteDamage(
+            AmmunitionType type,
+            float hitDamage,
+            float projectileScale)
+        {
+            ammunitionType = type;
+            damage = Mathf.Max(0f, hitDamage);
+            damageMultiplier = 1f;
+            transform.localScale *= Mathf.Max(
+                0.1f,
+                projectileScale
+            );
+        }
+
         public void Launch(Transform projectileOwner, Vector3 direction, float range, float duration, float height)
         {
             LaunchAt(

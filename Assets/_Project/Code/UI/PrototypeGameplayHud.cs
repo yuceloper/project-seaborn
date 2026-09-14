@@ -348,7 +348,16 @@ namespace Seaborn.UI
         {
             PrototypeShipRecoveryDirector recovery = PrototypeShipRecoveryDirector.Instance;
             bool reserve = recovery != null && recovery.State != PrototypeShipRecoveryState.MainShipActive;
-            shipNameText.text = reserve ? "YEDEK GEMİ" : "ANA GEMİ";
+            ShipProfileController profile =
+                boundPlayer != null
+                    ? boundPlayer.GetComponent<
+                        ShipProfileController>()
+                    : null;
+            shipNameText.text = reserve
+                ? "YEDEK GEMİ"
+                : profile?.Definition != null
+                    ? profile.Definition.displayName.ToUpperInvariant()
+                    : "ANA GEMİ";
 
             float current = health != null ? health.CurrentHealth : 0f;
             float maximum = health != null ? health.MaximumHealth : 1f;
@@ -422,6 +431,12 @@ namespace Seaborn.UI
 
         private void RefreshCombat()
         {
+            if (harpoons == null && boundPlayer != null)
+            {
+                harpoons = boundPlayer.GetComponentInChildren<
+                    HarpoonHuntingController>();
+            }
+
             float port = broadside != null ? broadside.GetReloadProgress(BroadsideSide.Port) : 0f;
             float starboard = broadside != null ? broadside.GetReloadProgress(BroadsideSide.Starboard) : 0f;
             SetBar(portFill, port);
@@ -434,7 +449,17 @@ namespace Seaborn.UI
             ammoStockText.text = broadside == null ? "1: 0   2: 0   3: 0" : $"1: {broadside.GetAmmunitionStock(AmmunitionType.Standard)}   2: {broadside.GetAmmunitionStock(AmmunitionType.Chain)}   3: {broadside.GetAmmunitionStock(AmmunitionType.Grapeshot)}";
 
             float reload = harpoons != null ? harpoons.ReloadProgress : 0f;
-            harpoonText.text = $"Zıpkın   {(harpoons != null ? harpoons.HarpoonStock : 0)}";
+            string harpoonName =
+                harpoons?.SelectedHarpoon != null
+                    ? $"{harpoons.SelectedHarpoon.weightKg:0} KG " +
+                      (harpoons.SelectedHarpoon.weightKg >= 4f
+                          ? "AĞIR"
+                          : "HAFİF")
+                    : "Zıpkın";
+            harpoonText.text =
+                $"{harpoonName}   " +
+                $"2KG {harpoons?.LightHarpoonStock ?? 0}  •  " +
+                $"4KG {harpoons?.HeavyHarpoonStock ?? 0}";
             SetBar(harpoonFill, reload);
             bool locked = broadside != null && broadside.IsBlockedBySafeHarbor;
             harborLockText.gameObject.SetActive(locked);

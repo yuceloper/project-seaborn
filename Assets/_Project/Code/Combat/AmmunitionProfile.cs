@@ -1,3 +1,4 @@
+using Seaborn.Equipment;
 using UnityEngine;
 
 namespace Seaborn.Combat
@@ -29,6 +30,21 @@ namespace Seaborn.Combat
 
         public static AmmunitionProfile Get(AmmunitionType type)
         {
+            string catalogueId = type.ToString().ToLowerInvariant();
+            if (EquipmentCatalog.TryGetAmmunition(
+                    catalogueId,
+                    out AmmunitionDefinition definition))
+            {
+                return new AmmunitionProfile(
+                    definition.damageMultiplier,
+                    definition.rangeMultiplier,
+                    definition.spreadMultiplier,
+                    definition.reloadMultiplier,
+                    Mathf.Max(1, definition.projectilesPerCannon),
+                    definition.projectileScale
+                );
+            }
+
             switch (type)
             {
                 case AmmunitionType.Chain:

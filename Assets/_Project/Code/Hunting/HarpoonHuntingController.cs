@@ -1,6 +1,7 @@
 using System;
 using Seaborn.Combat;
 using Seaborn.Expeditions;
+using Seaborn.Equipment;
 using Seaborn.Harbor;
 using Seaborn.Recovery;
 using UnityEngine;
@@ -12,6 +13,10 @@ namespace Seaborn.Hunting
     public sealed class HarpoonHuntingController :
         MonoBehaviour
     {
+        [Header("Harpoon profile")]
+        [SerializeField]
+        private string selectedHarpoonId = "light_2kg";
+
         [SerializeField, Min(1f)]
         private float maximumRange = 12f;
 
@@ -19,7 +24,10 @@ namespace Seaborn.Hunting
         private float reloadDuration = 1.8f;
 
         [SerializeField, Min(0)]
-        private int harpoonStock = 30;
+        private int lightHarpoonStock = 20;
+
+        [SerializeField, Min(0)]
+        private int heavyHarpoonStock = 10;
 
         [SerializeField, Min(0f)]
         private float harpoonDamage = 34f;
@@ -38,9 +46,17 @@ namespace Seaborn.Hunting
 
         public event Action HuntingStateChanged;
 
+        public string SelectedHarpoonId => selectedHarpoonId;
+        public HarpoonDefinition SelectedHarpoon { get; private set; }
+
         public bool IsAiming { get; private set; }
         public Vector3 AimPoint { get; private set; }
-        public int HarpoonStock => harpoonStock;
+        public int HarpoonStock =>
+            GetHarpoonStock(selectedHarpoonId);
+        public int LightHarpoonStock => lightHarpoonStock;
+        public int HeavyHarpoonStock => heavyHarpoonStock;
+        public int TotalHarpoonStock =>
+            lightHarpoonStock + heavyHarpoonStock;
         public float ReloadRemaining =>
             Mathf.Max(0f, nextFireTime - Time.time);
         public float ReloadProgress =>
@@ -70,6 +86,7 @@ namespace Seaborn.Hunting
 
         private void Awake()
         {
+            ApplyHarpoonProfile();
             aimCamera = UnityEngine.Camera.main;
             CreateAimLine();
         }
@@ -81,10 +98,24 @@ namespace Seaborn.Hunting
                 aimCamera = UnityEngine.Camera.main;
             }
 
-            bool wantsToAim =
-                !IsBlockedBySafeHarbor &&
+            bool shiftHeld =
                 Keyboard.current != null &&
                 Keyboard.current.leftShiftKey.isPressed;
+
+            if (shiftHeld &&
+                Keyboard.current.digit1Key.wasPressedThisFrame)
+            {
+                TrySelectHarpoon("light_2kg");
+            }
+            else if (shiftHeld &&
+                     Keyboard.current.digit2Key.wasPressedThisFrame)
+            {
+                TrySelectHarpoon("heavy_4kg");
+            }
+
+            bool wantsToAim =
+                !IsBlockedBySafeHarbor &&
+                shiftHeld;
 
             if (IsAiming != wantsToAim)
             {
@@ -117,6 +148,21 @@ namespace Seaborn.Hunting
             }
         }
 
+        public bool TrySelectHarpoon(string harpoonId)
+        {
+            if (!EquipmentCatalog.TryGetHarpoon(
+                    harpoonId,
+                    out HarpoonDefinition definition))
+            {
+                return false;
+            }
+
+            selectedHarpoonId = harpoonId;
+            ApplyHarpoonProfile(definition);
+            HuntingStateChanged?.Invoke();
+            return true;
+        }
+
         public void AddHarpoons(int amount)
         {
             if (amount <= 0)
@@ -124,7 +170,15 @@ namespace Seaborn.Hunting
                 return;
             }
 
-            harpoonStock += amount;
+            if (IsHeavyHarpoon(selectedHarpoonId))
+            {
+                heavyHarpoonStock += amount;
+            }
+            else
+            {
+                lightHarpoonStock += amount;
+            }
+
             HuntingStateChanged?.Invoke();
         }
 
@@ -141,8 +195,32 @@ namespace Seaborn.Hunting
 
         public void RestoreHarpoonStock(int amount)
         {
-            harpoonStock = Mathf.Max(0, amount);
+            lightHarpoonStock = Mathf.Max(0, amount);
+            heavyHarpoonStock = 0;
             HuntingStateChanged?.Invoke();
+        }
+
+        public void RestoreHarpoonStocks(
+            int light,
+            int heavy,
+            string selectedId)
+        {
+            lightHarpoonStock = Mathf.Max(0, light);
+            heavyHarpoonStock = Mathf.Max(0, heavy);
+
+            if (!string.IsNullOrWhiteSpace(selectedId))
+            {
+                TrySelectHarpoon(selectedId);
+            }
+
+            HuntingStateChanged?.Invoke();
+        }
+
+        public int GetHarpoonStock(string harpoonId)
+        {
+            return IsHeavyHarpoon(harpoonId)
+                ? heavyHarpoonStock
+                : lightHarpoonStock;
         }
 
         private bool TryUpdateAimPoint()
@@ -209,10 +287,59 @@ namespace Seaborn.Hunting
                     equipmentDamageMultiplier
             );
 
-            harpoonStock--;
+            if (IsHeavyHarpoon(selectedHarpoonId))
+            {
+                heavyHarpoonStock--;
+            }
+            else
+            {
+                lightHarpoonStock--;
+            }
             nextFireTime =
                 Time.time + EffectiveReloadDuration;
             HuntingStateChanged?.Invoke();
+        }
+
+        private static bool IsHeavyHarpoon(string harpoonId)
+        {
+            return string.Equals(
+                harpoonId,
+                "heavy_4kg",
+                StringComparison.OrdinalIgnoreCase
+            );
+        }
+
+        private void ApplyHarpoonProfile()
+        {
+            if (EquipmentCatalog.TryGetHarpoon(
+                    selectedHarpoonId,
+                    out HarpoonDefinition definition))
+            {
+                ApplyHarpoonProfile(definition);
+                return;
+            }
+
+            Debug.LogWarning(
+                $"Unknown harpoon profile: {selectedHarpoonId}",
+                this
+            );
+        }
+
+        private void ApplyHarpoonProfile(
+            HarpoonDefinition definition)
+        {
+            SelectedHarpoon = definition;
+            harpoonDamage = Mathf.Max(0f, definition.damage);
+            maximumRange = Mathf.Max(1f, definition.range);
+            reloadDuration = Mathf.Max(
+                0.1f,
+                definition.reloadDuration
+            );
+            flightDuration = Mathf.Max(
+                0.1f,
+                definition.flightDuration
+            );
+            arcHeight = Mathf.Max(0f, definition.arcHeight);
         }
 
         private void CreateAimLine()
@@ -298,8 +425,7 @@ namespace Seaborn.Hunting
                 Seaborn.World.PrototypeExpeditionRegionDirector
                     .IsHarborScene;
 
-            if (!isHarbor &&
-                player.GetComponent<
+            if (player.GetComponent<
                     HarpoonHuntingController>() == null)
             {
                 player.gameObject.AddComponent<
@@ -332,6 +458,14 @@ namespace Seaborn.Hunting
                 .EnsureAttached(player.transform);
             Seaborn.Progression.PrototypeShipEquipment
                 .EnsureAttached(player.transform);
+            Seaborn.Ship.ShipLoadout
+                .EnsureAttached(player.transform);
+            Seaborn.Progression
+                .PrototypeEquipmentInventory
+                .EnsureAttached(player.transform);
+            Seaborn.Progression
+                .PrototypeFleetInventory
+                .EnsureAttached(player.transform);
 
             if (isHarbor)
             {
@@ -355,6 +489,12 @@ namespace Seaborn.Hunting
                 );
                 Seaborn.Harbor.UI
                     .PrototypeShipyardUpgradePanel
+                    .EnsureCreated(player.transform);
+                Seaborn.Harbor.UI
+                    .PrototypeShipyardLoadoutPanel
+                    .EnsureCreated(player.transform);
+                Seaborn.Harbor.UI
+                    .PrototypeShipMarketPanel
                     .EnsureCreated(player.transform);
                 Seaborn.Harbor.UI
                     .PrototypeHarborContractPanel
