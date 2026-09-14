@@ -350,3 +350,14 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 **Karar:** Gold oynanış gücü satın almayan kalıcı kozmetik para birimidir. İlk prototipte yalnızca çok nadir pırıltı ödülü olarak elde edilir, HUD'da Silver yanında gösterilir ve yerel kayıtta korunur.
 
 **Neden:** Harita boyunca küçük rota sapmaları ve kısa savunmasızlık anları üretmek; keşif ödülünü mevcut riskli yük ve limana dönüş döngüsüne bağlarken premium para biriminin güç ekonomisinden ayrılığını erken doğrulamak.
+
+
+## 2026-09-14 — İlk taktik sarf malzemeleri
+
+**Karar:** İlk iki özel eşya Tortuga Tonic ve Light of Tortuga'dır. Tortuga Tonic 4 tuşuyla kullanılır, 250 gövde yeniler, tam canda tüketilemez ve 15 saniye yeniden kullanım süresine sahiptir. Light of Tortuga 5 tuşuyla kullanılır ve yedi saniye boyunca gemiyi görünmez kılar.
+
+**Karar:** Light of Tortuga etkin olduğunda korsan gemileri ateş hazırlığını durdurur ve Stormjaw avcıyı kovalamayı bırakır. Oyuncunun top veya zıpkın ateşlemesi ya da hasar alması görünmezliği erken bozar. Süre bittiğinde düşman önceden saldırgansa takibe devam edebilir; eşya savaşı silmez, kısa bir kaçış ve yeniden konumlanma penceresi üretir.
+
+**Karar:** Prototip başlangıç stoğu üç Tortuga Tonic ve bir Light of Tortuga'dır. Stoklar kalıcı kayda yazılır ve HUD'da gösterilir. Yeniden ikmal, Ticaret rıhtımı ekonomisiyle ayrı iterasyonda bağlanacaktır.
+
+**Neden:** Hotbar'ı yalnızca mühimmat seçimi olmaktan çıkarıp oyuncuya acil dayanıklılık ve taktik kaçış kararı vermek; görünmezliği ücretsiz çatışma sıfırlama yerine saldırıyla bozulan sınırlı bir konumlanma aracı olarak tutmak.

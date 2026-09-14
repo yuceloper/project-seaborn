@@ -355,3 +355,15 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Gold bakiyesinin HUD ve yerel kayda bağlanması
 - [ ] Pırıltı görselini nihai okyanus shader/VFX diliyle yenileme
 - [ ] Sunucu otoriteli üretim, ödül tohumu ve hile doğrulaması
+
+
+### İlk taktik sarf malzemeleri
+
+- [x] 4 tuşunda Tortuga Tonic ile anlık 250 gövde onarımı
+- [x] Tonic için 15 saniyelik yeniden kullanım süresi
+- [x] 5 tuşunda Light of Tortuga ile 7 saniyelik görünmezlik
+- [x] Top, zıpkın veya alınan hasarın görünmezliği bozması
+- [x] Korsan ve Stormjaw hedeflemesinin görünmezlik sırasında durması
+- [x] Stokların HUD ve yerel kayda bağlanması
+- [ ] Ticaret rıhtımında sarf malzemesi satın alma ve ikmal
+- [ ] Süreli saldırı, savunma, hız ve doldurma güçlendirmeleri

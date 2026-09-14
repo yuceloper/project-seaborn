@@ -49,6 +49,7 @@ namespace Seaborn.Hunting
         private float skillReloadMultiplier = 1f;
 
         public event Action HuntingStateChanged;
+        public event Action HarpoonFired;
 
         public string SelectedHarpoonId => selectedHarpoonId;
         public HarpoonDefinition SelectedHarpoon { get; private set; }
@@ -316,6 +317,7 @@ namespace Seaborn.Hunting
             nextFireTime =
                 Time.time + EffectiveReloadDuration;
             HuntingStateChanged?.Invoke();
+            HarpoonFired?.Invoke();
         }
 
         private static bool IsHeavyHarpoon(string harpoonId)
@@ -518,6 +520,9 @@ namespace Seaborn.Hunting
                 .EnsureAttached(player.transform);
             Seaborn.Progression
                 .PrototypeGoldWallet
+                .EnsureAttached(player.transform);
+            Seaborn.Ship
+                .PrototypeShipConsumables
                 .EnsureAttached(player.transform);
             Seaborn.Progression
                 .PrototypeFleetInventory
