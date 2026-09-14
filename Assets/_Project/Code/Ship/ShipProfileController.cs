@@ -93,8 +93,12 @@ namespace Seaborn.Ship
                     0,
                     Definition.deckExtensionLimit)
                 : 0;
-            InstalledDeckExtensions =
+            int nextInstalled =
                 Mathf.Clamp(installed, 0, limit);
+            if (InstalledDeckExtensions == nextInstalled)
+                return;
+
+            InstalledDeckExtensions = nextInstalled;
             if (Definition == null) return;
 
             ShipHealth health =
