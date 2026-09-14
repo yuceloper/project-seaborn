@@ -365,5 +365,17 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Top, zıpkın veya alınan hasarın görünmezliği bozması
 - [x] Korsan ve Stormjaw hedeflemesinin görünmezlik sırasında durması
 - [x] Stokların HUD ve yerel kayda bağlanması
-- [ ] Ticaret rıhtımında sarf malzemesi satın alma ve ikmal
+- [x] Ticaret rıhtımında sarf malzemesi satın alma ve ikmal
 - [ ] Süreli saldırı, savunma, hız ve doldurma güçlendirmeleri
+
+
+### Tortuga tedarikçisi
+
+- [x] Ticaret iskelesine özel sarf malzemesi mağazası
+- [x] 90 Silver karşılığı tek Tortuga Tonic
+- [x] 240 Silver karşılığı üçlü Tonic sandığı
+- [x] 650 Silver karşılığı Light of Tortuga
+- [x] Bakiye yetersizliğini ve satın alma sonucunu panelde gösterme
+- [x] Satın alınan stokları mevcut kalıcı kayıt akışına bağlama
+- [ ] Fiyatları 15–25 dakikalık gerçek sefer verisiyle dengeleme
+- [ ] Oyuncular arası sarf malzemesi ticareti ve pazar vergisi
