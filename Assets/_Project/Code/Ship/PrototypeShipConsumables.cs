@@ -12,16 +12,32 @@ namespace Seaborn.Ship
     {
         private const float TonicCooldown = 15f;
         private const float ConcealDuration = 7f;
+        private const float TimedBuffDuration = 90f;
 
         [SerializeField, Min(0)]
         private int tortugaTonics = 3;
         [SerializeField, Min(0)]
         private int lightsOfTortuga = 1;
+        [SerializeField, Min(0)]
+        private int corsairRum = 2;
+        [SerializeField, Min(0)]
+        private int galeElixirs = 2;
+        [SerializeField, Min(0)]
+        private int ironbarkBrews = 2;
 
         public event Action ConsumablesChanged;
 
         public int TortugaTonics => tortugaTonics;
         public int LightsOfTortuga => lightsOfTortuga;
+        public int CorsairRum => corsairRum;
+        public int GaleElixirs => galeElixirs;
+        public int IronbarkBrews => ironbarkBrews;
+        public float CorsairRumRemaining =>
+            Mathf.Max(0f, corsairRumUntil - Time.time);
+        public float GaleElixirRemaining =>
+            Mathf.Max(0f, galeElixirUntil - Time.time);
+        public float IronbarkBrewRemaining =>
+            Mathf.Max(0f, ironbarkBrewUntil - Time.time);
         public bool IsConcealed =>
             Time.time < concealedUntil;
         public float ConcealmentRemaining =>
@@ -34,8 +50,12 @@ namespace Seaborn.Ship
         private ShipHealth health;
         private BroadsideController broadside;
         private HarpoonHuntingController harpoons;
+        private ShipMotor motor;
         private float tonicReadyAt;
         private float concealedUntil;
+        private float corsairRumUntil;
+        private float galeElixirUntil;
+        private float ironbarkBrewUntil;
         private readonly Dictionary<Renderer, bool>
             rendererStates = new();
 
@@ -64,6 +84,7 @@ namespace Seaborn.Ship
                 BroadsideController>();
             harpoons = player.GetComponentInChildren<
                 HarpoonHuntingController>();
+            motor = player.GetComponentInChildren<ShipMotor>();
 
             if (health != null)
                 health.Damaged += HandleDamaged;
@@ -71,6 +92,7 @@ namespace Seaborn.Ship
                 broadside.BroadsideFired += HandleBroadsideFired;
             if (harpoons != null)
                 harpoons.HarpoonFired += HandleHarpoonFired;
+            ApplyTimedModifiers();
         }
 
         private void Update()
@@ -83,12 +105,40 @@ namespace Seaborn.Ship
                 if (Keyboard.current.digit5Key
                     .wasPressedThisFrame)
                     UseLightOfTortuga();
+                if (Keyboard.current.digit6Key
+                    .wasPressedThisFrame)
+                    UseCorsairRum();
+                if (Keyboard.current.digit7Key
+                    .wasPressedThisFrame)
+                    UseGaleElixir();
+                if (Keyboard.current.digit8Key
+                    .wasPressedThisFrame)
+                    UseIronbarkBrew();
             }
 
             if (concealedUntil > 0f &&
                 Time.time >= concealedUntil)
             {
                 EndConcealment("Görünmezlik sona erdi.");
+            }
+
+            bool expired =
+                (corsairRumUntil > 0f &&
+                 Time.time >= corsairRumUntil) ||
+                (galeElixirUntil > 0f &&
+                 Time.time >= galeElixirUntil) ||
+                (ironbarkBrewUntil > 0f &&
+                 Time.time >= ironbarkBrewUntil);
+            if (expired)
+            {
+                if (Time.time >= corsairRumUntil)
+                    corsairRumUntil = 0f;
+                if (Time.time >= galeElixirUntil)
+                    galeElixirUntil = 0f;
+                if (Time.time >= ironbarkBrewUntil)
+                    ironbarkBrewUntil = 0f;
+                ApplyTimedModifiers();
+                ConsumablesChanged?.Invoke();
             }
         }
 
@@ -135,11 +185,79 @@ namespace Seaborn.Ship
             return true;
         }
 
-        public void RestoreStocks(int tonics, int lights)
+        public void RestoreStocks(
+            int tonics,
+            int lights,
+            int rum,
+            int gale,
+            int ironbark)
         {
             tortugaTonics = Mathf.Max(0, tonics);
             lightsOfTortuga = Mathf.Max(0, lights);
+            corsairRum = Mathf.Max(0, rum);
+            galeElixirs = Mathf.Max(0, gale);
+            ironbarkBrews = Mathf.Max(0, ironbark);
             ConsumablesChanged?.Invoke();
+        }
+
+        public bool UseCorsairRum()
+        {
+            if (corsairRum <= 0)
+                return Fail("Corsair Rum kalmadı.");
+            corsairRum--;
+            corsairRumUntil =
+                Time.time + TimedBuffDuration;
+            ApplyTimedModifiers();
+            SetStatus(
+                "Corsair Rum: +%10 top hasarı ve doldurma"
+            );
+            ConsumablesChanged?.Invoke();
+            return true;
+        }
+
+        public bool UseGaleElixir()
+        {
+            if (galeElixirs <= 0)
+                return Fail("Gale Elixir kalmadı.");
+            galeElixirs--;
+            galeElixirUntil =
+                Time.time + TimedBuffDuration;
+            ApplyTimedModifiers();
+            SetStatus(
+                "Gale Elixir: +%12 hız ve manevra"
+            );
+            ConsumablesChanged?.Invoke();
+            return true;
+        }
+
+        public bool UseIronbarkBrew()
+        {
+            if (ironbarkBrews <= 0)
+                return Fail("Ironbark Brew kalmadı.");
+            ironbarkBrews--;
+            ironbarkBrewUntil =
+                Time.time + TimedBuffDuration;
+            ApplyTimedModifiers();
+            SetStatus(
+                "Ironbark Brew: -%15 alınan hasar"
+            );
+            ConsumablesChanged?.Invoke();
+            return true;
+        }
+
+        private void ApplyTimedModifiers()
+        {
+            broadside?.SetConsumableModifiers(
+                CorsairRumRemaining > 0f ? 1.1f : 1f,
+                CorsairRumRemaining > 0f ? 0.9f : 1f
+            );
+            motor?.SetConsumablePerformance(
+                GaleElixirRemaining > 0f ? 1.12f : 1f,
+                GaleElixirRemaining > 0f ? 1.12f : 1f
+            );
+            health?.SetConsumableDamageTakenMultiplier(
+                IronbarkBrewRemaining > 0f ? 0.85f : 1f
+            );
         }
 
         public void AddTortugaTonics(int amount)
@@ -153,6 +271,27 @@ namespace Seaborn.Ship
         {
             if (amount <= 0) return;
             lightsOfTortuga += amount;
+            ConsumablesChanged?.Invoke();
+        }
+
+        public void AddCorsairRum(int amount)
+        {
+            if (amount <= 0) return;
+            corsairRum += amount;
+            ConsumablesChanged?.Invoke();
+        }
+
+        public void AddGaleElixirs(int amount)
+        {
+            if (amount <= 0) return;
+            galeElixirs += amount;
+            ConsumablesChanged?.Invoke();
+        }
+
+        public void AddIronbarkBrews(int amount)
+        {
+            if (amount <= 0) return;
+            ironbarkBrews += amount;
             ConsumablesChanged?.Invoke();
         }
 
