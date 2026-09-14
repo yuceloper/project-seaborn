@@ -28,6 +28,7 @@ namespace Seaborn.UI
         private HarpoonHuntingController harpoons;
         private PrototypeHuntCargo cargo;
         private PrototypeSilverWallet wallet;
+        private PrototypeGoldWallet goldWallet;
         private PrototypeCaptainProgression captainProgression;
         private PrototypeExpeditionRegionDirector worldMap;
 
@@ -123,6 +124,7 @@ namespace Seaborn.UI
             harpoons = player.GetComponentInChildren<HarpoonHuntingController>();
             cargo = player.GetComponentInChildren<PrototypeHuntCargo>();
             wallet = player.GetComponentInChildren<PrototypeSilverWallet>();
+            goldWallet = player.GetComponentInChildren<PrototypeGoldWallet>();
             captainProgression =
                 player.GetComponentInChildren<
                     PrototypeCaptainProgression>();
@@ -448,7 +450,7 @@ namespace Seaborn.UI
 
         private void RefreshResources()
         {
-            silverText.text = $"SILVER   {(wallet != null ? wallet.Silver : 0)}";
+            silverText.text = $"SILVER   {(wallet != null ? wallet.Silver : 0)}  •  GOLD   {(goldWallet != null ? goldWallet.Gold : 0)}";
             int value = cargo != null ? cargo.UnsecuredSilverValue : 0;
             string capacity = cargo == null || cargo.MaximumSilverValue == int.MaxValue ? "SINIRSIZ" : cargo.MaximumSilverValue.ToString();
             cargoText.text = $"GÜVENCESİZ YÜK   {value} / {capacity}\nBATIŞTA KAYBEDİLİR";

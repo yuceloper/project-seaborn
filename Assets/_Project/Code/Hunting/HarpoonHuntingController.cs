@@ -517,6 +517,9 @@ namespace Seaborn.Hunting
                 .PrototypeCaptainSkills
                 .EnsureAttached(player.transform);
             Seaborn.Progression
+                .PrototypeGoldWallet
+                .EnsureAttached(player.transform);
+            Seaborn.Progression
                 .PrototypeFleetInventory
                 .EnsureAttached(player.transform);
 
@@ -534,6 +537,9 @@ namespace Seaborn.Hunting
                 PrototypeExpeditionDirector.EnsureCreated(
                     player.transform
                 );
+                Seaborn.World
+                    .PrototypeSeaSparkleDirector
+                    .EnsureCreated(player.transform);
             }
             PrototypeShipRecoveryDirector.EnsureCreated(
                 player.transform

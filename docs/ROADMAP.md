@@ -277,7 +277,7 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Add captain EXP, levels, unlock gates and skill-point earning
 - [x] Add first cannon, harpoon and ship skill branches
 - [ ] Add timed repair, tonic and special-item cooldown categories
-- [ ] Add interruptible sea-sparkle collection and weighted rewards
+- [x] Add interruptible sea-sparkle collection and weighted rewards
 - [ ] Add map-tier and map-quality modifiers
 - [ ] Add player-to-player Silver market after server authority exists
 
@@ -343,3 +343,15 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Yetenek seviyelerini yerel prototip kaydında koruma
 - [ ] Silver karşılığı yetenek sıfırlama / yeniden dağıtma
 - [ ] İkinci kademe dallanma, kritik isabet ve özel yetenekler
+
+
+### Deniz pırıltısı ödül döngüsü
+
+- [x] Sefer haritalarında bölgesel pırıltı üretimi
+- [x] E tuşuna üç saniye basılı tutarak toplama
+- [x] Hareket veya hasar alındığında toplamanın kesilmesi
+- [x] Ağırlıklı güvencesiz Silver, gövde onarımı ve bölgesel malzeme ödülleri
+- [x] Yüzde 2 olasılıkla 1 kalıcı Gold
+- [x] Gold bakiyesinin HUD ve yerel kayda bağlanması
+- [ ] Pırıltı görselini nihai okyanus shader/VFX diliyle yenileme
+- [ ] Sunucu otoriteli üretim, ödül tohumu ve hile doğrulaması
