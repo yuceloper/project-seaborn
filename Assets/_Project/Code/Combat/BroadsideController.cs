@@ -254,6 +254,7 @@ namespace Seaborn.Combat
                 reloadMultiplier *
                 equipmentReloadMultiplier *
                 skillReloadMultiplier *
+                consumableReloadMultiplier *
                 crewReloadMultiplier;
             if (side == BroadsideSide.Port)
             {
