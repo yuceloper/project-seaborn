@@ -66,6 +66,20 @@ namespace Seaborn.Hunting
                 return;
             }
 
+            PrototypeShipConsumables consumables =
+                hunter != null
+                    ? hunter.transform.root.GetComponent<
+                        PrototypeShipConsumables>()
+                    : null;
+            if (consumables != null &&
+                consumables.IsConcealed)
+            {
+                creature.IsMovementExternallyControlled =
+                    false;
+                return;
+            }
+            creature.IsMovementExternallyControlled = true;
+
             if (!PrototypeSafeHarborProtection.AllowsWeapons(
                     hunter))
             {
