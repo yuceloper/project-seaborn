@@ -152,11 +152,11 @@ namespace Seaborn.Harbor.UI
             );
             RectTransform rect =
                 panel.GetComponent<RectTransform>();
-            rect.anchorMin = new Vector2(1f, 1f);
-            rect.anchorMax = new Vector2(1f, 1f);
-            rect.pivot = new Vector2(1f, 1f);
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
             rect.anchoredPosition =
-                new Vector2(-24f, -24f);
+                new Vector2(0f, -48f);
             rect.sizeDelta = new Vector2(500f, 680f);
 
             GameObject accent = CreateBlock(
