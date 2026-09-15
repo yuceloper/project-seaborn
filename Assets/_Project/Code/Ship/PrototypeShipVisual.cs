@@ -14,7 +14,7 @@ namespace Seaborn.Ship
             "PrototypeShipBlockout";
         private const string ProductionVisualResourceName =
             "SeabornSloopVisual";
-        private const float ProductionVisualLength = 5.8f;
+        private const float ProductionVisualLength = 6.5f;
         private const float ProductionWaterlineRatio = 0.12f;
 
         private readonly List<Material> materials =
@@ -295,6 +295,7 @@ namespace Seaborn.Ship
                 false
             );
             instance.name = "Seaborn Sloop Production Visual";
+            TuneProductionRenderers(instance);
 
             foreach (Collider visualCollider in
                      instance.GetComponentsInChildren<Collider>(true))
@@ -338,6 +339,27 @@ namespace Seaborn.Ship
             );
             instance.transform.localPosition += correction;
             return true;
+        }
+
+
+        private static void TuneProductionRenderers(
+            GameObject instance)
+        {
+            Color visibilityTint =
+                new Color(1.18f, 1.12f, 1.05f, 1f);
+
+            foreach (Renderer renderer in
+                     instance.GetComponentsInChildren<Renderer>(true))
+            {
+                MaterialPropertyBlock properties =
+                    new MaterialPropertyBlock();
+                renderer.GetPropertyBlock(properties);
+                properties.SetColor(
+                    "_BaseColor",
+                    visibilityTint
+                );
+                renderer.SetPropertyBlock(properties);
+            }
         }
 
         private static Bounds CalculateBoundsInRoot(
