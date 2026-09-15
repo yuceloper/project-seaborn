@@ -69,7 +69,9 @@ namespace Seaborn.Harbor.UI
             bool visible =
                 docking != null &&
                 docking.IsDockedAt(
-                    PrototypeHarborStation.Shipyard);
+                    PrototypeHarborStation.Shipyard) &&
+                PrototypeHarborUiCoordinator.IsSelected(
+                    PrototypeHarborTab.ExtendedDeck);
 
             if (panel.activeSelf != visible)
                 panel.SetActive(visible);
