@@ -184,22 +184,19 @@ namespace Seaborn.Ship
                 0.42f
             );
 
-            CreateHull(hullMaterial);
-            CreatePrimitivePart(
-                "Deck",
-                PrimitiveType.Cube,
-                new Vector3(0f, 0.31f, -0.08f),
-                new Vector3(1.5f, 0.16f, 3.45f),
-                Quaternion.identity,
-                deckMaterial
-            );
-            CreatePrimitivePart(
-                "Rear Cabin",
-                PrimitiveType.Cube,
-                new Vector3(0f, 0.64f, -1.42f),
-                new Vector3(0.95f, 0.58f, 0.88f),
-                Quaternion.identity,
-                hullMaterial
+            PrototypeModularShipAssembler assembler =
+                GetComponent<
+                    PrototypeModularShipAssembler>();
+            if (assembler == null)
+            {
+                assembler = gameObject.AddComponent<
+                    PrototypeModularShipAssembler>();
+            }
+            assembler.Build(
+                motionRoot,
+                hullMaterial,
+                deckMaterial,
+                darkMaterial
             );
             CreatePrimitivePart(
                 "Main Mast",
@@ -238,8 +235,6 @@ namespace Seaborn.Ship
                 },
                 sailMaterial
             );
-
-            CreateCannons(darkMaterial);
 
             CreatePrimitivePart(
                 "Mast Flag",
