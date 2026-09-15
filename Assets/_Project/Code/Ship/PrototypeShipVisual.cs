@@ -15,7 +15,7 @@ namespace Seaborn.Ship
         private const string ProductionVisualResourceName =
             "SeabornSloopVisual";
         private const float ProductionVisualLength = 5.8f;
-        private const float ProductionWaterlineRatio = 0.23f;
+        private const float ProductionWaterlineRatio = 0.12f;
 
         private readonly List<Material> materials =
             new List<Material>();
@@ -37,7 +37,7 @@ namespace Seaborn.Ship
 
         private Transform visualRoot;
         private Transform motionRoot;
-        private MeshRenderer originalRenderer;
+        private Renderer[] originalRenderers;
         private Material hullMaterial;
         private Material sailMaterial;
         private Material accentMaterial;
@@ -60,11 +60,15 @@ namespace Seaborn.Ship
                 Mathf.PI * 2f
             );
 
-            originalRenderer = GetComponent<MeshRenderer>();
+            originalRenderers =
+                GetComponentsInChildren<Renderer>(true);
 
-            if (originalRenderer != null)
+            foreach (Renderer renderer in originalRenderers)
             {
-                originalRenderer.enabled = false;
+                if (renderer != null)
+                {
+                    renderer.enabled = false;
+                }
             }
 
             bool isEnemy =
@@ -661,9 +665,15 @@ namespace Seaborn.Ship
 
         private void OnDestroy()
         {
-            if (originalRenderer != null)
+            if (originalRenderers != null)
             {
-                originalRenderer.enabled = true;
+                foreach (Renderer renderer in originalRenderers)
+                {
+                    if (renderer != null)
+                    {
+                        renderer.enabled = true;
+                    }
+                }
             }
 
             foreach (Mesh mesh in meshes)
