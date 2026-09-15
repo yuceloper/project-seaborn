@@ -73,7 +73,9 @@ namespace Seaborn.Harbor.UI
         {
             bool visible =
                 skills != null &&
-                skills.CanSpendAtHarborOffice;
+                skills.CanSpendAtHarborOffice &&
+                PrototypeHarborUiCoordinator.IsSelected(
+                    PrototypeHarborTab.CaptainSkills);
 
             if (panel.activeSelf != visible)
                 panel.SetActive(visible);
