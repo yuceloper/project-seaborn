@@ -59,6 +59,11 @@ namespace Seaborn.Ship
         {
             shipMotor = GetComponent<ShipMotor>();
 
+            if (GetComponent<ShipSailingFeedback>() == null)
+            {
+                gameObject.AddComponent<ShipSailingFeedback>();
+            }
+
             float roleOffset =
                 name.IndexOf(
                     "Enemy",
