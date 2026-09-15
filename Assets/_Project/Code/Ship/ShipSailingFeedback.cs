@@ -12,8 +12,8 @@ namespace Seaborn.Ship
         [SerializeField, Min(0.1f)] private float fullWakeSpeed = 8f;
         [SerializeField, Min(0f)] private float sternOffset = 2.35f;
         [SerializeField, Min(0f)] private float wakeHalfWidth = 0.58f;
-        [SerializeField, Min(0f)] private float waterlineOffset = 0.12f;
-        [SerializeField, Range(0.05f, 0.8f)] private float maximumWakeWidth = 0.24f;
+        [SerializeField, Min(0f)] private float waterlineOffset = 0.22f;
+        [SerializeField, Range(0.05f, 0.8f)] private float maximumWakeWidth = 0.34f;
         [SerializeField, Range(0.2f, 3f)] private float wakeLifetime = 1.25f;
 
         private Rigidbody shipRigidbody;
@@ -109,6 +109,7 @@ namespace Seaborn.Ship
             trail.textureMode = LineTextureMode.Stretch;
             trail.shadowCastingMode = ShadowCastingMode.Off;
             trail.receiveShadows = false;
+            trail.sortingOrder = 25;
             trail.generateLightingData = false;
             trail.emitting = false;
             return trail;
@@ -167,8 +168,8 @@ namespace Seaborn.Ship
                 },
                 new[]
                 {
-                    new GradientAlphaKey(0.58f, 0f),
-                    new GradientAlphaKey(0.28f, 0.5f),
+                    new GradientAlphaKey(0.78f, 0f),
+                    new GradientAlphaKey(0.42f, 0.5f),
                     new GradientAlphaKey(0f, 1f)
                 }
             );
@@ -185,17 +186,27 @@ namespace Seaborn.Ship
                 material.SetColor("_BaseColor", Color.white);
             }
 
-            if (material.HasProperty("_Surface"))
-            {
-                material.SetFloat("_Surface", 1f);
-                material.SetFloat("_Blend", 0f);
-                material.SetFloat("_ZWrite", 0f);
-                material.EnableKeyword(
-                    "_SURFACE_TYPE_TRANSPARENT"
-                );
-            }
-
-            material.renderQueue = 3000;
+            material.SetOverrideTag(
+                "RenderType",
+                "Transparent"
+            );
+            material.SetFloat("_Surface", 1f);
+            material.SetFloat(
+                "_SrcBlend",
+                (float)BlendMode.SrcAlpha
+            );
+            material.SetFloat(
+                "_DstBlend",
+                (float)BlendMode.OneMinusSrcAlpha
+            );
+            material.SetFloat("_ZWrite", 0f);
+            material.EnableKeyword(
+                "_SURFACE_TYPE_TRANSPARENT"
+            );
+            material.DisableKeyword(
+                "_ALPHAPREMULTIPLY_ON"
+            );
+            material.renderQueue = 3100;
         }
 
         private void OnDisable()
