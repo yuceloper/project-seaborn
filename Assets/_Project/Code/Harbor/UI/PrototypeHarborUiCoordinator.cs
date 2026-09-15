@@ -34,6 +34,11 @@ namespace Seaborn.Harbor.UI
         public static PrototypeHarborUiCoordinator
             Instance { get; private set; }
 
+        public static bool IsOpen =>
+            Instance != null &&
+            Instance.shell != null &&
+            Instance.shell.activeSelf;
+
         public static bool IsSelected(PrototypeHarborTab tab)
         {
             return Instance == null ||
