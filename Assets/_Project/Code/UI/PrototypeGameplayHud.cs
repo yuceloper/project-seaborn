@@ -181,12 +181,12 @@ namespace Seaborn.UI
             crewText = CreateText(ship, font, "MÜRETTEBAT %100", 10, Muted, FontStyle.Bold, new Vector2(174f, -91f), new Vector2(140f, 16f), TextAnchor.UpperRight);
             crewFill = CreateBar(ship, "Crew", new Vector2(174f, -112f), new Vector2(140f, 7f), out _);
 
-            RectTransform expedition = CreateCard("Expedition", new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -24f), new Vector2(500f, 88f));
+            RectTransform expedition = CreateCard("Expedition", new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -24f), new Vector2(500f, 112f));
             expeditionStateText = CreateText(expedition, font, "GÜVENLİ LİMAN", 16, Gold, FontStyle.Bold, new Vector2(16f, -10f), new Vector2(468f, 24f), TextAnchor.UpperCenter);
-            expeditionDetailText = CreateText(expedition, font, "SEFERE HAZIRLAN", 13, Cream, FontStyle.Normal, new Vector2(16f, -38f), new Vector2(468f, 22f), TextAnchor.UpperCenter);
-            pressureFill = CreateBar(expedition, "Pressure", new Vector2(16f, -69f), new Vector2(468f, 7f), out _);
+            expeditionDetailText = CreateText(expedition, font, "SEFERE HAZIRLAN", 12, Cream, FontStyle.Normal, new Vector2(16f, -38f), new Vector2(468f, 46f), TextAnchor.UpperCenter);
+            pressureFill = CreateBar(expedition, "Pressure", new Vector2(16f, -94f), new Vector2(468f, 7f), out _);
 
-            RectTransform target = CreateCard("Target", new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -124f), new Vector2(440f, 104f));
+            RectTransform target = CreateCard("Target", new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -148f), new Vector2(440f, 104f));
             targetPanel = target.gameObject;
             targetNameText = CreateText(target, font, "HEDEF", 14, Gold, FontStyle.Bold, new Vector2(14f, -9f), new Vector2(265f, 20f));
             targetStateText = CreateText(target, font, "PASİF", 11, Muted, FontStyle.Bold, new Vector2(290f, -10f), new Vector2(136f, 20f), TextAnchor.UpperRight);
@@ -427,9 +427,11 @@ namespace Seaborn.UI
                 expeditionStateText.color = harbor
                     ? Success
                     : Gold;
-                expeditionDetailText.text = harbor
-                    ? "TİCARET VE HAZIRLIK MERKEZİ"
-                    : "SİSTEMLER HAZIRLANIYOR";
+                expeditionDetailText.text =
+                    (harbor
+                        ? "TİCARET VE HAZIRLIK MERKEZİ"
+                        : "SİSTEMLER HAZIRLANIYOR") +
+                    DailyContractLine();
                 SetBar(pressureFill, 0f);
                 return;
             }
@@ -446,10 +448,30 @@ namespace Seaborn.UI
                 ? regions.CurrentDangerColor
                 : Gold;
             int seconds = Mathf.FloorToInt(director.ElapsedTime);
-            expeditionDetailText.text = director.IsActive
-                ? $"{danger}   •   {seconds / 60:00}:{seconds % 60:00}   •   HEDEF {director.CurrentUnsecuredValue} / {director.RecommendedReturnValue}"
-                : director.State == PrototypeExpeditionState.AtHarbor ? $"{danger}   •   SEFERE HAZIRLAN" : $"{danger}   •   SÜRE {seconds / 60:00}:{seconds % 60:00}";
+            expeditionDetailText.text =
+                (director.IsActive
+                    ? $"{danger}   •   {seconds / 60:00}:{seconds % 60:00}   •   HEDEF {director.CurrentUnsecuredValue} / {director.RecommendedReturnValue}"
+                    : director.State == PrototypeExpeditionState.AtHarbor
+                        ? $"{danger}   •   SEFERE HAZIRLAN"
+                        : $"{danger}   •   SÜRE {seconds / 60:00}:{seconds % 60:00}") +
+                DailyContractLine();
             SetBar(pressureFill, director.PressureNormalized);
+        }
+
+        private static string DailyContractLine()
+        {
+            PrototypeContractBoard board =
+                PrototypeContractBoard.Instance;
+            PrototypeContractProgress active =
+                board?.SelectedDailyContract;
+            if (active == null)
+            {
+                return "\nGÜNLÜK  •  LİMAN İDARESİNDEN GÖREV SEÇ";
+            }
+
+            return $"\nGÜNLÜK  •  " +
+                $"{active.Definition.Title.ToUpperInvariant()}  " +
+                $"{active.Current}/{active.Definition.Target}";
         }
 
         private void RefreshResources()
