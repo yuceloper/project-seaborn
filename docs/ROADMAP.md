@@ -456,14 +456,14 @@ Bu kapı, prototip sistemlerinin sayısını artırmadan önce mevcut dikey dili
 
 ### Kontrol prototipi
 
-- [ ] W/S ile -1, 0, 1, 2, 3 seyir kademeleri
-- [ ] Kademeye bağlı hedef hız ve gemiye özel ivmelenme eğrisi
-- [ ] Momentumlu yavaşlama ve gecikmeli tornistan
-- [ ] A/D ile dümen açısı ve merkeze dönüş
-- [ ] Hıza/gövde uzunluğuna bağlı dönüş çemberi
-- [ ] Sert dönüşte kontrollü hız kaybı ve yanal sürüklenme
-- [ ] Çarpışma sonrası açısal hız sınırı ve spin kurtarma
-- [ ] HUD seyir kademesi ve dümen göstergesi
+- [~] W/S ile -1, 0, 1, 2, 3 seyir kademeleri
+- [~] Kademeye bağlı hedef hız ve gemiye özel ivmelenme eğrisi
+- [~] Momentumlu yavaşlama ve gecikmeli tornistan
+- [~] A/D ile dümen açısı ve merkeze dönüş
+- [~] Hıza/gövde uzunluğuna bağlı dönüş çemberi
+- [~] Sert dönüşte kontrollü hız kaybı ve yanal sürüklenme
+- [~] Çarpışma sonrası açısal hız sınırı ve spin kurtarma
+- [x] HUD seyir kademesi ve dümen göstergesi
 
 ### Modüler Sloop
 

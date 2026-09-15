@@ -25,6 +25,7 @@ namespace Seaborn.UI
 
         private ShipHealth health;
         private ShipSubsystemController subsystems;
+        private ShipMotor motor;
         private BroadsideController broadside;
         private HarpoonHuntingController harpoons;
         private PrototypeHuntCargo cargo;
@@ -141,6 +142,7 @@ namespace Seaborn.UI
             subsystems = health != null
                 ? health.GetComponent<ShipSubsystemController>()
                 : null;
+            motor = player.GetComponentInChildren<ShipMotor>();
             broadside = player.GetComponentInChildren<BroadsideController>();
             harpoons = player.GetComponentInChildren<HarpoonHuntingController>();
             cargo = player.GetComponentInChildren<PrototypeHuntCargo>();
@@ -592,10 +594,28 @@ namespace Seaborn.UI
             }
             else
             {
+                string helm = motor != null
+                    ? $"SEYİR {motor.SailingOrder} " +
+                      $"{motor.SailingOrderLabel}  •  " +
+                      $"DÜMEN {RudderLabel(motor.RudderAngleDegrees)}"
+                    : "SEYİR DUR";
                 harborLockText.text =
-                    "R  SAHA TAMİRİ";
+                    $"{helm}  •  R SAHA TAMİRİ";
                 harborLockText.color = Muted;
             }
+        }
+
+        private static string RudderLabel(
+            float angle)
+        {
+            if (Mathf.Abs(angle) < 1f)
+            {
+                return "ORTA";
+            }
+
+            return angle < 0f
+                ? $"İSKELE {Mathf.Abs(angle):0}°"
+                : $"SANCAK {angle:0}°";
         }
 
         private void HandleTravelBlocked(
