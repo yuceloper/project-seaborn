@@ -617,7 +617,6 @@ namespace Seaborn.UI
                 ? $"İSKELE {Mathf.Abs(angle):0}°"
                 : $"SANCAK {angle:0}°";
         }
-        }
 
         private void HandleTravelBlocked(
             string regionName,
