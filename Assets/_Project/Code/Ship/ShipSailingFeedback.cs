@@ -12,7 +12,7 @@ namespace Seaborn.Ship
         [SerializeField, Min(0.1f)] private float fullWakeSpeed = 8f;
         [SerializeField, Min(0f)] private float sternOffset = 2.35f;
         [SerializeField, Min(0f)] private float wakeHalfWidth = 0.58f;
-        [SerializeField, Min(0f)] private float waterlineOffset = 0.035f;
+        [SerializeField, Min(0f)] private float waterlineOffset = 0.12f;
         [SerializeField, Range(0.05f, 0.8f)] private float maximumWakeWidth = 0.24f;
         [SerializeField, Range(0.2f, 3f)] private float wakeLifetime = 1.25f;
 
@@ -29,6 +29,8 @@ namespace Seaborn.Ship
 
         private void LateUpdate()
         {
+            UpdateWakeAnchorPositions();
+
             if (shipRigidbody == null)
             {
                 SetWake(false, 0f);
@@ -110,6 +112,28 @@ namespace Seaborn.Ship
             trail.generateLightingData = false;
             trail.emitting = false;
             return trail;
+        }
+
+        private void UpdateWakeAnchorPositions()
+        {
+            Vector3 sternCenter =
+                transform.position -
+                transform.forward * sternOffset +
+                Vector3.up * waterlineOffset;
+            Vector3 sideOffset =
+                transform.right * wakeHalfWidth;
+
+            if (portWake != null)
+            {
+                portWake.transform.position =
+                    sternCenter - sideOffset;
+            }
+
+            if (starboardWake != null)
+            {
+                starboardWake.transform.position =
+                    sternCenter + sideOffset;
+            }
         }
 
         private void SetWake(bool emitting, float strength)
