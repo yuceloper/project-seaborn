@@ -273,7 +273,9 @@ namespace Seaborn.Harbor.UI
             ResolveBindings();
             bool visible =
                 equipment != null &&
-                equipment.CanUseShipyard;
+                equipment.CanUseShipyard &&
+                PrototypeHarborUiCoordinator.IsSelected(
+                    PrototypeHarborTab.Upgrades);
             panel.SetActive(visible);
             if (!visible) return;
 
