@@ -26,9 +26,20 @@ Oyuncu tek başına bir gemiyi yönetir; gemisini konumlandırır, doğru borday
 - [Oyun vizyonu](docs/GAME_VISION.md)
 - [Yol haritası ve yapılacaklar](docs/ROADMAP.md)
 - [Karar günlüğü](docs/DECISIONS.md)
+- [Sanat yönü](docs/ART_DIRECTION.md)
+- [UI görsel standardı](docs/UI_STYLE_GUIDE.md)
+- [Dümen ve modüler gemi tasarımı](docs/SHIP_CONTROL_AND_MODULAR_CUSTOMIZATION.md)
 
 ## Mevcut oynanabilir döngü
 
 Gemi hareketi → manuel borda nişanı → hazırlık ve saçılma → salvo → hasar → batış.
 
 Prototip kodu ve görseller geçicidir. Amaç önce doğru hissi ve sistem sınırlarını kanıtlamak, ardından üretim varlıklarına geçmektir.
+
+
+## Prototip seyir kontrolleri
+
+- `W`: seyir emrini bir kademe yükseltir — Ağır Yol, Yarım Yol, Tam Yol
+- `S`: seyir emrini bir kademe düşürür — Dur, ardından Tornistan
+- `A / D`: dümeni kademeli olarak iskele/sancağa çevirir
+- Tuş bırakıldığında dümen merkeze döner; gemi hedef hıza ivmeyle ulaşır.
