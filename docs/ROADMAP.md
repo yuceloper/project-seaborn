@@ -432,7 +432,7 @@ Bu kapı, prototip sistemlerinin sayısını artırmadan önce mevcut dikey dili
 - [x] Pırıltı toplamayı “E'ye bas ve 3 saniye bekle” akışına geçir
 - [x] Light of Tortuga sırasında yerel gemiyi saydam hayalet olarak göster
 - [x] İstasyon paneli açıkken dünya üzeri “ayrıl” istemini gizle
-- [ ] Liman servislerini aynı anda açılan paneller yerine tek odaklı, sekmeli liman arayüzünde birleştir
+- [~] Liman servislerini aynı anda açılan paneller yerine tek odaklı, sekmeli liman arayüzünde birleştir
 - [ ] HUD bilgi hiyerarşisi, ikon seti, tipografi ve çözünürlük ölçekleme turu
 - [ ] Gerçek gemi modeliyle hızlanma, dümen, kamera ve çarpışma hissini yeniden ayarla
 - [ ] Liman → sefer → görev → ödül döngüsü için uçtan uca regresyon kontrol listesi

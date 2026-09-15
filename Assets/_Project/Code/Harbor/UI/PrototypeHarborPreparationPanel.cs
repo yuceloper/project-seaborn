@@ -3,6 +3,7 @@ using Seaborn.Combat;
 using Seaborn.Expeditions;
 using Seaborn.Hunting;
 using Seaborn.Harbor;
+using Seaborn.Harbor.UI;
 using Seaborn.Ship;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -99,10 +100,10 @@ namespace Seaborn.Harbor
                 protection != null &&
                 protection.IsProtected &&
                 docking != null &&
-                (docking.IsDockedAt(
-                    PrototypeHarborStation.Trade) ||
-                 docking.IsDockedAt(
-                    PrototypeHarborStation.HarborOffice));
+                docking.IsDockedAt(
+                    PrototypeHarborStation.Trade) &&
+                PrototypeHarborUiCoordinator.IsSelected(
+                    PrototypeHarborTab.TradePreparation);
 
             if (panel.activeSelf != shouldShow)
             {

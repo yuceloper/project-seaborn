@@ -121,11 +121,11 @@ namespace Seaborn.Harbor.UI
             panel.transform.SetParent(transform, false);
             RectTransform rect =
                 panel.GetComponent<RectTransform>();
-            rect.anchorMin = new Vector2(1f, 0f);
-            rect.anchorMax = new Vector2(1f, 0f);
-            rect.pivot = new Vector2(1f, 0f);
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
             rect.anchoredPosition =
-                new Vector2(-470f, 24f);
+                new Vector2(0f, -48f);
             rect.sizeDelta = new Vector2(450f, 462f);
             panel.GetComponent<Image>().color = Navy;
 
@@ -253,7 +253,9 @@ namespace Seaborn.Harbor.UI
 
             bool visible =
                 inventory != null &&
-                inventory.CanUseShipyard;
+                inventory.CanUseShipyard &&
+                PrototypeHarborUiCoordinator.IsSelected(
+                    PrototypeHarborTab.Loadout);
             panel.SetActive(visible);
             if (!visible) return;
 

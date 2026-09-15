@@ -401,3 +401,16 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 **Karar:** Genişletilmiş top yuvası yalnızca kapasite açar; bedava top üretmez. Oyuncu sahip olduğu topları tersane yükleme panelinden yeni yuvaya ayrıca kurmalıdır.
 
 **Neden:** Nadir ganimeti doğrudan Silver'a dönüşen tek kullanımlık ödül olmaktan çıkarıp belirli bir gemiye bağlanan uzun vadeli değer üretmek; güçlü gemilerin sınırsız büyümesini sınıf bazlı tavanla engellemek.
+
+
+## 2026-09-15 — Liman arayüzü istasyon ve sekme odaklı olacak
+
+**Karar:** Oyuncu bir liman istasyonuna yanaştığında aynı servise ait bütün bağımsız paneller aynı anda açılmayacak. Oyun HUD'ı geçici olarak gizlenecek; koyu bir liman katmanı üzerinde yalnızca seçili hizmet gösterilecek.
+
+- Tersane: Gemiler, Donanım, Geliştir, Güverte
+- Ticaret ve İkmal: Hazırlık, Tedarikçi
+- Liman İdaresi: Görevler, Yetenekler
+- İstasyondan ayrılınca liman katmanı kapanacak ve oyun HUD'ı geri gelecek.
+- Mevcut ekonomi ve ilerleme bileşenleri korunacak; koordinatör yalnızca sunum ve görünürlük sahibi olacak.
+
+**Gerekçe:** Prototip boyunca her sistem kendi Canvas'ını ürettiği için ekran bilgi hiyerarşisini kaybetti ve bir oyun arayüzünden çok geliştirici araçlarına benzedi. Tek odaklı yapı hem tıklama çakışmalarını azaltır hem de ileride ikon, animasyon ve gamepad navigasyonunu merkezi hale getirir.
