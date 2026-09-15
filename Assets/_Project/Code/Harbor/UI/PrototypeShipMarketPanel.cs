@@ -217,7 +217,9 @@ namespace Seaborn.Harbor.UI
 
             bool visible =
                 fleet != null &&
-                fleet.CanUseShipyard;
+                fleet.CanUseShipyard &&
+                PrototypeHarborUiCoordinator.IsSelected(
+                    PrototypeHarborTab.ShipMarket);
             panel.SetActive(visible);
             if (!visible) return;
 
