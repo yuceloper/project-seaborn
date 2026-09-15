@@ -141,6 +141,57 @@ namespace Seaborn.Ship
             );
         }
 
+
+        public void BuildHardpointsOnly(
+            Transform visualParent,
+            Material cannonMaterial)
+        {
+            if (visualParent == null) return;
+
+            ClearAssembly();
+            portHardpoints.Clear();
+            starboardHardpoints.Clear();
+
+            GameObject root =
+                new("Production Sloop Hardpoints");
+            assemblyRoot = root.transform;
+            assemblyRoot.SetParent(visualParent, false);
+
+            float[] longitudinalPositions =
+                { -0.82f, 0f, 0.82f };
+
+            for (int index = 0;
+                 index < longitudinalPositions.Length;
+                 index++)
+            {
+                float z = longitudinalPositions[index];
+
+                CreateCannonHardpoint(
+                    assemblyRoot,
+                    PrototypeHardpointSide.Port,
+                    index,
+                    new Vector3(-0.72f, 0.3f, z),
+                    cannonMaterial,
+                    false
+                );
+                CreateCannonHardpoint(
+                    assemblyRoot,
+                    PrototypeHardpointSide.Starboard,
+                    index,
+                    new Vector3(0.72f, 0.3f, z),
+                    cannonMaterial,
+                    false
+                );
+            }
+
+            BroadsideController broadside =
+                GetComponent<BroadsideController>();
+            broadside?.SetRuntimeMuzzles(
+                portHardpoints.ToArray(),
+                starboardHardpoints.ToArray()
+            );
+        }
+
         public void SetMidshipSectionCount(
             int count,
             Transform visualParent,
@@ -308,7 +359,8 @@ namespace Seaborn.Ship
             PrototypeHardpointSide side,
             int index,
             Vector3 position,
-            Material material)
+            Material material,
+            bool showPreview = true)
         {
             GameObject hardpoint = new(
                 $"{side} Cannon Hardpoint {index + 1}"
@@ -320,15 +372,18 @@ namespace Seaborn.Ship
                 side == PrototypeHardpointSide.Port
                     ? -1f
                     : 1f;
-            GameObject barrel = CreatePart(
-                hardpoint.transform,
-                "Installed Cannon Preview",
-                PrimitiveType.Cylinder,
-                Vector3.zero,
-                new Vector3(0.09f, 0.3f, 0.09f),
-                Quaternion.Euler(0f, 0f, 90f),
-                material
-            );
+            if (showPreview)
+            {
+                CreatePart(
+                    hardpoint.transform,
+                    "Installed Cannon Preview",
+                    PrimitiveType.Cylinder,
+                    Vector3.zero,
+                    new Vector3(0.09f, 0.3f, 0.09f),
+                    Quaternion.Euler(0f, 0f, 90f),
+                    material
+                );
+            }
 
             GameObject muzzle = new("Muzzle");
             muzzle.transform.SetParent(

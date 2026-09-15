@@ -65,7 +65,7 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Oyuncu gemisi görsel blockout
 - [x] Düşman gemisi renk ve bayrak ayrımı
 - [x] Gövde, güverte, direk, yelken ve top silüeti
-- [~] İlk gerçek Sloop üretim asset’i
+- [x] İlk gerçek Sloop üretim asset’i
 - [ ] Hasar durumuna bağlı görsel değişimler
 
 ### Hareket ve çevresel geri bildirim
@@ -447,9 +447,10 @@ Bu kapı, prototip sistemlerinin sayısını artırmadan önce mevcut dikey dili
 - [x] Final UI görsel ve etkileşim standardı
 - [x] Sloop ana referansı, Meshy 7 Multi-View, retopology ve 2K PBR çıktısını onayla
 - [ ] Modüler liman asset adaylarını değerlendir
-- [~] Meshy Sloop’u Blender’da temizle ve modüler ayır
-- [ ] Temizlenen Sloop’u mevcut hardpoint/loadout sistemine bağla
-- [ ] Sloop ile hareket/kamera/çarpışma hissini yeniden ayarla
+- [x] Meshy Sloop’u retopology, UV ve 2K PBR kaynaklarıyla oyuna hazırla
+- [x] Onaylı Sloop görselini mevcut physics, buoyancy ve hardpoint akışına bağla
+- [~] Sloop ile hareket/kamera/çarpışma hissini yeniden ayarla
+- [ ] Sloop’u görsel tersane için semantik ve modüler parçalara ayır
 - [ ] İlk üretim kalitesinde görsel dikey dilimi kaydet
 
 

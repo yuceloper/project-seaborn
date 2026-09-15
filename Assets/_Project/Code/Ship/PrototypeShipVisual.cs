@@ -12,6 +12,10 @@ namespace Seaborn.Ship
             "Seaborn/Ship Blockout";
         private const string MaterialResourceName =
             "PrototypeShipBlockout";
+        private const string ProductionVisualResourceName =
+            "SeabornSloopVisual";
+        private const float ProductionVisualLength = 6.5f;
+        private const float ProductionWaterlineRatio = 0.12f;
 
         private readonly List<Material> materials =
             new List<Material>();
@@ -33,7 +37,7 @@ namespace Seaborn.Ship
 
         private Transform visualRoot;
         private Transform motionRoot;
-        private MeshRenderer originalRenderer;
+        private Renderer[] originalRenderers;
         private Material hullMaterial;
         private Material sailMaterial;
         private Material accentMaterial;
@@ -56,11 +60,15 @@ namespace Seaborn.Ship
                 Mathf.PI * 2f
             );
 
-            originalRenderer = GetComponent<MeshRenderer>();
+            originalRenderers =
+                GetComponentsInChildren<Renderer>(true);
 
-            if (originalRenderer != null)
+            foreach (Renderer renderer in originalRenderers)
             {
-                originalRenderer.enabled = false;
+                if (renderer != null)
+                {
+                    renderer.enabled = false;
+                }
             }
 
             bool isEnemy =
@@ -157,6 +165,29 @@ namespace Seaborn.Ship
             motionRoot = motionObject.transform;
             motionRoot.SetParent(visualRoot, false);
 
+            if (!isEnemy && TryBuildProductionVisual())
+            {
+                Material productionCannonMaterial =
+                    CreateMaterial(
+                        new Color(0.055f, 0.05f, 0.045f, 1f),
+                        0.12f
+                    );
+
+                PrototypeModularShipAssembler productionAssembler =
+                    GetComponent<PrototypeModularShipAssembler>();
+                if (productionAssembler == null)
+                {
+                    productionAssembler = gameObject.AddComponent<
+                        PrototypeModularShipAssembler>();
+                }
+
+                productionAssembler.BuildHardpointsOnly(
+                    motionRoot,
+                    productionCannonMaterial
+                );
+                return;
+            }
+
             hullMaterial = CreateMaterial(
                 isEnemy
                     ? new Color(0.24f, 0.105f, 0.075f, 1f)
@@ -244,6 +275,143 @@ namespace Seaborn.Ship
                 Quaternion.identity,
                 accentMaterial
             );
+        }
+
+
+        private bool TryBuildProductionVisual()
+        {
+            GameObject template =
+                Resources.Load<GameObject>(
+                    ProductionVisualResourceName
+                );
+            if (template == null)
+            {
+                return false;
+            }
+
+            GameObject instance = Instantiate(
+                template,
+                motionRoot,
+                false
+            );
+            instance.name = "Seaborn Sloop Production Visual";
+            TuneProductionRenderers(instance);
+
+            foreach (Collider visualCollider in
+                     instance.GetComponentsInChildren<Collider>(true))
+            {
+                visualCollider.enabled = false;
+                Destroy(visualCollider);
+            }
+
+            Bounds bounds = CalculateBoundsInRoot(
+                instance,
+                motionRoot
+            );
+            float sourceLength = Mathf.Max(
+                bounds.size.x,
+                bounds.size.z
+            );
+            if (sourceLength <= 0.001f)
+            {
+                Destroy(instance);
+                return false;
+            }
+
+            float fitScale =
+                ProductionVisualLength / sourceLength;
+            instance.transform.localScale =
+                Vector3.one * fitScale;
+
+            bounds = CalculateBoundsInRoot(
+                instance,
+                motionRoot
+            );
+            float waterlineY =
+                bounds.min.y +
+                bounds.size.y *
+                ProductionWaterlineRatio;
+
+            Vector3 correction = new Vector3(
+                -bounds.center.x,
+                -waterlineY,
+                -bounds.center.z
+            );
+            instance.transform.localPosition += correction;
+            return true;
+        }
+
+
+        private static void TuneProductionRenderers(
+            GameObject instance)
+        {
+            Color visibilityTint =
+                new Color(1.18f, 1.12f, 1.05f, 1f);
+
+            foreach (Renderer renderer in
+                     instance.GetComponentsInChildren<Renderer>(true))
+            {
+                MaterialPropertyBlock properties =
+                    new MaterialPropertyBlock();
+                renderer.GetPropertyBlock(properties);
+                properties.SetColor(
+                    "_BaseColor",
+                    visibilityTint
+                );
+                renderer.SetPropertyBlock(properties);
+            }
+        }
+
+        private static Bounds CalculateBoundsInRoot(
+            GameObject target,
+            Transform root)
+        {
+            Renderer[] renderers =
+                target.GetComponentsInChildren<Renderer>(true);
+            if (renderers.Length == 0)
+            {
+                return new Bounds(
+                    Vector3.zero,
+                    Vector3.zero
+                );
+            }
+
+            bool initialized = false;
+            Bounds result = default;
+
+            foreach (Renderer renderer in renderers)
+            {
+                Bounds worldBounds = renderer.bounds;
+                Vector3 center = worldBounds.center;
+                Vector3 extents = worldBounds.extents;
+
+                for (int x = -1; x <= 1; x += 2)
+                for (int y = -1; y <= 1; y += 2)
+                for (int z = -1; z <= 1; z += 2)
+                {
+                    Vector3 corner = center + Vector3.Scale(
+                        extents,
+                        new Vector3(x, y, z)
+                    );
+                    Vector3 local =
+                        root.InverseTransformPoint(corner);
+
+                    if (!initialized)
+                    {
+                        result = new Bounds(
+                            local,
+                            Vector3.zero
+                        );
+                        initialized = true;
+                    }
+                    else
+                    {
+                        result.Encapsulate(local);
+                    }
+                }
+            }
+
+            return result;
         }
 
         private void CreateHull(Material material)
@@ -519,9 +687,15 @@ namespace Seaborn.Ship
 
         private void OnDestroy()
         {
-            if (originalRenderer != null)
+            if (originalRenderers != null)
             {
-                originalRenderer.enabled = true;
+                foreach (Renderer renderer in originalRenderers)
+                {
+                    if (renderer != null)
+                    {
+                        renderer.enabled = true;
+                    }
+                }
             }
 
             foreach (Mesh mesh in meshes)
