@@ -257,11 +257,21 @@ namespace Seaborn.Expeditions
                 return false;
             }
 
+            // A daily contract is a deliberate choice:
+            // keep it locked until it is completed and paid.
+            if (SelectedDailyContract != null &&
+                !SelectedDailyContract.RewardClaimed)
+            {
+                return SelectedDailyContract.Definition.Id ==
+                    contractId;
+            }
+
             foreach (PrototypeContractProgress contract
                      in dailyContracts)
             {
                 if (contract.Definition.Id != contractId ||
-                    contract.RewardClaimed)
+                    contract.RewardClaimed ||
+                    contract.IsComplete)
                 {
                     continue;
                 }
@@ -475,6 +485,21 @@ namespace Seaborn.Expeditions
                     $"{contract.Definition.Title}",
                     this
                 );
+
+                if (contract.Definition.Cadence ==
+                        PrototypeContractCadence.Daily)
+                {
+                    ClaimReward(contract);
+                    if (SelectedDailyContract == contract)
+                    {
+                        SelectedDailyContract = null;
+                    }
+                    Debug.Log(
+                        $"Günlük görev ödülü alındı: " +
+                        $"+{contract.Definition.SilverReward} silver.",
+                        this
+                    );
+                }
             }
         }
 
