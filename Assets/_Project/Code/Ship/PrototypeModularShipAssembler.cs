@@ -141,6 +141,55 @@ namespace Seaborn.Ship
             );
         }
 
+
+        public void BuildHardpointsOnly(
+            Transform visualParent,
+            Material cannonMaterial)
+        {
+            if (visualParent == null) return;
+
+            ClearAssembly();
+            portHardpoints.Clear();
+            starboardHardpoints.Clear();
+
+            GameObject root =
+                new("Production Sloop Hardpoints");
+            assemblyRoot = root.transform;
+            assemblyRoot.SetParent(visualParent, false);
+
+            float[] longitudinalPositions =
+                { -0.82f, 0f, 0.82f };
+
+            for (int index = 0;
+                 index < longitudinalPositions.Length;
+                 index++)
+            {
+                float z = longitudinalPositions[index];
+
+                CreateCannonHardpoint(
+                    assemblyRoot,
+                    PrototypeHardpointSide.Port,
+                    index,
+                    new Vector3(-0.72f, 0.02f, z),
+                    cannonMaterial
+                );
+                CreateCannonHardpoint(
+                    assemblyRoot,
+                    PrototypeHardpointSide.Starboard,
+                    index,
+                    new Vector3(0.72f, 0.02f, z),
+                    cannonMaterial
+                );
+            }
+
+            BroadsideController broadside =
+                GetComponent<BroadsideController>();
+            broadside?.SetRuntimeMuzzles(
+                portHardpoints.ToArray(),
+                starboardHardpoints.ToArray()
+            );
+        }
+
         public void SetMidshipSectionCount(
             int count,
             Transform visualParent,
