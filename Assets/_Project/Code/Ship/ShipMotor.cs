@@ -31,12 +31,16 @@ namespace Seaborn.Ship
 
         [Header("Water Resistance")]
         [SerializeField, Min(0f)] private float lateralResistance = 2.5f;
+        [SerializeField, Range(0f, 1f)] private float hardTurnSpeedLoss = 0.16f;
+        [SerializeField, Min(0f)] private float turnDragResponse = 2.4f;
 
         [Header("Collision Stability")]
         [SerializeField, Min(0f)] private float angularRecovery = 12f;
         [SerializeField, Min(0f)] private float collisionRecoveryDuration = 0.65f;
         [SerializeField, Range(0f, 1f)] private float collisionVelocityRetention = 0.45f;
         [SerializeField, Min(0f)] private float maximumImpactDrift = 3f;
+        [SerializeField, Range(0f, 1f)] private float contactSteeringRetention = 0.35f;
+        [SerializeField, Min(0f)] private float contactSeparationSpeed = 0.8f;
 
         private Rigidbody shipRigidbody;
         private Vector2 moveInput;
@@ -56,6 +60,8 @@ namespace Seaborn.Ship
         private float repairTurnMultiplier = 1f;
 
         private float collisionRecoveryUntil;
+        private float collisionContactUntil;
+        private Vector3 collisionNormal;
 
         public int SailingOrder => sailingOrder;
         public float RudderNormalized => rudder;
@@ -241,6 +247,7 @@ namespace Seaborn.Ship
             ApplyCollisionStability();
             ApplyForwardMovement();
             ApplySteering();
+            ApplyTurnDrag();
             ApplyLateralResistance();
             ClampPlanarVelocity();
         }
@@ -335,6 +342,10 @@ namespace Seaborn.Ship
                     ? -1f
                     : 1f;
 
+            float contactAuthority =
+                Time.time < collisionContactUntil
+                    ? contactSteeringRetention
+                    : 1f;
             float rotationAmount =
                 rudder *
                 reverseDirection *
@@ -342,6 +353,7 @@ namespace Seaborn.Ship
                 TurnMultiplier *
                 waterFlowAuthority *
                 highSpeedPenalty *
+                contactAuthority *
                 Time.fixedDeltaTime;
 
             Quaternion targetRotation =
@@ -353,6 +365,33 @@ namespace Seaborn.Ship
                 );
 
             shipRigidbody.MoveRotation(targetRotation);
+        }
+
+        private void ApplyTurnDrag()
+        {
+            float rudderLoad = Mathf.Abs(rudder);
+            if (rudderLoad < 0.01f) return;
+
+            float currentForwardSpeed = CurrentForwardSpeed;
+            float retainedSpeed = Mathf.Lerp(
+                1f,
+                1f - hardTurnSpeedLoss,
+                rudderLoad
+            );
+            float desiredForwardSpeed =
+                currentForwardSpeed * retainedSpeed;
+            float nextForwardSpeed = Mathf.MoveTowards(
+                currentForwardSpeed,
+                desiredForwardSpeed,
+                turnDragResponse * rudderLoad *
+                Time.fixedDeltaTime
+            );
+
+            shipRigidbody.AddForce(
+                transform.forward *
+                (nextForwardSpeed - currentForwardSpeed),
+                ForceMode.VelocityChange
+            );
         }
 
         private void ApplyLateralResistance()
@@ -391,6 +430,24 @@ namespace Seaborn.Ship
             }
 
             shipRigidbody.angularVelocity = angularVelocity;
+
+            if (Time.time < collisionContactUntil &&
+                collisionNormal.sqrMagnitude > 0.01f)
+            {
+                Vector3 intoContact = Vector3.Project(
+                    shipRigidbody.linearVelocity,
+                    -collisionNormal
+                );
+                if (Vector3.Dot(intoContact, -collisionNormal) > 0f)
+                {
+                    shipRigidbody.linearVelocity -= intoContact;
+                }
+
+                shipRigidbody.AddForce(
+                    collisionNormal * contactSeparationSpeed,
+                    ForceMode.Acceleration
+                );
+            }
         }
 
         private void ClampPlanarVelocity()
@@ -418,6 +475,7 @@ namespace Seaborn.Ship
         {
             if (collision.contactCount <= 0) return;
 
+            RegisterCollisionContact(collision);
             collisionRecoveryUntil =
                 Time.time + collisionRecoveryDuration;
 
@@ -429,6 +487,24 @@ namespace Seaborn.Ship
             shipRigidbody.linearVelocity =
                 planarVelocity + Vector3.up * velocity.y;
             shipRigidbody.angularVelocity = Vector3.zero;
+        }
+
+        private void OnCollisionStay(Collision collision)
+        {
+            if (collision.contactCount <= 0) return;
+            RegisterCollisionContact(collision);
+        }
+
+        private void RegisterCollisionContact(Collision collision)
+        {
+            collisionContactUntil =
+                Time.time + Time.fixedDeltaTime * 2.5f;
+
+            Vector3 normal = collision.GetContact(0).normal;
+            normal.y = 0f;
+            collisionNormal = normal.sqrMagnitude > 0.001f
+                ? normal.normalized
+                : Vector3.zero;
         }
     }
 }

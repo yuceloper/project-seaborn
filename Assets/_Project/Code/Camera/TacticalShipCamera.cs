@@ -31,6 +31,8 @@ namespace Seaborn.Camera
         [SerializeField] private float minimumDistance = 11f;
         [SerializeField] private float maximumDistance = 28f;
         [SerializeField] private float zoomStep = 2.5f;
+        [SerializeField, Min(0f)] private float speedDistanceBoost = 1.8f;
+        [SerializeField, Min(0.1f)] private float speedForMaximumBoost = 10f;
         [SerializeField] private float zoomSmoothTime = 0.12f;
 
         [Header("Movement")]
@@ -123,9 +125,29 @@ namespace Seaborn.Camera
 
         private void UpdateDistance()
         {
+            float speedRatio = 0f;
+            if (targetRigidbody != null)
+            {
+                Vector3 planarVelocity = Vector3.ProjectOnPlane(
+                    targetRigidbody.linearVelocity,
+                    Vector3.up
+                );
+                speedRatio = Mathf.Clamp01(
+                    planarVelocity.magnitude /
+                    speedForMaximumBoost
+                );
+            }
+
+            float desiredDistance = Mathf.Clamp(
+                targetDistance +
+                speedDistanceBoost *
+                speedRatio * speedRatio,
+                minimumDistance,
+                maximumDistance
+            );
             currentDistance = Mathf.SmoothDamp(
                 currentDistance,
-                targetDistance,
+                desiredDistance,
                 ref distanceVelocity,
                 zoomSmoothTime
             );
