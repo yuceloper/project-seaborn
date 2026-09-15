@@ -419,3 +419,20 @@ Hedef sahne: **fırtına öncesi altın saat kıyı suları**.
 - [x] Stok ve gemiye kurulu miktarların yerel kaydı
 - [ ] Genişletme sökme ve oyuncular arası ticaret
 - [ ] Güverte ağırlığına bağlı hız/manevra bedelini dengeleme
+
+
+## Stabilizasyon kapısı — yeni özelliklerden önce
+
+Bu kapı, prototip sistemlerinin sayısını artırmadan önce mevcut dikey dilimi güvenilir ve okunabilir hale getirir.
+
+- [x] Harita geçişlerinde sahneye ait Canvas ve EventSystem katmanlarının çoğalmasını engelle
+- [x] Limana dönüşte tıklanamaz UI sorununu gider
+- [x] Günlük kontratta aynı anda yalnızca bir aktif seçim ve tek seferlik ödül uygula
+- [x] Aktif günlük kontratı deniz HUD'ında göster
+- [x] Pırıltı toplamayı “E'ye bas ve 3 saniye bekle” akışına geçir
+- [x] Light of Tortuga sırasında yerel gemiyi saydam hayalet olarak göster
+- [x] İstasyon paneli açıkken dünya üzeri “ayrıl” istemini gizle
+- [ ] Liman servislerini aynı anda açılan paneller yerine tek odaklı, sekmeli liman arayüzünde birleştir
+- [ ] HUD bilgi hiyerarşisi, ikon seti, tipografi ve çözünürlük ölçekleme turu
+- [ ] Gerçek gemi modeliyle hızlanma, dümen, kamera ve çarpışma hissini yeniden ayarla
+- [ ] Liman → sefer → görev → ödül döngüsü için uçtan uca regresyon kontrol listesi
