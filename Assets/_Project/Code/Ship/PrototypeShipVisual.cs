@@ -35,16 +35,35 @@ namespace Seaborn.Ship
         [SerializeField, Min(0f)]
         private float pitchAmplitude = 0.7f;
 
+        [Header("Sailing Response")]
+        [SerializeField, Range(0f, 8f)]
+        private float maximumTurnLean = 2.8f;
+
+        [SerializeField, Min(0.1f)]
+        private float turnLeanResponse = 2.5f;
+
+        [SerializeField, Range(0f, 1f)]
+        private float speedHeaveReduction = 0.35f;
+
         private Transform visualRoot;
         private Transform motionRoot;
         private Renderer[] originalRenderers;
         private Material hullMaterial;
         private Material sailMaterial;
         private Material accentMaterial;
+        private ShipMotor shipMotor;
         private float motionPhase;
+        private float turnLean;
 
         private void Awake()
         {
+            shipMotor = GetComponent<ShipMotor>();
+
+            if (GetComponent<ShipSailingFeedback>() == null)
+            {
+                gameObject.AddComponent<ShipSailingFeedback>();
+            }
+
             float roleOffset =
                 name.IndexOf(
                     "Enemy",
@@ -126,10 +145,38 @@ namespace Seaborn.Ship
                 2f +
                 motionPhase;
 
-            float heave =
-                Mathf.Sin(cycle) * heaveAmplitude +
-                Mathf.Sin(cycle * 1.73f + 0.8f) *
+            float speedRatio = 0f;
+            float desiredTurnLean = 0f;
+            if (shipMotor != null)
+            {
+                speedRatio = Mathf.Clamp01(
+                    Mathf.Abs(shipMotor.CurrentForwardSpeed) / 8f
+                );
+                desiredTurnLean =
+                    -shipMotor.RudderNormalized *
+                    maximumTurnLean *
+                    speedRatio;
+            }
+
+            turnLean = Mathf.Lerp(
+                turnLean,
+                desiredTurnLean,
+                1f - Mathf.Exp(
+                    -turnLeanResponse * Time.deltaTime
+                )
+            );
+
+            float effectiveHeaveAmplitude =
                 heaveAmplitude *
+                Mathf.Lerp(
+                    1f,
+                    1f - speedHeaveReduction,
+                    speedRatio
+                );
+            float heave =
+                Mathf.Sin(cycle) * effectiveHeaveAmplitude +
+                Mathf.Sin(cycle * 1.73f + 0.8f) *
+                effectiveHeaveAmplitude *
                 0.28f;
 
             float roll =
@@ -143,7 +190,11 @@ namespace Seaborn.Ship
             motionRoot.localPosition =
                 Vector3.up * heave;
             motionRoot.localRotation =
-                Quaternion.Euler(pitch, 0f, roll);
+                Quaternion.Euler(
+                    pitch,
+                    0f,
+                    roll + turnLean
+                );
         }
 
         private void BuildVisual(bool isEnemy)
@@ -753,6 +804,13 @@ namespace Seaborn.Ship
                 {
                     ship.gameObject.AddComponent<
                         PrototypeShipVisual>();
+                }
+
+                if (ship.GetComponent<ShipSailingFeedback>() ==
+                    null)
+                {
+                    ship.gameObject.AddComponent<
+                        ShipSailingFeedback>();
                 }
             }
         }

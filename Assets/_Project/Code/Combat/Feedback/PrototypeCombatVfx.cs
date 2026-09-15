@@ -174,6 +174,32 @@ namespace Seaborn.Combat
             );
         }
 
+        public static void PlayShipWake(
+            Vector3 position,
+            Vector3 direction,
+            float strength)
+        {
+            float safeStrength = Mathf.Clamp01(strength);
+            int particleCount = Mathf.RoundToInt(
+                Mathf.Lerp(4f, 9f, safeStrength)
+            );
+
+            CreateBurst(
+                "Ship Wake Foam",
+                position + Vector3.up * 0.04f,
+                direction + Vector3.up * 0.08f,
+                new Color(0.68f, 0.9f, 0.92f, 0.78f),
+                particleCount,
+                0.48f,
+                0.92f,
+                0.04f,
+                Mathf.Lerp(0.18f, 0.42f, safeStrength),
+                Mathf.Lerp(0.13f, 0.18f, safeStrength),
+                Mathf.Lerp(0.28f, 0.42f, safeStrength),
+                -0.035f
+            );
+        }
+
         public static void PlayLeviathanWake(
             Vector3 position,
             Vector3 direction)
