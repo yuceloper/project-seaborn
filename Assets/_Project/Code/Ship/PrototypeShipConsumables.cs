@@ -56,8 +56,10 @@ namespace Seaborn.Ship
         private float corsairRumUntil;
         private float galeElixirUntil;
         private float ironbarkBrewUntil;
-        private readonly Dictionary<Renderer, bool>
-            rendererStates = new();
+        private readonly Dictionary<Renderer, Material[]>
+            rendererMaterials = new();
+        private readonly List<Material>
+            concealmentMaterials = new();
 
         public static PrototypeShipConsumables EnsureAttached(
             Transform player)
@@ -179,7 +181,7 @@ namespace Seaborn.Ship
 
             lightsOfTortuga--;
             concealedUntil = Time.time + ConcealDuration;
-            CaptureAndHideRenderers();
+            ApplyLocalConcealmentVisual();
             SetStatus("Light of Tortuga: 7 sn görünmezlik");
             ConsumablesChanged?.Invoke();
             return true;
@@ -321,29 +323,105 @@ namespace Seaborn.Ship
                 );
         }
 
-        private void CaptureAndHideRenderers()
+        private void ApplyLocalConcealmentVisual()
         {
-            rendererStates.Clear();
+            RestoreLocalConcealmentVisual();
+
             Renderer[] renderers =
                 GetComponentsInChildren<Renderer>(true);
             for (int i = 0; i < renderers.Length; i++)
             {
                 Renderer renderer = renderers[i];
-                rendererStates[renderer] = renderer.enabled;
-                renderer.enabled = false;
+                if (renderer == null ||
+                    renderer is ParticleSystemRenderer ||
+                    renderer is LineRenderer)
+                {
+                    continue;
+                }
+
+                Material[] originals = renderer.sharedMaterials;
+                rendererMaterials[renderer] = originals;
+                Material[] ghosts =
+                    new Material[originals.Length];
+
+                for (int j = 0; j < originals.Length; j++)
+                {
+                    Material source = originals[j];
+                    if (source == null)
+                    {
+                        ghosts[j] = null;
+                        continue;
+                    }
+
+                    Material ghost = new(source)
+                    {
+                        name = source.name +
+                            " (Local Concealment)",
+                        renderQueue = 3000
+                    };
+                    Color color = source.HasProperty(
+                            "_BaseColor")
+                        ? source.GetColor("_BaseColor")
+                        : source.color;
+                    color = Color.Lerp(
+                        color,
+                        new Color(0.35f, 0.9f, 0.92f, 1f),
+                        0.28f
+                    );
+                    color.a = 0.3f;
+
+                    if (ghost.HasProperty("_BaseColor"))
+                        ghost.SetColor("_BaseColor", color);
+                    if (ghost.HasProperty("_Color"))
+                        ghost.SetColor("_Color", color);
+                    if (ghost.HasProperty("_Surface"))
+                        ghost.SetFloat("_Surface", 1f);
+                    if (ghost.HasProperty("_Blend"))
+                        ghost.SetFloat("_Blend", 0f);
+                    if (ghost.HasProperty("_SrcBlend"))
+                        ghost.SetFloat("_SrcBlend", 5f);
+                    if (ghost.HasProperty("_DstBlend"))
+                        ghost.SetFloat("_DstBlend", 10f);
+                    if (ghost.HasProperty("_ZWrite"))
+                        ghost.SetFloat("_ZWrite", 0f);
+
+                    ghost.EnableKeyword(
+                        "_SURFACE_TYPE_TRANSPARENT");
+                    ghost.DisableKeyword(
+                        "_SURFACE_TYPE_OPAQUE");
+                    concealmentMaterials.Add(ghost);
+                    ghosts[j] = ghost;
+                }
+
+                renderer.sharedMaterials = ghosts;
             }
+        }
+
+        private void RestoreLocalConcealmentVisual()
+        {
+            foreach (
+                KeyValuePair<Renderer, Material[]> item
+                in rendererMaterials)
+            {
+                if (item.Key != null)
+                    item.Key.sharedMaterials = item.Value;
+            }
+            rendererMaterials.Clear();
+
+            for (int i = 0;
+                 i < concealmentMaterials.Count;
+                 i++)
+            {
+                if (concealmentMaterials[i] != null)
+                    Destroy(concealmentMaterials[i]);
+            }
+            concealmentMaterials.Clear();
         }
 
         private void EndConcealment(string reason)
         {
             concealedUntil = 0f;
-            foreach (KeyValuePair<Renderer, bool> item
-                     in rendererStates)
-            {
-                if (item.Key != null)
-                    item.Key.enabled = item.Value;
-            }
-            rendererStates.Clear();
+            RestoreLocalConcealmentVisual();
             SetStatus(reason);
             ConsumablesChanged?.Invoke();
         }
@@ -410,6 +488,7 @@ namespace Seaborn.Ship
 
         private void OnDestroy()
         {
+            RestoreLocalConcealmentVisual();
             Unsubscribe();
         }
     }
