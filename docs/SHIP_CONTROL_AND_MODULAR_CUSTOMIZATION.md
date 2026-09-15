@@ -255,7 +255,39 @@ Aynı model yelken, zırh, zıpkın, utility ve kozmetik parçalar için kullan�
 
 ---
 
-## 9. Veri ve ağ otoritesi
+## 9. Modüler direk, yelken ve arma
+
+Yelken donanımı tek bir hız çarpanı olarak kalmayacaktır. Görsel gemi standardı oturduktan sonra üç ayrı katmana bölünür:
+
+1. **Direk/Rig Slot:** Kaç yelken taşıyabildiğini ve dayanıklılık sınırını belirler.
+2. **Yelken Planı:** Kare, latin veya hibrit düzen; hızlanma, dönüş ve rüzgâr açısı karakterini belirler.
+3. **Kumaş ve Arma Donanımı:** Azami hız, yelken canı, komut tepkisi ve onarım değerini değiştirir.
+
+Örnek yelken rolleri:
+
+| Donanım | Güçlü yanı | Bedeli |
+|---|---|---|
+| Patched Canvas | Ucuz ve dengeli | Düşük azami performans |
+| Rat Sails | İvmelenme ve kaçış | Düşük dayanıklılık |
+| Heavy War Canvas | Yelken canı ve tam yol | Yavaş kademe tepkisi |
+| Lateen Rig | Dönüş ve düşük hız kontrolü | Daha düşük düz hat hızı |
+| Stormweave | Fırtına/rüzgâr verimi | Nadir ve pahalı |
+
+Yelken seçimi gemi üzerinde görünür olmalıdır. Direk sayısı, yelken biçimi, renk/desen ve hasar durumu diğer oyuncuların okuyabileceği fiziksel bilgi taşır.
+
+### Tersane yelken akışı
+
+- Oyuncu direk veya yelken yuvasını seçer.
+- Uyumlu yelken planları sağ envanterde filtrelenir.
+- Hayalet önizleme geminin silüet değişimini gösterir.
+- Hızdan ayrı olarak ivmelenme, dümen tepkisi, yelken HP ve rüzgâr verimi karşılaştırılır.
+- Kurulum arma noktalarına bağlanır ve kalıcı loadout’a yazılır.
+
+İlk kontrol prototipi rüzgâr simülasyonu beklemez. Mevcut `sailSpeedMultiplier` verisi, ileride bu modüler hesapların ürettiği sonuç değerine dönüşür.
+
+---
+
+## 10. Veri ve ağ otoritesi
 
 Gemi görünüşü kayıtlı loadout verisinden üretilir; sahnedeki mesh tek başına gerçek veri değildir.
 
@@ -274,7 +306,7 @@ Gemi görünüşü kayıtlı loadout verisinden üretilir; sahnedeki mesh tek ba
 
 ---
 
-## 10. Uygulama sırası
+## 11. Uygulama sırası
 
 ### Aşama A — Kontrol prototipi
 
@@ -314,7 +346,7 @@ Gemi görünüşü kayıtlı loadout verisinden üretilir; sahnedeki mesh tek ba
 
 ---
 
-## Kabul kriteri
+## 12. Kabul kriteri
 
 Bu tasarım ilk kez tamamlanmış sayılırken:
 
