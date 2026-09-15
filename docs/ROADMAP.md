@@ -467,12 +467,12 @@ Bu kapı, prototip sistemlerinin sayısını artırmadan önce mevcut dikey dili
 
 ### Modüler Sloop
 
-- [ ] Pruva, orta gövde ve kıç soket standardı
-- [ ] Tekrar edilebilir orta gövde modülü
-- [ ] Runtime gemi assembler
+- [~] Pruva, orta gövde ve kıç soket standardı
+- [~] Tekrar edilebilir orta gövde modülü
+- [x] Runtime gemi assembler
 - [ ] Birleşik fakat kararlı fizik collider yapısı
-- [ ] Fiziksel iskele/sancak top hardpoint’leri
-- [ ] Takılan topun model ve namlu çıkış noktasına bağlanması
+- [x] Fiziksel iskele/sancak top hardpoint’leri
+- [~] Takılan topun model ve namlu çıkış noktasına bağlanması
 - [ ] Modül etkilerinin hız, HP, kargo ve dönüşe uygulanması
 - [ ] Modüler loadout kalıcılığı
 - [ ] Direk, yelken planı ve arma soket standardı

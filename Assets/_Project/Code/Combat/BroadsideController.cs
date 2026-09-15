@@ -171,6 +171,19 @@ namespace Seaborn.Combat
             AmmunitionStateChanged?.Invoke();
         }
 
+        public void SetRuntimeMuzzles(
+            Transform[] port,
+            Transform[] starboard)
+        {
+            if (port != null && port.Length > 0)
+                portMuzzles = port;
+            if (starboard != null &&
+                starboard.Length > 0)
+            {
+                starboardMuzzles = starboard;
+            }
+        }
+
         public void SetCrewReloadMultiplier(
             float reloadMultiplier)
         {
