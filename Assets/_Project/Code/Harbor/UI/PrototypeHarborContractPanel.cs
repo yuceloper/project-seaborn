@@ -427,8 +427,13 @@ namespace Seaborn.Harbor.UI
                         ? new Color(
                             0.12f, 0.25f, 0.24f, 0.98f)
                         : NavyLight;
+                string state = contract.RewardClaimed
+                    ? "TAMAMLANDI  •  ÖDÜL ALINDI  •  "
+                    : selected
+                        ? "AKTİF  •  "
+                        : "";
                 row.Label.text =
-                    $"{(selected ? "AKTİF  •  " : "")}" +
+                    state +
                     $"{contract.Definition.Title}\n" +
                     $"{contract.Current}/" +
                     $"{contract.Definition.Target}  •  " +
@@ -437,9 +442,14 @@ namespace Seaborn.Harbor.UI
                     contract.IsComplete
                         ? Success
                         : Cream;
+                bool anotherActive =
+                    contracts.SelectedDailyContract != null &&
+                    contracts.SelectedDailyContract != contract;
                 row.Button.interactable =
                     !selected &&
-                    !contract.RewardClaimed;
+                    !contract.RewardClaimed &&
+                    !contract.IsComplete &&
+                    !anotherActive;
                 Text buttonText =
                     row.Button.GetComponentInChildren<Text>();
                 buttonText.text =
