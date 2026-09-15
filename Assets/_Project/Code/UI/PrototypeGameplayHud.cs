@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Seaborn.Combat;
 using Seaborn.Expeditions;
 using Seaborn.Hunting;
+using Seaborn.Harbor.UI;
 using Seaborn.Recovery;
 using Seaborn.Progression;
 using Seaborn.Ship;
@@ -79,6 +80,7 @@ namespace Seaborn.UI
         private Font interfaceFont;
         private readonly List<Toast> toasts = new();
         private bool criticalHullWarningShown;
+        private CanvasGroup hudGroup;
 
         private sealed class Toast
         {
@@ -107,6 +109,23 @@ namespace Seaborn.UI
 
         private void Update()
         {
+            bool harborInterfaceOpen =
+                PrototypeHarborUiCoordinator.IsOpen;
+            if (hudGroup != null)
+            {
+                hudGroup.alpha =
+                    harborInterfaceOpen ? 0f : 1f;
+                hudGroup.interactable =
+                    !harborInterfaceOpen;
+                hudGroup.blocksRaycasts =
+                    !harborInterfaceOpen;
+            }
+
+            if (harborInterfaceOpen)
+            {
+                return;
+            }
+
             AnimateNotifications();
             if (Time.unscaledTime < nextRefreshTime) return;
             nextRefreshTime = Time.unscaledTime + 0.1f;
@@ -160,6 +179,7 @@ namespace Seaborn.UI
 
         private void BuildInterface()
         {
+            hudGroup = gameObject.AddComponent<CanvasGroup>();
             Canvas canvas = gameObject.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             canvas.sortingOrder = 60;
