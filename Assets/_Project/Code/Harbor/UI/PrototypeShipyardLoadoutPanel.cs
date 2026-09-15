@@ -253,7 +253,9 @@ namespace Seaborn.Harbor.UI
 
             bool visible =
                 inventory != null &&
-                inventory.CanUseShipyard;
+                inventory.CanUseShipyard &&
+                PrototypeHarborUiCoordinator.IsSelected(
+                    PrototypeHarborTab.Loadout);
             panel.SetActive(visible);
             if (!visible) return;
 
