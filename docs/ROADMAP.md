@@ -445,9 +445,9 @@ Bu kapı, prototip sistemlerinin sayısını artırmadan önce mevcut dikey dili
 - [x] İlk gerçek Sloop için teknik standart
 - [x] Güvenli liman modüler üretim sırası
 - [x] Final UI görsel ve etkileşim standardı
-- [ ] Sloop adaylarını gerçek oyun kamerasında değerlendir
+- [~] Sloop ana referansı ve Meshy 7 Multi-View üretimini değerlendir
 - [ ] Modüler liman asset adaylarını değerlendir
-- [ ] Onaylı Sloop’u mevcut fizik, hardpoint ve loadout sistemine bağla
+- [ ] Meshy Sloop’u Blender’da temizle, modüler ayır ve mevcut hardpoint/loadout sistemine bağla
 - [ ] Sloop ile hareket/kamera/çarpışma hissini yeniden ayarla
 - [ ] İlk üretim kalitesinde görsel dikey dilimi kaydet
 
