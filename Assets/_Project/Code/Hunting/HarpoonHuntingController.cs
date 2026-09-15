@@ -575,6 +575,9 @@ namespace Seaborn.Hunting
             PrototypeHarborServices.EnsureAttached(player);
             PrototypeConsumableShop.EnsureAttached(player);
             PrototypeContractBoard.EnsureCreated(player);
+            Seaborn.Harbor.UI
+                .PrototypeHarborUiCoordinator
+                .EnsureCreated();
             PrototypeHarborPreparationPanel.EnsureCreated(player);
             Seaborn.Harbor.UI
                 .PrototypeShipyardUpgradePanel
