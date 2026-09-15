@@ -170,14 +170,14 @@ namespace Seaborn.Ship
                     assemblyRoot,
                     PrototypeHardpointSide.Port,
                     index,
-                    new Vector3(-0.72f, 0.02f, z),
+                    new Vector3(-0.72f, 0.3f, z),
                     cannonMaterial
                 );
                 CreateCannonHardpoint(
                     assemblyRoot,
                     PrototypeHardpointSide.Starboard,
                     index,
-                    new Vector3(0.72f, 0.02f, z),
+                    new Vector3(0.72f, 0.3f, z),
                     cannonMaterial
                 );
             }
