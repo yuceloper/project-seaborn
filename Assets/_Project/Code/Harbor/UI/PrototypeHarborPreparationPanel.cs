@@ -99,10 +99,10 @@ namespace Seaborn.Harbor
                 protection != null &&
                 protection.IsProtected &&
                 docking != null &&
-                (docking.IsDockedAt(
-                    PrototypeHarborStation.Trade) ||
-                 docking.IsDockedAt(
-                    PrototypeHarborStation.HarborOffice));
+                docking.IsDockedAt(
+                    PrototypeHarborStation.Trade) &&
+                PrototypeHarborUiCoordinator.IsSelected(
+                    PrototypeHarborTab.TradePreparation);
 
             if (panel.activeSelf != shouldShow)
             {
