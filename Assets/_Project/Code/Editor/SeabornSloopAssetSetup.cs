@@ -76,6 +76,14 @@ namespace Seaborn.EditorTools
                 return;
             }
 
+            if (!force &&
+                AssetDatabase.LoadAssetAtPath<Texture2D>(MaskPath) != null &&
+                AssetDatabase.LoadAssetAtPath<Material>(MaterialPath) != null &&
+                AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath) != null)
+            {
+                return;
+            }
+
             isBuilding = true;
             try
             {
