@@ -436,3 +436,17 @@ Bu kapı, prototip sistemlerinin sayısını artırmadan önce mevcut dikey dili
 - [ ] HUD bilgi hiyerarşisi, ikon seti, tipografi ve çözünürlük ölçekleme turu
 - [ ] Gerçek gemi modeliyle hızlanma, dümen, kamera ve çarpışma hissini yeniden ayarla
 - [ ] Liman → sefer → görev → ödül döngüsü için uçtan uca regresyon kontrol listesi
+
+
+## Milestone — Görsel üretim temeli
+
+- [x] Sanat yönü kuzey yıldızı ve gerçekçilik sınırı
+- [x] Gemi/liman asset kabul puanlaması
+- [x] İlk gerçek Sloop için teknik standart
+- [x] Güvenli liman modüler üretim sırası
+- [x] Final UI görsel ve etkileşim standardı
+- [ ] Sloop adaylarını gerçek oyun kamerasında değerlendir
+- [ ] Modüler liman asset adaylarını değerlendir
+- [ ] Onaylı Sloop’u mevcut fizik, hardpoint ve loadout sistemine bağla
+- [ ] Sloop ile hareket/kamera/çarpışma hissini yeniden ayarla
+- [ ] İlk üretim kalitesinde görsel dikey dilimi kaydet
