@@ -450,3 +450,41 @@ Bu kapı, prototip sistemlerinin sayısını artırmadan önce mevcut dikey dili
 - [ ] Onaylı Sloop’u mevcut fizik, hardpoint ve loadout sistemine bağla
 - [ ] Sloop ile hareket/kamera/çarpışma hissini yeniden ayarla
 - [ ] İlk üretim kalitesinde görsel dikey dilimi kaydet
+
+
+## Milestone — Dümen hissi ve modüler gemi
+
+### Kontrol prototipi
+
+- [ ] W/S ile -1, 0, 1, 2, 3 seyir kademeleri
+- [ ] Kademeye bağlı hedef hız ve gemiye özel ivmelenme eğrisi
+- [ ] Momentumlu yavaşlama ve gecikmeli tornistan
+- [ ] A/D ile dümen açısı ve merkeze dönüş
+- [ ] Hıza/gövde uzunluğuna bağlı dönüş çemberi
+- [ ] Sert dönüşte kontrollü hız kaybı ve yanal sürüklenme
+- [ ] Çarpışma sonrası açısal hız sınırı ve spin kurtarma
+- [ ] HUD seyir kademesi ve dümen göstergesi
+
+### Modüler Sloop
+
+- [ ] Pruva, orta gövde ve kıç soket standardı
+- [ ] Tekrar edilebilir orta gövde modülü
+- [ ] Runtime gemi assembler
+- [ ] Birleşik fakat kararlı fizik collider yapısı
+- [ ] Fiziksel iskele/sancak top hardpoint’leri
+- [ ] Takılan topun model ve namlu çıkış noktasına bağlanması
+- [ ] Modül etkilerinin hız, HP, kargo ve dönüşe uygulanması
+- [ ] Modüler loadout kalıcılığı
+- [ ] Direk, yelken planı ve arma soket standardı
+- [ ] Yelken modelinin hız, ivmelenme, dümen tepkisi ve yelken HP etkileri
+- [ ] Takılan yelkenin runtime gemi silüetine uygulanması
+
+### Görsel tersane
+
+- [ ] Gemiyi kadraja alan tersane kamera rig’i
+- [ ] Gemi bölümü ve hardpoint seçimi
+- [ ] Uyumlu envanter filtresi
+- [ ] Hayalet parça önizlemesi
+- [ ] İstatistik ve toplam borda hasarı karşılaştırması
+- [ ] Uygula, sök, iptal ve kaydet işlemleri
+- [ ] Parça montaj animasyonu ve ses geri bildirimi

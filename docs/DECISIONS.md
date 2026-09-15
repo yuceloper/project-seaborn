@@ -414,3 +414,26 @@ Bu belge alınmış ürün ve teknik kararlarını korur. Değişen kararlar sil
 - Mevcut ekonomi ve ilerleme bileşenleri korunacak; koordinatör yalnızca sunum ve görünürlük sahibi olacak.
 
 **Gerekçe:** Prototip boyunca her sistem kendi Canvas'ını ürettiği için ekran bilgi hiyerarşisini kaybetti ve bir oyun arayüzünden çok geliştirici araçlarına benzedi. Tek odaklı yapı hem tıklama çakışmalarını azaltır hem de ileride ikon, animasyon ve gamepad navigasyonunu merkezi hale getirir.
+
+
+## 2026-09-15 — W/S seyir emri, A/D dümen olacak
+
+**Karar:** W ve S anlık ileri/geri kuvvet vermeyecek; -1 tornistan, 0 dur, 1 ağır yol, 2 yarım yol ve 3 tam yol seyir kademeleri arasında emir verecek. Gemi seçili kademenin hedef hızına ivmeyle yaklaşacak. A/D doğrudan gövde rotasyonu değil, kademeli dümen açısı yönetecek.
+
+**Gerekçe:** Gemi bir araba veya tank gibi hissetmemeli. Momentum, durma mesafesi ve hıza bağlı dönüş çemberi hem denizcilik duygusunu hem de borda saldırılarındaki konum taktiğini güçlendirir. Tam fizik simülasyonu yerine okunabilir bir denizcilik soyutlaması kullanılacaktır.
+
+**Sınırlar:**
+
+- Gemi düşük hızda yerinde dönmez.
+- Tam yol daha geniş dönüş ve daha uzun duruş getirir.
+- Tornistan düşük güçlü liman/kurtarma davranışıdır.
+- Çarpışma gemiyi kalıcı spin durumuna sokamaz.
+- Pitch/roll görsel kökte, oynanış fiziği kararlı düzlemde kalır.
+
+## 2026-09-15 — Gemiler soket tabanlı pruva, orta gövde ve kıç bölümlerinden kurulacak
+
+**Karar:** Üretim gemileri Forecastle/Pruva, tekrar edilebilir Midship/Orta Gövde ve Quarterdeck–Stern/Kıç bölümleriyle kurulacak. Donanım kapasitesi yalnızca sayı olarak değil, bu bölümlerde bulunan fiziksel hardpoint’lerle temsil edilecek.
+
+**Gerekçe:** Oyuncunun gemisi karakteridir. Tersanede gemiye yaklaşmak, bir yuva seçmek ve envanterdeki topu gerçek model üzerine takmak, düz istatistik panelinden daha güçlü sahiplik ve modifikasyon hissi verir.
+
+**Denge sınırı:** Ek orta gövde daha fazla HP, kargo veya top yuvası sağlayabilir; fakat kütle, ivmelenme, dönüş yarıçapı, hedef profili ve işletme maliyeti getirir. Küçük gemiler yüksek ilerleme seviyelerinde de çeviklik rolünü korur.
