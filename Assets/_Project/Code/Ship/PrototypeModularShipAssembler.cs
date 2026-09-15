@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Seaborn.Combat;
 using UnityEngine;
 
 namespace Seaborn.Ship
@@ -130,6 +131,13 @@ namespace Seaborn.Ship
                 stern,
                 hullMaterial,
                 deckMaterial
+            );
+
+            BroadsideController broadside =
+                GetComponent<BroadsideController>();
+            broadside?.SetRuntimeMuzzles(
+                portHardpoints.ToArray(),
+                starboardHardpoints.ToArray()
             );
         }
 
