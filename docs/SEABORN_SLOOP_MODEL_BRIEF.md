@@ -2,9 +2,10 @@
 
 ## Durum
 
-- Ana üç çeyrek referans: oluşturuldu, ilk yön onayı bekliyor
-- 3B üretim yöntemi: Meshy 7 Image-to-3D Multi-View
-- Nihai temizlik ve modüler ayırma: Blender
+- Ana üç çeyrek referans ve Multi-View: onaylandı
+- 3B üretim: Meshy 7 Image-to-3D Multi-View tamamlandı
+- Retopology ve 2K PBR texture: onaylandı
+- Nihai temizlik ve modüler ayırma: Blender'da devam ediyor
 - Oyun entegrasyonu: Unity URP, mevcut `PrototypeModularShipAssembler`
 - Bu gemi onaylanmadan Rat Sails veya Dreadwake üretimine geçilmez
 
@@ -54,6 +55,22 @@ A game-ready small age-of-sail combat and hunting vessel named Seaborn Sloop, be
 
 Avoid: crew, ocean, waves, dock, base, text, logo, skull motifs, neon magic, steampunk machinery, modern engine, oversized fantasy sails, tangled dense ropes, tiny ornaments, toy proportions, plastic low-poly look, damaged wreck, baked background, permanently attached cannon projectiles.
 ```
+
+## Onaylanan Meshy kaynak asseti
+
+**Kaynak rolü:** Blender temizlik ve modüler ayırma girdisi; doğrudan final Unity prefabı değildir.
+
+- Geometri: 100.644 üçgen, 77.844 vertex
+- Dosya: dokulu GLB 15,14 MB; harici texture'lı FBX paketi 30,45 MB
+- UV: mevcut
+- Texture: 2048×2048 Base Color, Normal, Metallic ve Roughness
+- Topoloji doğrulaması: bozuk üçgen yok, non-manifold kenar yok
+- Materyal: tek atlas/tek kaynak materyal
+- Mesh yapısı: tek birleşik mesh; semantik bölümleme zorunlu
+- Kaynak ekseni: uzunluk X, genişlik Y, yükseklik Z
+- Unity hedefi: ileri +Z, yukarı +Y
+
+FBX ve texture dosyaları Git LFS üzerinden `Assets/_Project/Art/Ships/SeabornSloop/Source/` altında tutulur. Blender hazırlığı için `Tools/Blender/prepare_seaborn_sloop.py` kullanılır.
 
 ## Blender temizlik ve modüler ayırma
 
@@ -132,7 +149,8 @@ En fazla ilk sürüm hedefi:
 
 İlk hedef, görünüş doğrulandıktan sonra Blender’da kesinleştirilir:
 
-- LOD0: yaklaşık 35–70 bin üçgen
+- Onaylı Meshy kaynak: yaklaşık 100 bin üçgen
+- Unity LOD0 hedefi: yaklaşık 50–80 bin üçgen
 - LOD1: LOD0’ın %45–55’i
 - LOD2: LOD0’ın %15–25’i
 - Uzak impostor bu aşamada zorunlu değil
@@ -177,7 +195,7 @@ Alt prefablar:
 
 ## İlk onay kapısı
 
-Meshy’den çıkan ilk model doğrudan projeye kalıcı asset olarak eklenmez. Önce şu üç görüntü paylaşılır:
+Meshy kaynak modeli silüet, oran, retopology ve PBR açısından onaylandı. Unity kabulünden önce Blender'da şu görünüşler tekrar doğrulanır:
 
 1. Meshy 3B önizlemesinde üç çeyrek görünüm
 2. Tam yan görünüm
