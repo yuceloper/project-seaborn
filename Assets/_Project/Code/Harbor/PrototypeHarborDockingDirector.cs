@@ -464,8 +464,16 @@ namespace Seaborn.Harbor
 
         private void OnGUI()
         {
+            // Docked station panels already carry their own
+            // leave instruction. Drawing this IMGUI prompt as well
+            // caused it to remain over the interactive harbor UI.
             if (NearbyStation ==
-                PrototypeHarborStation.None) return;
+                    PrototypeHarborStation.None ||
+                DockedStation !=
+                    PrototypeHarborStation.None)
+            {
+                return;
+            }
 
             const float width = 430f;
             Rect prompt = new(

@@ -25,6 +25,7 @@ namespace Seaborn.World
         private float progress;
         private float interruptedUntil;
         private bool collected;
+        private bool channeling;
         private string rewardMessage;
         private Material visualMaterial;
 
@@ -62,27 +63,35 @@ namespace Seaborn.World
                 player.position,
                 transform.position
             );
-            bool holding =
+            bool interactPressed =
                 Keyboard.current != null &&
-                Keyboard.current.eKey.isPressed;
+                Keyboard.current.eKey.wasPressedThisFrame;
 
-            if (distance > CollectRange ||
-                !holding ||
-                time < interruptedUntil)
+            if (distance > CollectRange)
             {
-                progress = 0f;
+                CancelChannel();
                 return;
             }
 
-            if (progress <= 0f)
+            if (!channeling)
+            {
+                if (!interactPressed ||
+                    time < interruptedUntil)
+                {
+                    return;
+                }
+
+                channeling = true;
+                progress = 0f;
                 channelStart = player.position;
+            }
 
             if (HorizontalDistance(
                     player.position,
                     channelStart) >
                 MovementTolerance)
             {
-                progress = 0f;
+                CancelChannel();
                 interruptedUntil = time + 0.45f;
                 return;
             }
@@ -90,6 +99,12 @@ namespace Seaborn.World
             progress += Time.unscaledDeltaTime;
             if (progress >= CollectDuration)
                 Collect();
+        }
+
+        private void CancelChannel()
+        {
+            channeling = false;
+            progress = 0f;
         }
 
         private void Collect()
@@ -175,7 +190,7 @@ namespace Seaborn.World
         {
             if (progress <= 0f) return;
 
-            progress = 0f;
+            CancelChannel();
             interruptedUntil = Time.unscaledTime + 1f;
         }
 
@@ -286,7 +301,7 @@ namespace Seaborn.World
                 ? "TOPLAMA KESİLDİ"
                 : progress > 0f
                     ? $"TOPLANIYOR  %{Mathf.RoundToInt(ratio * 100f)}"
-                    : "E BASILI TUT  •  DENİZ PIRILTISI";
+                    : "E  •  TOPLAMAYI BAŞLAT";
             DrawMessage(
                 label,
                 interruptedUntil > Time.unscaledTime

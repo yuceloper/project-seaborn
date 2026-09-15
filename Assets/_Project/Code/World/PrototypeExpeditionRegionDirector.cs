@@ -341,8 +341,11 @@ namespace Seaborn.World
             }
 
             yield return FadeTo(1f, 0.28f);
-            PreserveRuntimeUi();
 
+            // Scene-owned canvases must be destroyed with their
+            // scene. Preserving every Canvas left invisible
+            // raycasters and duplicate EventSystems after travel.
+            // Runtime HUDs are rebuilt and rebound by the bootstrap.
             AsyncOperation load =
                 SceneManager.LoadSceneAsync(sceneName);
             while (load != null && !load.isDone)
@@ -430,20 +433,6 @@ namespace Seaborn.World
 
             body.linearVelocity = Vector3.zero;
             body.angularVelocity = Vector3.zero;
-        }
-
-        private void PreserveRuntimeUi()
-        {
-            Canvas[] canvases =
-                FindObjectsByType<Canvas>(
-                    FindObjectsSortMode.None
-                );
-            for (int i = 0; i < canvases.Length; i++)
-            {
-                DontDestroyOnLoad(
-                    canvases[i].transform.root.gameObject
-                );
-            }
         }
 
         private void RemoveDuplicatePlayer()
