@@ -13,10 +13,21 @@ namespace Seaborn.Ship
         [SerializeField, Min(0f)] private float maxForwardSpeed = 10f;
         [SerializeField, Min(0f)] private float maxReverseSpeed = 3f;
         [SerializeField, Min(0f)] private float acceleration = 2.5f;
+        [SerializeField, Min(0f)] private float deceleration = 1.8f;
+        [SerializeField, Range(0.05f, 0.6f)]
+        private float slowAheadRatio = 0.3f;
+        [SerializeField, Range(0.4f, 0.85f)]
+        private float halfAheadRatio = 0.65f;
 
         [Header("Steering")]
         [SerializeField, Min(0f)] private float turnSpeed = 45f;
-        [SerializeField, Range(0f, 1f)] private float stationarySteering = 0.15f;
+        [SerializeField, Range(0f, 1f)] private float stationarySteering = 0.04f;
+        [SerializeField, Min(0.1f)] private float rudderResponse = 1.8f;
+        [SerializeField, Min(0.1f)] private float rudderReturnSpeed = 2.4f;
+        [SerializeField, Range(0.4f, 1f)]
+        private float fullSpeedTurnRetention = 0.72f;
+        [SerializeField, Range(10f, 45f)]
+        private float maximumRudderAngle = 35f;
 
         [Header("Water Resistance")]
         [SerializeField, Min(0f)] private float lateralResistance = 2.5f;
@@ -29,6 +40,9 @@ namespace Seaborn.Ship
 
         private Rigidbody shipRigidbody;
         private Vector2 moveInput;
+        private float previousThrottleAxis;
+        private float rudder;
+        private int sailingOrder;
         private float speedMultiplier = 1f;
         private float accelerationMultiplier = 1f;
         private float turnMultiplier = 1f;
@@ -42,6 +56,28 @@ namespace Seaborn.Ship
         private float repairTurnMultiplier = 1f;
 
         private float collisionRecoveryUntil;
+
+        public int SailingOrder => sailingOrder;
+        public float RudderNormalized => rudder;
+        public float RudderAngleDegrees =>
+            rudder * maximumRudderAngle;
+        public float CurrentForwardSpeed =>
+            shipRigidbody != null
+                ? Vector3.Dot(
+                    shipRigidbody.linearVelocity,
+                    transform.forward)
+                : 0f;
+        public float TargetForwardSpeed =>
+            GetTargetForwardSpeed();
+        public string SailingOrderLabel => sailingOrder switch
+        {
+            -1 => "TORNİSTAN",
+            0 => "DUR",
+            1 => "AĞIR YOL",
+            2 => "YARIM YOL",
+            3 => "TAM YOL",
+            _ => "DUR"
+        };
 
         public float SpeedMultiplier =>
             speedMultiplier *
@@ -149,12 +185,55 @@ namespace Seaborn.Ship
 
         private void OnDisable()
         {
-            moveAction.action.Disable();
+            if (moveAction != null &&
+                moveAction.action != null)
+            {
+                moveAction.action.Disable();
+            }
+
+            sailingOrder = 0;
+            previousThrottleAxis = 0f;
+            rudder = 0f;
+            moveInput = Vector2.zero;
         }
 
         private void Update()
         {
-            moveInput = moveAction.action.ReadValue<Vector2>();
+            if (moveAction == null ||
+                moveAction.action == null)
+            {
+                moveInput = Vector2.zero;
+                return;
+            }
+
+            moveInput =
+                moveAction.action.ReadValue<Vector2>();
+            UpdateSailingOrder(moveInput.y);
+        }
+
+        private void UpdateSailingOrder(
+            float throttleAxis)
+        {
+            const float threshold = 0.5f;
+
+            if (throttleAxis >= threshold &&
+                previousThrottleAxis < threshold)
+            {
+                sailingOrder = Mathf.Min(
+                    3,
+                    sailingOrder + 1
+                );
+            }
+            else if (throttleAxis <= -threshold &&
+                     previousThrottleAxis > -threshold)
+            {
+                sailingOrder = Mathf.Max(
+                    -1,
+                    sailingOrder - 1
+                );
+            }
+
+            previousThrottleAxis = throttleAxis;
         }
 
         private void FixedUpdate()
@@ -168,45 +247,110 @@ namespace Seaborn.Ship
 
         private void ApplyForwardMovement()
         {
-            float requestedSpeed = moveInput.y >= 0f
-                ? moveInput.y * maxForwardSpeed * SpeedMultiplier
-                : moveInput.y * maxReverseSpeed * SpeedMultiplier;
+            float requestedSpeed =
+                GetTargetForwardSpeed();
+            float currentForwardSpeed =
+                CurrentForwardSpeed;
 
-            float currentForwardSpeed = Vector3.Dot(
-                shipRigidbody.linearVelocity,
-                transform.forward);
+            bool slowing =
+                Mathf.Abs(requestedSpeed) <
+                    Mathf.Abs(currentForwardSpeed) ||
+                Mathf.Sign(requestedSpeed) !=
+                    Mathf.Sign(currentForwardSpeed);
+            float response = slowing
+                ? deceleration
+                : acceleration;
+            response *= accelerationMultiplier;
 
-            float speedDifference = requestedSpeed - currentForwardSpeed;
+            float nextForwardSpeed = Mathf.MoveTowards(
+                currentForwardSpeed,
+                requestedSpeed,
+                response * Time.fixedDeltaTime
+            );
+            float velocityChange =
+                nextForwardSpeed - currentForwardSpeed;
 
             shipRigidbody.AddForce(
-                transform.forward * speedDifference *
-                acceleration * accelerationMultiplier,
-                ForceMode.Acceleration);
+                transform.forward * velocityChange,
+                ForceMode.VelocityChange
+            );
+        }
+
+        private float GetTargetForwardSpeed()
+        {
+            float ratio = sailingOrder switch
+            {
+                -1 => -maxReverseSpeed /
+                    Mathf.Max(0.01f, maxForwardSpeed),
+                1 => slowAheadRatio,
+                2 => halfAheadRatio,
+                3 => 1f,
+                _ => 0f
+            };
+
+            return ratio *
+                maxForwardSpeed *
+                SpeedMultiplier;
         }
 
         private void ApplySteering()
         {
-            float forwardSpeed = Mathf.Abs(Vector3.Dot(
-                shipRigidbody.linearVelocity,
-                transform.forward));
+            float targetRudder =
+                Mathf.Abs(moveInput.x) > 0.08f
+                    ? Mathf.Clamp(moveInput.x, -1f, 1f)
+                    : 0f;
+            float rudderRate =
+                Mathf.Abs(targetRudder) > 0.01f
+                    ? rudderResponse
+                    : rudderReturnSpeed;
+            rudder = Mathf.MoveTowards(
+                rudder,
+                targetRudder,
+                rudderRate * Time.fixedDeltaTime
+            );
 
-            float steeringAuthority = Mathf.Lerp(
+            float forwardSpeed =
+                Mathf.Abs(CurrentForwardSpeed);
+            float normalizedSpeed = Mathf.Clamp01(
+                forwardSpeed /
+                Mathf.Max(
+                    0.01f,
+                    maxForwardSpeed * SpeedMultiplier)
+            );
+            float waterFlowAuthority = Mathf.Lerp(
                 stationarySteering,
                 1f,
-                Mathf.Clamp01(
-                    forwardSpeed /
-                    (maxForwardSpeed * SpeedMultiplier)));
+                normalizedSpeed
+            );
+            float highSpeedPenalty = Mathf.Lerp(
+                1f,
+                fullSpeedTurnRetention,
+                Mathf.InverseLerp(
+                    0.65f,
+                    1f,
+                    normalizedSpeed)
+            );
+            float reverseDirection =
+                CurrentForwardSpeed < -0.1f
+                    ? -1f
+                    : 1f;
 
             float rotationAmount =
-                moveInput.x *
+                rudder *
+                reverseDirection *
                 turnSpeed *
                 TurnMultiplier *
-                steeringAuthority *
+                waterFlowAuthority *
+                highSpeedPenalty *
                 Time.fixedDeltaTime;
 
             Quaternion targetRotation =
                 shipRigidbody.rotation *
-                Quaternion.Euler(0f, rotationAmount, 0f);
+                Quaternion.Euler(
+                    0f,
+                    rotationAmount,
+                    0f
+                );
 
             shipRigidbody.MoveRotation(targetRotation);
         }
