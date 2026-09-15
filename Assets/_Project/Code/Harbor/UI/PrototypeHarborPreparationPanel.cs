@@ -3,6 +3,7 @@ using Seaborn.Combat;
 using Seaborn.Expeditions;
 using Seaborn.Hunting;
 using Seaborn.Harbor;
+using Seaborn.Harbor.UI;
 using Seaborn.Ship;
 using UnityEngine;
 using UnityEngine.EventSystems;
