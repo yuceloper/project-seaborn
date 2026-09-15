@@ -301,7 +301,7 @@ namespace Seaborn.World
                 ? "TOPLAMA KESİLDİ"
                 : progress > 0f
                     ? $"TOPLANIYOR  %{Mathf.RoundToInt(ratio * 100f)}"
-                    : "E BASILI TUT  •  DENİZ PIRILTISI";
+                    : "E  •  TOPLAMAYI BAŞLAT";
             DrawMessage(
                 label,
                 interruptedUntil > Time.unscaledTime
