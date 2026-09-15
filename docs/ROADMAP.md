@@ -475,6 +475,9 @@ Bu kapı, prototip sistemlerinin sayısını artırmadan önce mevcut dikey dili
 - [ ] Takılan topun model ve namlu çıkış noktasına bağlanması
 - [ ] Modül etkilerinin hız, HP, kargo ve dönüşe uygulanması
 - [ ] Modüler loadout kalıcılığı
+- [ ] Direk, yelken planı ve arma soket standardı
+- [ ] Yelken modelinin hız, ivmelenme, dümen tepkisi ve yelken HP etkileri
+- [ ] Takılan yelkenin runtime gemi silüetine uygulanması
 
 ### Görsel tersane
 
