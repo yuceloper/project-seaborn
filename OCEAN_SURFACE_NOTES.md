@@ -59,3 +59,18 @@ Unity compilation, visual quality and GPU timings are still unverified here.
 
 Acceptance: half/full ahead, left/right turns, stop and observe tail fading, far zoom,
 map transitions, Windows build. Compare highlights at the same sun angle.
+
+## Bow wash pass
+User accepted the reflection / wake refinement and requested continuation.
+- Two short curved ribbons at the bow, on the same Ocean water plane.
+- Forward-speed driven, with smooth buildup/fade and a restrained helm-side bias.
+- Uses the existing surface foam shader; no particle spray or extra material/draw call.
+- Stern history and accepted ocean shading remain unchanged.
+- Bow endpoints fade to zero; bow strips do not connect to stern strip or each other.
+- 36 extra vertices and 32 extra triangles; maximum combined capacity 422 vertices.
+- Bow offset/length/width and enable switch are exposed in ShipSailingFeedback.
+- Geometric defaults target the current 6.5-unit fitted prototype hull, not arbitrary imported ships.
+
+Acceptance: check port/starboard foam is outside the hull at half/full ahead,
+turn both ways, stop and reverse (no new forward bow wash), switch maps,
+compare near/far zoom. Console/Editor/Windows visual testing remains pending.
