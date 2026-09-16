@@ -174,8 +174,10 @@ namespace Seaborn.Ship
         {
             float age = Mathf.Max(0f, now - sample.born);
             float life = Mathf.Clamp01(age / Mathf.Max(0.1f, lifetime));
+            float spreadTime = Mathf.Max(0.1f, lifetime * 0.9f);
+            float spread = spreadingSpeed * spreadTime * (1f - Mathf.Exp(-age / spreadTime));
             float width = wakeHalfWidth * Mathf.Lerp(0.8f, 1.2f, sample.strength) +
-                age * spreadingSpeed * Mathf.Lerp(0.5f, 1f, sample.strength);
+                spread * Mathf.Lerp(0.5f, 1f, sample.strength);
             Vector3 center = sample.position;
             center.y = height;
             int index = vertices.Count;
@@ -185,7 +187,8 @@ namespace Seaborn.Ship
             uvs.Add(new Vector2(1f, sample.distance));
             float alpha = Mathf.Pow(1f - life, 1.6f) * sample.strength;
             if (breakBefore) alpha = 0f;
-            Color color = new Color(1f, 1f, 1f, alpha);
+            // R encodes normalized foam age; A remains opacity.
+            Color color = new Color(life, 1f, 1f, alpha);
             colors.Add(color); colors.Add(color);
             if (index < 2 || breakBefore) return;
             triangles.Add(index - 2); triangles.Add(index); triangles.Add(index - 1);

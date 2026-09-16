@@ -120,7 +120,7 @@ namespace Seaborn.Atmosphere
             );
             SetFloat(
                 "_SunGlintStrength",
-                profile.GlintStrength
+                profile.GlintStrength * 0.78f
             );
             SetFloat(
                 "_WaveAmplitudeA",
@@ -138,8 +138,8 @@ namespace Seaborn.Atmosphere
             SetFloat("_RippleStrength", Mathf.Lerp(0.12f, 0.22f, roughness));
             SetFloat("_RippleScale", 1.15f);
             SetFloat("_SkyReflection", Mathf.Lerp(0.38f, 0.28f, roughness));
-            SetFloat("_WhitecapStrength", Mathf.Lerp(0.025f, 0.12f, roughness));
-            SetFloat("_SunGlintPower", 72f);
+            SetFloat("_WhitecapStrength", Mathf.Lerp(0.008f, 0.045f, roughness));
+            SetFloat("_SunGlintPower", 48f);
             SetFloat("_FresnelPower", 4.5f);
 
 

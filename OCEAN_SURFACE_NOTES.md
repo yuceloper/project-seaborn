@@ -1,10 +1,10 @@
-# Ocean surface polish — first pass
+# Ocean surface polish — reflection and wake refinement
 
-Base: feature/sloop-sailing-feedback (accepted surface foam). No wake or ship handling edits.
+Base: feature/sloop-sailing-feedback (accepted surface foam). Wake fading/shading refined in this follow-up; no ship handling changes.
 
 ## Direction
 Deep blue open water, turquoise harbor/east, darker western waters.
-Eight directional normal waves replace two broad sine bands.
+Four directional swells plus three independently rotated noise-gradient ripple layers.
 Fine ripples are filtered at subpixel scales; highlights broaden with normal variation.
 Subtle procedural sky tint/reflection and sparse crest breakup.
 Main-light shadow attenuation supports ship/pier grounding.
@@ -22,7 +22,7 @@ Existing shader GUID/name and material references preserved.
 Regional profiles update new surface properties at runtime; scene settings cannot silently
 restore the old broad-band palette.
 Shader is already referenced by OceanPrototype.mat; no new resource or manual wiring needed.
-No change to global post-processing, camera, ship light settings or accepted wake.
+No change to global post-processing, camera, ship light settings, water height or wake anchoring.
 
 ## Acceptance
 - Exit Play Mode, switch to feature/ocean-surface-polish, restart.
@@ -42,3 +42,20 @@ Do not add vertex displacement without updating the accepted wake and waterline 
 
 ## API reference
 [Unity 6.6 custom shader shadows](https://docs.unity3d.com/6000.6/Documentation/Manual/urp/use-built-in-shader-methods-shadows.html)
+
+## Gameplay follow-up
+Video 01.40.19.18 showed orange reflection grids and dense repeating whitecaps.
+- Quintic noise gradients replace periodic fine-wave trains; independent rotations break stripe intersections.
+- Softer, weaker highlights with reduced double-orange tinting.
+- Whitecap strength: 0.008–0.045 by region, stricter crest thresholds and irregular patch gating.
+- Wake spread settles gradually; aged shoulders dissolve unevenly.
+- C# vertex color R encodes foam age; A remains opacity. Wake shader and controller update together.
+- Filter distant fine foam detail to reduce shimmer.
+
+Validation: analytic noise gradients checked against finite differences at 200 locations;
+101 wake ages checked for finite, monotonic bounded spreading.
+Material/profile property names checked against shader declarations.
+Unity compilation, visual quality and GPU timings are still unverified here.
+
+Acceptance: half/full ahead, left/right turns, stop and observe tail fading, far zoom,
+map transitions, Windows build. Compare highlights at the same sun angle.

@@ -13,12 +13,12 @@ Shader "Seaborn/Ocean Prototype"
         _WaveSpeedA ("Swell Speed", Range(-3, 3)) = 0.7
         _WaveSpeedB ("Cross Wave Speed", Range(-3, 3)) = 1.15
         _FresnelPower ("Fresnel Power", Range(0.5, 8)) = 4.5
-        _SunGlintPower ("Sun Glint Sharpness", Range(8, 256)) = 72
-        _SunGlintStrength ("Sun Glint Strength", Range(0, 2)) = 0.42
+        _SunGlintPower ("Sun Glint Sharpness", Range(8, 256)) = 48
+        _SunGlintStrength ("Sun Glint Strength", Range(0, 2)) = 0.30
         _RippleStrength ("Fine Ripple Normal", Range(0, 0.5)) = 0.17
         _RippleScale ("Ripple Scale", Range(0.2, 4)) = 1.15
         _SkyReflection ("Sky Reflection", Range(0, 1)) = 0.34
-        _WhitecapStrength ("Sparse Crest Foam", Range(0, 0.5)) = 0.07
+        _WhitecapStrength ("Sparse Crest Foam", Range(0, 0.5)) = 0.028
     }
     SubShader
     {
@@ -63,11 +63,34 @@ Shader "Seaborn/Ocean Prototype"
             {
                 float2 cell = floor(p);
                 float2 f = frac(p);
-                f = f * f * (3.0 - 2.0 * f);
+                f = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
                 return lerp(lerp(Hash(cell), Hash(cell + float2(1,0)), f.x),
                             lerp(Hash(cell + float2(0,1)), Hash(cell + 1), f.x), f.y);
             }
-            // Analytic slope amplitudes, filtered where a ripple becomes subpixel.
+            // Continuous derivatives keep reflection normals smooth at cell boundaries.
+            float3 NoiseGradient(float2 p)
+            {
+                float2 cell = floor(p);
+                float2 f = frac(p);
+                float2 u = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
+                float2 du = 30.0 * f * f * (f - 1.0) * (f - 1.0);
+                float a = Hash(cell);
+                float b = Hash(cell + float2(1, 0));
+                float c = Hash(cell + float2(0, 1));
+                float d = Hash(cell + 1);
+                float k = a - b - c + d;
+                return float3(a + (b-a)*u.x + (c-a)*u.y + k*u.x*u.y,
+                    du.x * (b-a + k*u.y), du.y * (c-a + k*u.x));
+            }
+            float2 RippleGradient(float2 p, float scale, float2 drift)
+            {
+                float2 q = float2(p.x * 0.8 + p.y * 0.6, -p.x * 0.6 + p.y * 0.8);
+                q = q * scale + drift;
+                float filter = 1.0 - smoothstep(0.35, 1.4, max(fwidth(q.x), fwidth(q.y)));
+                float2 g = NoiseGradient(q).yz;
+                return float2(g.x * 0.8 - g.y * 0.6, g.x * 0.6 + g.y * 0.8) * filter;
+            }
+            // Long swell remains directional; fine reflection normals are aperiodic.
             void Wave(float2 p, float2 direction, float frequency, float speed,
                       float amplitude, float phaseOffset, inout float height, inout float2 slope)
             {
@@ -90,7 +113,8 @@ Shader "Seaborn/Ocean Prototype"
             {
                 float2 p = input.positionWS.xz;
                 float drift = Noise(p * 0.15 + float2(_Time.y * 0.015, 0));
-                float2 warped = p + (drift - 0.5) * float2(0.75, 1.3);
+                float driftB = Noise(p * 0.19 + float2(17.3, -_Time.y * 0.018));
+                float2 warped = p + (float2(drift, driftB) - 0.5) * 2.6;
                 float height = 0;
                 float2 slope = 0;
                 Wave(warped, float2(1,0.42), _WaveScaleA * 3.0, _WaveSpeedA, _WaveAmplitudeA, 0, height, slope);
@@ -98,13 +122,17 @@ Shader "Seaborn/Ocean Prototype"
                 Wave(warped, float2(0.85,0.68), _WaveScaleA * 5.8, _WaveSpeedA * 1.32, _WaveAmplitudeA * 0.40, 3.2, height, slope);
                 Wave(warped, float2(-0.3,1), _WaveScaleB * 4.1, _WaveSpeedB * 0.85, _WaveAmplitudeB * 0.5, 0.9, height, slope);
                 float swellHeight = height;
-                float rippleHeight = 0;
-                float2 rippleSlope = 0;
-                Wave(warped, float2(1,0.24), _RippleScale * 5.1, _WaveSpeedA * 2.0, _RippleStrength * 0.55, drift * 2, rippleHeight, rippleSlope);
-                Wave(warped, float2(-0.55,1), _RippleScale * 7.3, _WaveSpeedB * 1.8, _RippleStrength * 0.36, 2.8, rippleHeight, rippleSlope);
-                Wave(warped, float2(0.78,0.6), _RippleScale * 10.6, _WaveSpeedA * 2.7, _RippleStrength * 0.22, 4.1, rippleHeight, rippleSlope);
-                Wave(warped, float2(-0.8,0.35), _RippleScale * 14.3, _WaveSpeedB * 2.2, _RippleStrength * 0.14, 5.8, rippleHeight, rippleSlope);
-                slope += rippleSlope * lerp(0.7, 1.2, drift);
+                // Independent rotations break intersecting periodic glint stripes.
+                float2 rippleSlope = RippleGradient(p, _RippleScale * 0.72,
+                    float2(-_Time.y * _WaveSpeedA * 0.13, _Time.y * 0.045)) * 0.70;
+                float2 rotated = float2(p.x * 0.36 - p.y * 0.93295, p.x * 0.93295 + p.y * 0.36);
+                float2 crossSlope = RippleGradient(rotated, _RippleScale * 1.57,
+                    float2(9.7 + _Time.y * 0.07, -_Time.y * _WaveSpeedB * 0.11));
+                rippleSlope += float2(crossSlope.x * 0.36 + crossSlope.y * 0.93295,
+                    -crossSlope.x * 0.93295 + crossSlope.y * 0.36) * 0.32;
+                rippleSlope += RippleGradient(p, _RippleScale * 3.13,
+                    float2(32.4 - _Time.y * 0.08, 15.2 + _Time.y * 0.12)) * 0.14;
+                slope += rippleSlope * _RippleStrength * lerp(0.85, 1.15, drift);
 
                 half3 normalWS = normalize(half3(-slope.x, 1, -slope.y));
                 half3 viewWS = GetWorldSpaceNormalizeViewDir(input.positionWS);
@@ -137,15 +165,22 @@ Shader "Seaborn/Ocean Prototype"
                 float ndh = saturate(dot(normalWS, halfDirection));
                 float variance = dot(ddx(normalWS), ddx(normalWS)) + dot(ddy(normalWS), ddy(normalWS));
                 float power = lerp(_SunGlintPower, 16.0, saturate(variance * 7));
-                float glint = pow(ndh, power) * 0.75 + pow(ndh, 12.0) * 0.1;
-                water += _SunGlintColor.rgb * sun.color * glint *
+                float energy = sqrt(power / max(8.0, _SunGlintPower));
+                float glint = pow(ndh, power) * 0.58 * energy + pow(ndh, 12.0) * 0.07;
+                glint *= lerp(0.70, 1.0, driftB);
+                // Avoid multiplying two strongly orange tints.
+                half3 glintTint = lerp(half3(1, 1, 1), _SunGlintColor.rgb, 0.55h);
+                water += glintTint * sun.color * glint *
                     _SunGlintStrength * sun.shadowAttenuation * ndl;
 
-                float crests = smoothstep(0.60, 0.95,
+                float crests = smoothstep(0.72, 0.98,
                     swellHeight / max(0.02, _WaveAmplitudeA + _WaveAmplitudeB) * 0.5 + 0.5);
-                float flecks = smoothstep(0.64, 0.85,
-                    Noise(p * 3.6 + float2(-_Time.y * 0.09, _Time.y * 0.04)));
-                float foam = crests * flecks * _WhitecapStrength;
+                float2 foamFlow = warped + float2(-_Time.y * 0.08, _Time.y * 0.025);
+                float patches = smoothstep(0.52, 0.78, Noise(foamFlow * 0.31 + 23.7));
+                float foamDetail = Noise(foamFlow * 2.7 + driftB);
+                float aa = max(0.025, fwidth(foamDetail));
+                float flecks = smoothstep(0.74 - aa, 0.9 + aa, foamDetail);
+                float foam = crests * patches * flecks * _WhitecapStrength;
                 water = lerp(water, half3(0.56, 0.75, 0.76) * shade, foam);
                 return half4(MixFog(water, input.fogFactor), 1);
             }
