@@ -100,9 +100,6 @@ namespace Seaborn.UI
             if (portBar != null) portBar.gameObject.SetActive(false);
             if (starboardBar != null) starboardBar.gameObject.SetActive(false);
 
-            // The two legacy readiness texts were anonymous direct children.
-            // Identify only those by their known layout coordinates so item labels
-            // and hotbar text remain untouched.
             for (int i = 0; i < combatRoot.childCount; i++)
             {
                 RectTransform child = combatRoot.GetChild(i) as RectTransform;
@@ -207,7 +204,8 @@ namespace Seaborn.UI
             image.sprite = sprite;
             image.raycastTarget = false;
             RectTransform rect = image.rectTransform;
-            rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(0f, 1f);
+            rect.anchorMin = rect.anchorMax = new Vector2(0f, 1f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
             rect.anchoredPosition = position;
             rect.sizeDelta = size;
             return image;
@@ -227,8 +225,9 @@ namespace Seaborn.UI
             text.alignment = TextAnchor.MiddleCenter;
             text.raycastTarget = false;
             RectTransform rect = text.rectTransform;
-            rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(0f, 1f);
-            rect.anchoredPosition = position - bounds * 0.5f;
+            rect.anchorMin = rect.anchorMax = new Vector2(0f, 1f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = position;
             rect.sizeDelta = bounds;
             return text;
         }
