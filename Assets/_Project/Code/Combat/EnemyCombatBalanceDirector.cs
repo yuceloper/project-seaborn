@@ -7,6 +7,8 @@ namespace Seaborn.Combat
     [DisallowMultipleComponent]
     public sealed class EnemyCombatBalanceDirector : MonoBehaviour
     {
+        private const float EnemyBaseHull = 2500f;
+
         private readonly Dictionary<EnemyShipController, EnemyShipArchetype> tuned = new();
         private float nextScanTime;
 
@@ -38,6 +40,9 @@ namespace Seaborn.Combat
                 {
                     continue;
                 }
+
+                ShipHealth health = enemy.GetComponent<ShipHealth>();
+                health?.SetBaseMaximumHealth(EnemyBaseHull, true);
 
                 BroadsideController broadside =
                     enemy.GetComponent<BroadsideController>();
