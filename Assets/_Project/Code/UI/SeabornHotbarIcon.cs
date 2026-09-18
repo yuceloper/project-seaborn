@@ -7,7 +7,17 @@ namespace Seaborn.UI
     [DisallowMultipleComponent]
     public sealed class SeabornHotbarIcon : MaskableGraphic
     {
-        public int Kind { get; set; }
+        private int kind;
+        public int Kind
+        {
+            get => kind;
+            set
+            {
+                if (kind == value) return;
+                kind = value;
+                SetVerticesDirty();
+            }
+        }
 
         protected override void OnPopulateMesh(VertexHelper vh)
         {
