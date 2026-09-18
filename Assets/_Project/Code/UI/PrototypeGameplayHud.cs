@@ -86,6 +86,8 @@ namespace Seaborn.UI
         private Transform boundPlayer;
         private RectTransform notificationRoot;
         private Font interfaceFont;
+        private const float ChartHalfExtent = 60f;
+        private static readonly Color BrassTint = new Color(0.78f, 0.82f, 0.80f, 1f);
         private readonly List<Toast> toasts = new();
         private bool criticalHullWarningShown;
         private CanvasGroup hudGroup;
@@ -223,7 +225,7 @@ namespace Seaborn.UI
             shipNameText.resizeTextMinSize = 14;
             shipNameText.resizeTextMaxSize = 22;
             hullFill = CreateBar(ship,"Hull",new(148,-49),new(382,37),out hullFillImage);
-            hullText = CreateText(ship,font,"",17,SeabornUiSkin.Ink,FontStyle.Bold,new(177,-56),new(328,25));
+            hullText = CreateText(ship,font,"",17,SeabornUiSkin.Ink,FontStyle.Bold,new(179,-58),new(324,25));
             sailText = CreateText(ship,font,"",13,Cream,FontStyle.Normal,new(180,-92),new(156,20));
             crewText = CreateText(ship,font,"",13,Cream,FontStyle.Normal,new(367,-92),new(159,20));
             Art(ship,"Sails",SeabornHudArt.Glyph(3),new(148,-88),new(27,27));
@@ -267,6 +269,7 @@ namespace Seaborn.UI
             activeBuffText = CreateText(resources,font,"",11,Cream,FontStyle.Normal,new(0,-114),new(380,28),TextAnchor.UpperRight);
 
             RectTransform minimap = CreateCard("Navigation",new(0,0),new(0,0),new(20,28),new(335,360));
+            minimap.localScale = Vector3.one * 0.84f;
             Image circle = Art(minimap,"Round Map Mask",SeabornHudArt.CircleMask,new(49,-48),new(240,240));
             circle.gameObject.AddComponent<Mask>().showMaskGraphic = false;
             minimapArea = circle.rectTransform;
@@ -294,17 +297,17 @@ namespace Seaborn.UI
 
             // No full-width backing box. Art-backed cells float over the scene.
             RectTransform combat = CreateCard("Combat",new(0.5f,0),new(0.5f,0),new(0,24),new(980,157));
-            portText = CreateText(combat,font,"",11,Cream,FontStyle.Normal,new(4,-1),new(160,18));
+            portText = CreateText(combat,font,"",13,Cream,FontStyle.Normal,new(4,-1),new(160,18));
             portFill = CreateBar(combat,"Port",new(4,-21),new(150,5),out _);
             ammoNameText = CreateText(combat,font,"",12,Cream,FontStyle.Normal,new(200,-1),new(580,20),TextAnchor.UpperCenter);
-            starboardText = CreateText(combat,font,"",11,Cream,FontStyle.Normal,new(816,-1),new(160,18),TextAnchor.UpperRight);
+            starboardText = CreateText(combat,font,"",13,Cream,FontStyle.Normal,new(816,-1),new(160,18),TextAnchor.UpperRight);
             starboardFill = CreateBar(combat,"Starboard",new(826,-21),new(150,5),out _);
-            harpoonText = CreateText(combat,font,"",10,Muted,FontStyle.Normal,new(205,22),new(570,18),TextAnchor.UpperCenter);
+            harpoonText = CreateText(combat,font,"",12,Muted,FontStyle.Normal,new(205,20),new(570,18),TextAnchor.UpperCenter);
             harpoonFill = CreateBar(combat,"Harpoon",new(427,4),new(126,4),out _);
             string[] keys = { "1", "2", "3", "SHIFT+1", "SHIFT+2", "4", "5", "6", "7", "8" };
             string[] names = { "STANDART\nGÜLLE", "ZİNCİRLİ\nGÜLLE", "SAÇMA", "HAFİF\nZIPKIN", "AĞIR\nZIPKIN", "TONİK", "SAKLANMA\nFENERİ", "ROM", "RÜZGÂR\nİKSİRİ", "ZIRH" };
             for (int i=0;i<hotbar.Length;i++) hotbar[i]=CreateHotbarSlot(combat,i,keys[i],names[i]);
-            RectTransform helm = CreateCard("Helm",new(0.5f,0),new(0.5f,0),new(0,205),new(760,28));
+            RectTransform helm = CreateCard("Helm",new(0.5f,0),new(0.5f,0),new(0,192),new(760,28));
             harborLockText = CreateText(helm,font,"",12,Cream,FontStyle.Normal,new(0,0),new(760,26),TextAnchor.UpperCenter);
 
             GameObject notifications = new GameObject("Notifications",typeof(RectTransform));
@@ -320,7 +323,9 @@ namespace Seaborn.UI
             GameObject item = new GameObject(name,typeof(RectTransform),typeof(Image));
             item.transform.SetParent(parent,false);
             Image image = item.GetComponent<Image>();
-            image.sprite = sprite; image.preserveAspect = preserve; image.raycastTarget = false;
+            image.sprite = sprite;
+            if (name.Contains("Frame") || name.Contains("Capsule") || name.Contains("Rim") || name.Contains("Medallion")) image.color = BrassTint;
+            image.preserveAspect = preserve; image.raycastTarget = false;
             RectTransform rect = image.rectTransform;
             rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(0,1);
             rect.anchoredPosition = position; rect.sizeDelta = size;
@@ -337,7 +342,7 @@ namespace Seaborn.UI
             cameraObject.transform.position = new Vector3(0,180,0);
             cameraObject.transform.rotation = Quaternion.Euler(90,0,0);
             chartCamera.orthographic = true;
-            chartCamera.orthographicSize = 90f;
+            chartCamera.orthographicSize = ChartHalfExtent;
             chartCamera.nearClipPlane = 0.1f; chartCamera.farClipPlane = 400f;
             chartCamera.clearFlags = CameraClearFlags.SolidColor;
             chartCamera.backgroundColor = new Color(0.035f,0.16f,0.17f,1f);
@@ -585,13 +590,14 @@ namespace Seaborn.UI
             rect.anchoredPosition = new Vector2(index * 98f,-31f);
             rect.sizeDelta = new Vector2(94,126);
             Image background = Art(rect,"Slot Frame",SeabornHudArt.Frame(4),Vector2.zero,new(94,94),false);
-            Image glow = Art(rect,"Selected Frame",SeabornHudArt.Frame(5),new(-6,6),new(106,106),false);
+            Image glow = Art(rect,"Selected Frame",SeabornHudArt.Frame(4),Vector2.zero,new(94,94),false);
+            glow.color = new Color(1f, 0.96f, 0.78f, 1f);
             glow.gameObject.SetActive(false);
-            CreateText(rect,interfaceFont,key,11,Cream,FontStyle.Normal,new(6,-7),new(82,17),TextAnchor.UpperCenter);
+            CreateText(rect,interfaceFont,key,12,Cream,FontStyle.Normal,new(11,-9),new(72,18),TextAnchor.UpperLeft);
             Image icon = Art(rect,"Illustrated Item",SeabornHudArt.Icon(index),new(20,-26),new(54,51));
-            Text count = CreateText(rect,interfaceFont,"0",12,Cream,FontStyle.Bold,new(44,-71),new(40,20),TextAnchor.UpperRight);
+            Text count = CreateText(rect,interfaceFont,"0",14,Cream,FontStyle.Bold,new(40,-68),new(40,22),TextAnchor.UpperRight);
             Text timer = CreateText(rect,interfaceFont,"",12,Gold,FontStyle.Bold,new(6,-55),new(78,19),TextAnchor.UpperRight);
-            CreateText(rect,interfaceFont,label,11,Cream,FontStyle.Normal,new(-1,-99),new(96,28),TextAnchor.UpperCenter);
+            CreateText(rect,interfaceFont,label,12,Cream,FontStyle.Normal,new(-1,-99),new(96,32),TextAnchor.UpperCenter);
             return new HotbarSlot { Background=background, Selection=glow.gameObject, Count=count, Timer=timer, Icon=icon };
         }
 
@@ -704,23 +710,16 @@ namespace Seaborn.UI
             rect.anchorMin = new Vector2(1f, 1f);
             rect.anchorMax = new Vector2(1f, 1f);
             rect.pivot = new Vector2(1f, 1f);
-            rect.sizeDelta = new Vector2(360f, 58f);
+            rect.sizeDelta = new Vector2(360f, 82f);
             card.GetComponent<Image>().sprite = SeabornHudArt.Frame(3);
-            card.GetComponent<Image>().color = Color.white;
+            card.GetComponent<Image>().color = BrassTint;
             card.GetComponent<Image>().raycastTarget = false;
 
-            GameObject stripe = new("Accent", typeof(RectTransform), typeof(Image));
-            stripe.transform.SetParent(card.transform, false);
-            RectTransform stripeRect = stripe.GetComponent<RectTransform>();
-            stripeRect.anchorMin = new Vector2(0f, 0f);
-            stripeRect.anchorMax = new Vector2(0f, 1f);
-            stripeRect.pivot = new Vector2(0f, 0.5f);
-            stripeRect.sizeDelta = new Vector2(4f, 0f);
-            stripeRect.anchoredPosition = Vector2.zero;
-            stripe.GetComponent<Image>().color = accent;
-
-            CreateText(rect, interfaceFont, title, 13, accent, FontStyle.Bold, new Vector2(14f, -8f), new Vector2(332f, 20f));
-            CreateText(rect, interfaceFont, detail, 11, Cream, FontStyle.Normal, new Vector2(14f, -31f), new Vector2(332f, 18f));
+            Text titleText = CreateText(rect, interfaceFont, title, 14, accent, FontStyle.Bold, new Vector2(30f, -18f), new Vector2(300f, 21f));
+            titleText.resizeTextForBestFit = true;
+            titleText.resizeTextMinSize = 11;
+            titleText.resizeTextMaxSize = 14;
+            CreateText(rect, interfaceFont, detail, 13, Cream, FontStyle.Normal, new Vector2(30f, -42f), new Vector2(300f, 32f));
 
             float now = Time.unscaledTime;
             toasts.Add(new Toast
@@ -760,7 +759,7 @@ namespace Seaborn.UI
             for (int index = 0; index < toasts.Count; index++)
             {
                 Vector2 position = toasts[index].Rect.anchoredPosition;
-                position.y = -index * 66f;
+                position.y = -index * 90f;
                 toasts[index].Rect.anchoredPosition = position;
             }
         }
@@ -825,12 +824,12 @@ namespace Seaborn.UI
                 map.CurrentRegionName;
             Vector3 position = boundPlayer.position;
             float normalizedX = Mathf.Clamp(
-                position.x / 90f,
+                position.x / ChartHalfExtent,
                 -1f,
                 1f
             );
             float normalizedZ = Mathf.Clamp(
-                position.z / 90f,
+                position.z / ChartHalfExtent,
                 -1f,
                 1f
             );
@@ -1004,7 +1003,9 @@ namespace Seaborn.UI
             rect.anchoredPosition = position;
             rect.sizeDelta = dimensions;
             Text text = item.GetComponent<Text>();
-            text.font = font;
+            text.font = size <= 16 ? Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf") : font;
+            text.horizontalOverflow = HorizontalWrapMode.Wrap;
+            text.verticalOverflow = VerticalWrapMode.Truncate;
             text.text = value;
             text.fontSize = size;
             text.fontStyle = style;
