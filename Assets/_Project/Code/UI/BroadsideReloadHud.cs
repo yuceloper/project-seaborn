@@ -34,10 +34,15 @@ namespace Seaborn.UI
         private static void EnsureCreated()
         {
             BroadsideReloadHud existing = FindFirstObjectByType<BroadsideReloadHud>();
-            if (existing != null) return;
+            if (existing != null)
+            {
+                DontDestroyOnLoad(existing.gameObject);
+                return;
+            }
 
             GameObject root = new("Broadside Reload HUD");
             root.AddComponent<BroadsideReloadHud>();
+            DontDestroyOnLoad(root);
         }
 
         private void Awake()
@@ -56,8 +61,13 @@ namespace Seaborn.UI
                 return;
             }
 
-            if ((broadside == null || combatRoot == null || portDial == null) &&
-                Time.unscaledTime >= nextBindTime)
+            bool bindingLost =
+                broadside == null ||
+                combatRoot == null ||
+                portDial == null ||
+                starboardDial == null;
+
+            if (bindingLost && Time.unscaledTime >= nextBindTime)
             {
                 nextBindTime = Time.unscaledTime + 0.25f;
                 TryBind();
@@ -83,10 +93,11 @@ namespace Seaborn.UI
             RectTransform nextCombatRoot = combat as RectTransform;
             if (nextCombatRoot == null) return;
 
-            if (combatRoot == nextCombatRoot && portDial != null) return;
-            combatRoot = nextCombatRoot;
+            if (combatRoot == nextCombatRoot && portDial != null && starboardDial != null)
+                return;
 
             RemoveOldDials();
+            combatRoot = nextCombatRoot;
             HideLegacyReloadBars();
 
             portDial = CreateDial("İSKELE", new Vector2(-62f, -65f));
@@ -95,6 +106,8 @@ namespace Seaborn.UI
 
         private void HideLegacyReloadBars()
         {
+            if (combatRoot == null) return;
+
             Transform portBar = combatRoot.Find("Port Background");
             Transform starboardBar = combatRoot.Find("Starboard Background");
             if (portBar != null) portBar.gameObject.SetActive(false);
