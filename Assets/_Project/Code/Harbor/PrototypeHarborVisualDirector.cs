@@ -12,18 +12,19 @@ namespace Seaborn.Harbor
         private static readonly Color StoneLight =
             new(0.37f, 0.39f, 0.35f, 1f);
         private static readonly Color Timber =
-            new(0.31f, 0.18f, 0.08f, 1f);
+            new(0.19f, 0.17f, 0.14f, 1f);
         private static readonly Color TimberLight =
-            new(0.52f, 0.32f, 0.13f, 1f);
+            new(0.39f, 0.34f, 0.26f, 1f);
         private static readonly Color Plaster =
-            new(0.68f, 0.63f, 0.49f, 1f);
+            new(0.56f, 0.55f, 0.48f, 1f);
         private static readonly Color Roof =
-            new(0.34f, 0.12f, 0.08f, 1f);
+            new(0.20f, 0.25f, 0.27f, 1f);
         private static readonly Color Lantern =
             new(1f, 0.63f, 0.22f, 1f);
 
         private readonly List<Transform> labels = new();
         private Material sharedMaterial;
+        private readonly List<Mesh> generatedMeshes = new();
         private Transform lighthouseBeam;
         private bool initialized;
 
@@ -80,6 +81,26 @@ namespace Seaborn.Harbor
                 new Vector3(44f, 1.2f, 1.2f),
                 StoneLight
             );
+
+            // Small staggered courses break up the wall without changing
+            // the shoreline footprint or the station trigger locations.
+            for (int row = 0; row < 2; row++)
+            {
+                int blocks = row == 0 ? 22 : 23;
+                float width = 44f / blocks;
+                for (int block = 0; block < blocks; block++)
+                {
+                    Color tint = Color.Lerp(Stone, StoneLight,
+                        0.45f + ((block * 3 + row) % 5) * 0.1f);
+                    CreatePart($"Quay Masonry {row} {block}", PrimitiveType.Cube,
+                        new Vector3(-22f + (block + 0.5f) * width,
+                            0.78f + row * 0.55f, -15.14f),
+                        new Vector3(width - 0.045f, 0.50f, 0.16f), tint);
+                }
+            }
+            CreatePart("Quay Coping", PrimitiveType.Cube,
+                new Vector3(0f, 1.72f, -15.8f),
+                new Vector3(44.2f, 0.16f, 1.32f), StoneLight);
 
             for (int x = -18; x <= 18; x += 6)
             {
@@ -333,13 +354,32 @@ namespace Seaborn.Harbor
             Vector3 position,
             Vector3 scale)
         {
-            CreatePart(
-                objectName,
-                PrimitiveType.Cube,
-                position,
-                scale,
-                TimberLight
-            );
+            // The dark support stays under the boards, making real seams
+            // without transparent surfaces or overlapping coplanar faces.
+            CreatePart(objectName, PrimitiveType.Cube, position,
+                scale, Timber);
+            int rows = Mathf.CeilToInt(scale.z / 0.65f);
+            int columns = Mathf.CeilToInt(scale.x / 3.5f);
+            float depth = scale.z / rows;
+            float width = scale.x / columns;
+            for (int row = 0; row < rows; row++)
+            {
+                for (int column = 0; column < columns; column++)
+                {
+                    float shade = 0.90f + ((row * 7 + column * 3) % 9) * 0.025f;
+                    Color boardColor = new Color(
+                        TimberLight.r * shade, TimberLight.g * shade,
+                        TimberLight.b * shade, 1f);
+                    CreatePart($"{objectName} Board {row} {column}",
+                        PrimitiveType.Cube,
+                        position + new Vector3(
+                            -scale.x * 0.5f + (column + 0.5f) * width,
+                            scale.y * 0.5f + 0.045f,
+                            -scale.z * 0.5f + (row + 0.5f) * depth),
+                        new Vector3(width - 0.035f, 0.09f, depth - 0.035f),
+                        boardColor);
+                }
+            }
 
             float halfLength = scale.z * 0.5f;
             for (float z = -halfLength + 1f;
@@ -377,19 +417,84 @@ namespace Seaborn.Harbor
                 scale,
                 wallColor
             );
-            CreatePart(
-                $"{objectName} Roof",
-                PrimitiveType.Cube,
-                position +
-                Vector3.up * (scale.y * 0.56f),
-                new Vector3(
-                    scale.x * 1.08f,
-                    0.7f,
-                    scale.z * 1.08f
-                ),
-                Roof,
-                Quaternion.Euler(0f, 0f, 3f)
-            );
+            float eave = position.y + scale.y * 0.5f;
+            float halfDepth = scale.z * 0.54f;
+            float rise = scale.z * 0.26f;
+            float slope = Mathf.Atan2(rise, halfDepth) * Mathf.Rad2Deg;
+            float roofLength = Mathf.Sqrt(halfDepth * halfDepth + rise * rise);
+            for (int side = -1; side <= 1; side += 2)
+            {
+                CreatePart($"{objectName} Roof {side}", PrimitiveType.Cube,
+                    new Vector3(position.x, eave + rise * 0.5f,
+                        position.z + side * halfDepth * 0.5f),
+                    new Vector3(scale.x * 1.08f, 0.16f, roofLength),
+                    Roof, Quaternion.Euler(side * slope, 0f, 0f));
+            }
+            CreateGables(objectName, position, scale, rise, wallColor);
+            CreatePart($"{objectName} Ridge", PrimitiveType.Cube,
+                new Vector3(position.x, eave + rise, position.z),
+                new Vector3(scale.x * 1.1f, 0.2f, 0.22f), Roof);
+
+            // Facades face the water (+Z); details remain inside each plot.
+            float front = position.z + scale.z * 0.5f + 0.06f;
+            for (int index = -1; index <= 1; index++)
+            {
+                float x = position.x + index * scale.x * 0.46f;
+                CreatePart($"{objectName} Upright {index}", PrimitiveType.Cube,
+                    new Vector3(x, position.y, front),
+                    new Vector3(0.18f, scale.y, 0.18f), Timber);
+            }
+            CreatePart($"{objectName} Front Beam", PrimitiveType.Cube,
+                new Vector3(position.x, eave - 0.12f, front),
+                new Vector3(scale.x, 0.24f, 0.2f), Timber);
+            CreatePart($"{objectName} Stone Footing", PrimitiveType.Cube,
+                position + Vector3.down * (scale.y * 0.5f - 0.2f),
+                new Vector3(scale.x + 0.12f, 0.4f, scale.z + 0.12f), StoneLight);
+            for (int side = -1; side <= 1; side += 2)
+            {
+                Vector3 window = new Vector3(
+                    position.x + side * scale.x * 0.26f,
+                    position.y + 0.25f, front + 0.06f);
+                CreatePart($"{objectName} Window Frame {side}", PrimitiveType.Cube,
+                    window, new Vector3(1.2f, 1.25f, 0.16f), Timber);
+                CreatePart($"{objectName} Window {side}", PrimitiveType.Cube,
+                    window + Vector3.forward * 0.09f,
+                    new Vector3(0.94f, 1f, 0.04f),
+                    new Color(0.12f, 0.19f, 0.20f, 1f));
+                CreatePart($"{objectName} Window Mullion {side}", PrimitiveType.Cube,
+                    window + Vector3.forward * 0.13f,
+                    new Vector3(0.07f, 1f, 0.05f), TimberLight);
+            }
+        }
+
+        private void CreateGables(string objectName, Vector3 position,
+            Vector3 scale, float rise, Color color)
+        {
+            // Separate vertices keep the end-wall normals flat.
+            Vector3[] vertices = new Vector3[6];
+            for (int end = 0; end < 2; end++)
+            {
+                float x = (end == 0 ? -1f : 1f) * scale.x * 0.5f;
+                vertices[end * 3] = new Vector3(x, 0f, -scale.z * 0.5f);
+                vertices[end * 3 + 1] = new Vector3(x, rise, 0f);
+                vertices[end * 3 + 2] = new Vector3(x, 0f, scale.z * 0.5f);
+            }
+            Mesh mesh = new Mesh { name = $"{objectName} Gables" };
+            mesh.vertices = vertices;
+            mesh.triangles = new[] { 0, 2, 1, 3, 4, 5 };
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+            generatedMeshes.Add(mesh);
+            GameObject part = new GameObject(mesh.name);
+            part.transform.SetParent(transform, false);
+            part.transform.localPosition = position + Vector3.up * scale.y * 0.5f;
+            part.AddComponent<MeshFilter>().sharedMesh = mesh;
+            MeshRenderer renderer = part.AddComponent<MeshRenderer>();
+            renderer.sharedMaterial = ResolveMaterial();
+            MaterialPropertyBlock properties = new MaterialPropertyBlock();
+            properties.SetColor("_BaseColor", color);
+            properties.SetColor("_Color", color);
+            renderer.SetPropertyBlock(properties);
         }
 
         private void CreateBuoy(
@@ -438,8 +543,8 @@ namespace Seaborn.Harbor
                 lightObject.AddComponent<Light>();
             light.type = LightType.Point;
             light.color = Lantern;
-            light.intensity = 45f;
-            light.range = 9f;
+            light.intensity = 3f;
+            light.range = 6f;
         }
 
         private void CreateLabel(
@@ -483,6 +588,7 @@ namespace Seaborn.Harbor
                 part.GetComponent<Collider>();
             if (collider != null)
             {
+                collider.enabled = false;
                 Destroy(collider);
             }
 
@@ -531,11 +637,21 @@ namespace Seaborn.Harbor
                         "Prototype Harbor Shared Material"
                 };
             }
+            if (sharedMaterial != null)
+            {
+                sharedMaterial.SetFloat("_Smoothness", 0.16f);
+                sharedMaterial.SetFloat("_Metallic", 0f);
+            }
             return sharedMaterial;
         }
 
         private void OnDestroy()
         {
+            foreach (Mesh mesh in generatedMeshes)
+            {
+                if (mesh != null) Destroy(mesh);
+            }
+            generatedMeshes.Clear();
             if (sharedMaterial != null)
             {
                 Destroy(sharedMaterial);
