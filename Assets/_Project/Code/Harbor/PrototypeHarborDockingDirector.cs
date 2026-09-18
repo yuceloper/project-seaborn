@@ -45,6 +45,8 @@ namespace Seaborn.Harbor
         private bool isDocking;
         private LineRenderer forwardRope;
         private LineRenderer aftRope;
+        private readonly LineRenderer[] stationMarkers = new LineRenderer[4];
+        private readonly Color[] stationColors = new Color[4];
 
         public bool IsDockedAt(
             PrototypeHarborStation station)
@@ -101,6 +103,7 @@ namespace Seaborn.Harbor
 
         private void Update()
         {
+            UpdateMarkers();
             if (player == null) return;
 
             if (DockedStation !=
@@ -421,10 +424,14 @@ namespace Seaborn.Harbor
 
             LineRenderer ring =
                 marker.AddComponent<LineRenderer>();
+            stationMarkers[(int)station] = ring;
+            stationColors[(int)station] = color;
+            ring.enabled = false;
             ring.loop = true;
             ring.useWorldSpace = false;
             ring.positionCount = 40;
-            ring.widthMultiplier = 0.09f;
+            ring.widthMultiplier = 0.04f;
+            color.a = 0f;
             ring.startColor = color;
             ring.endColor = color;
             ring.shadowCastingMode =
@@ -454,63 +461,45 @@ namespace Seaborn.Harbor
                 ring.SetPosition(
                     i,
                     new Vector3(
-                        Mathf.Cos(angle) * 2.4f,
+                        Mathf.Cos(angle) * 1.3f,
                         0f,
-                        Mathf.Sin(angle) * 2.4f
+                        Mathf.Sin(angle) * 1.3f
                     )
                 );
             }
         }
 
-        private void OnGUI()
+        private void UpdateMarkers()
         {
-            // Docked station panels already carry their own
-            // leave instruction. Drawing this IMGUI prompt as well
-            // caused it to remain over the interactive harbor UI.
-            if (NearbyStation ==
-                    PrototypeHarborStation.None ||
-                DockedStation !=
-                    PrototypeHarborStation.None)
+            int nearest = 0;
+            float best = 14f;
+            bool available = player != null &&
+                Seaborn.World.PrototypeExpeditionRegionDirector.IsHarborScene &&
+                DockedStation == PrototypeHarborStation.None &&
+                !Seaborn.Harbor.UI.PrototypeHarborUiCoordinator.IsOpen;
+            if (available)
             {
-                return;
-            }
-
-            const float width = 430f;
-            Rect prompt = new(
-                (Screen.width - width) * 0.5f,
-                Screen.height - 182f,
-                width,
-                46f
-            );
-            Color previous = GUI.color;
-            GUI.color =
-                new Color(0.025f, 0.075f, 0.105f, 0.95f);
-            GUI.Box(prompt, GUIContent.none);
-            GUI.color = previous;
-
-            GUIStyle style =
-                new(GUI.skin.label)
+                for (int i = 1; i < stationMarkers.Length; i++)
                 {
-                    alignment = TextAnchor.MiddleCenter,
-                    fontStyle = FontStyle.Bold,
-                    fontSize = 14
-                };
-            style.normal.textColor =
-                new Color(0.91f, 0.78f, 0.46f);
-
-            string action =
-                DockedStation == NearbyStation
-                    ? "AYRIL"
-                    : "YANAŞ";
-            GUI.Label(
-                prompt,
-                $"E — {StationLabel(NearbyStation)} " +
-                action,
-                style
-            );
+                    float distance = HorizontalDistance(player.position,
+                        StationPosition((PrototypeHarborStation)i));
+                    if (distance < best) { best = distance; nearest = i; }
+                }
+            }
+            for (int i = 1; i < stationMarkers.Length; i++)
+            {
+                LineRenderer ring = stationMarkers[i];
+                if (ring == null) continue;
+                float target = i == nearest ? Mathf.Lerp(0.65f, 0f,
+                    Mathf.InverseLerp(ApproachRadius, 14f, best)) : 0f;
+                Color tint = stationColors[i];
+                tint.a = Mathf.MoveTowards(ring.startColor.a, target, Time.unscaledDeltaTime * 2f);
+                ring.startColor = ring.endColor = tint;
+                ring.enabled = tint.a > 0.01f;
+            }
         }
 
-        private static string StationLabel(
+        public static string StationLabel(
             PrototypeHarborStation station)
         {
             return station switch

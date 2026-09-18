@@ -13,6 +13,8 @@ namespace Seaborn.Hunting
         private PrototypeHuntCargo cargo;
         private PrototypeSilverWallet wallet;
         private Material markerMaterial;
+        private LineRenderer deliveryRing;
+        private GameObject deliveryBeacon;
 
         public float DeliveryRadius => deliveryRadius;
 
@@ -56,6 +58,8 @@ namespace Seaborn.Hunting
 
         private void Update()
         {
+            if (deliveryRing != null) deliveryRing.enabled = false;
+            if (deliveryBeacon != null) deliveryBeacon.SetActive(false);
             if (player == null)
             {
                 return;
@@ -85,6 +89,12 @@ namespace Seaborn.Hunting
             Vector3 offset =
                 player.position - transform.position;
             offset.y = 0f;
+            if (deliveryBeacon != null)
+                deliveryBeacon.SetActive(offset.sqrMagnitude <= 100f &&
+                    !Seaborn.Harbor.UI.PrototypeHarborUiCoordinator.IsOpen);
+            if (deliveryRing != null)
+                deliveryRing.enabled = offset.sqrMagnitude <= 100f &&
+                    !Seaborn.Harbor.UI.PrototypeHarborUiCoordinator.IsOpen;
 
             if (offset.sqrMagnitude >
                 deliveryRadius * deliveryRadius)
@@ -94,6 +104,9 @@ namespace Seaborn.Hunting
 
             int secured =
                 cargo.SecureAtPort(wallet);
+            if (deliveryRing != null) deliveryRing.enabled = false;
+
+            if (deliveryBeacon != null) deliveryBeacon.SetActive(false);
 
             if (secured > 0)
             {
@@ -123,6 +136,8 @@ namespace Seaborn.Hunting
                 GameObject.CreatePrimitive(
                     PrimitiveType.Cylinder
                 );
+            deliveryBeacon = buoy;
+            buoy.SetActive(false);
             buoy.name = "Harbor Beacon";
             buoy.transform.SetParent(
                 transform,
@@ -137,6 +152,7 @@ namespace Seaborn.Hunting
                 buoy.GetComponent<Collider>();
             if (buoyCollider != null)
             {
+                buoyCollider.enabled = false;
                 Destroy(buoyCollider);
             }
 
@@ -172,6 +188,8 @@ namespace Seaborn.Hunting
             LineRenderer ring =
                 gameObject.AddComponent<
                     LineRenderer>();
+            deliveryRing = ring;
+            ring.enabled = false;
             const int segmentCount = 48;
             ring.positionCount = segmentCount;
             ring.loop = true;
