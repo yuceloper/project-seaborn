@@ -10,6 +10,7 @@ namespace Seaborn.Hunting
         private int silver;
 
         public event Action<int> SilverChanged;
+        public event Action<int> SilverAdded;
 
         public int Silver => silver;
 
@@ -61,6 +62,7 @@ namespace Seaborn.Hunting
             }
 
             silver += amount;
+            SilverAdded?.Invoke(amount);
             SilverChanged?.Invoke(silver);
             Debug.Log(
                 $"{reason}: +{amount} silver " +

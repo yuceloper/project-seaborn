@@ -557,6 +557,8 @@ namespace Seaborn.Hunting
             );
             Seaborn.Persistence.PrototypeProgressPersistence
                 .EnsureAttached(player.transform);
+            Seaborn.Expeditions.PrototypeExpeditionReportTracker
+                .EnsureAttached(player.transform);
             Seaborn.UI.PrototypeGameplayHud.EnsureCreated(
                 player.transform
             );

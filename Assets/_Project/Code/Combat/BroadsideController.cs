@@ -47,6 +47,7 @@ namespace Seaborn.Combat
         private float crewReloadMultiplier = 1f;
 
         public event Action AmmunitionStateChanged;
+        public event Action<AmmunitionType, int> AmmunitionConsumed;
         public event Action<BroadsideSide> BroadsideFired;
 
         public AmmunitionType SelectedAmmunition => selectedAmmunition;
@@ -214,6 +215,7 @@ namespace Seaborn.Combat
             AmmunitionType firedType = selectedAmmunition;
             AmmunitionProfile profile = AmmunitionProfile.Get(firedType);
             ConsumeAmmunition(firedType, loadedCannons);
+            AmmunitionConsumed?.Invoke(firedType, loadedCannons);
             SetReload(side, profile.ReloadMultiplier);
             StartCoroutine(FireBroadsideAt(
                 muzzles,
