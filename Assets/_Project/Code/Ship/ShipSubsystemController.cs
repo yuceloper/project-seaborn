@@ -66,17 +66,17 @@ namespace Seaborn.Ship
             switch (damageInfo.AmmunitionType)
             {
                 case AmmunitionType.Chain:
-                    // Chain shot is primarily a mobility weapon. A strong
-                    // broadside should cripple sails over roughly two passes,
-                    // not erase them with the first projectile that connects.
+                    // Integrity uses a 100-point scale independently of hull HP.
+                    // Limit a single chain impact while retaining salvo pressure.
                     sailDamage =
-                        damageInfo.Amount * 0.35f;
+                        Mathf.Min(8f, damageInfo.Amount * 0.20f);
                     break;
                 case AmmunitionType.Grapeshot:
-                    // Grapeshot trades hull damage and range for crew pressure.
-                    // Several pellets need to land before reload penalties become severe.
+                    // Each cannon fires three pellets. Count their combined pressure:
+                    // six 6 lb cannons cause ~33 readiness loss on perfect hits.
+                    // A stronger individual pellet cannot remove more than 3 points.
                     crewDamage =
-                        damageInfo.Amount * 0.55f;
+                        Mathf.Min(3f, damageInfo.Amount * 0.12f);
                     break;
             }
 
