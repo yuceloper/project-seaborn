@@ -3,6 +3,7 @@ using Seaborn.Combat;
 using Seaborn.Expeditions;
 using Seaborn.Hunting;
 using Seaborn.Harbor.UI;
+using Seaborn.Harbor;
 using Seaborn.Recovery;
 using Seaborn.Progression;
 using Seaborn.Ship;
@@ -49,12 +50,10 @@ namespace Seaborn.UI
         private RectTransform pressureFill;
         private Text silverText;
         private Text cargoText;
-        private Text consumableStockText;
         private Text activeBuffText;
         private GameObject pressureTrack;
         private RectTransform resourceCard;
         private Text ammoNameText;
-        private Text ammoStockText;
         private Text portText;
         private Text starboardText;
         private RectTransform portFill;
@@ -86,6 +85,15 @@ namespace Seaborn.UI
         private readonly List<Toast> toasts = new();
         private bool criticalHullWarningShown;
         private CanvasGroup hudGroup;
+        private readonly HotbarSlot[] hotbar = new HotbarSlot[10];
+        private sealed class HotbarSlot
+        {
+            public Image Background;
+            public GameObject Selection;
+            public Text Count;
+            public Text Timer;
+            public SeabornHotbarIcon Icon;
+        }
 
         private sealed class Toast
         {
@@ -367,19 +375,21 @@ namespace Seaborn.UI
                 TextAnchor.UpperCenter
             );
 
-            RectTransform combat = CreateCard("Combat", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 24f), new Vector2(680f, 152f));
-            portText = CreateText(combat, font, "İSKELE HAZIR", 13, Cream, FontStyle.Bold, new Vector2(16f, -12f), new Vector2(156f, 21f));
-            portFill = CreateBar(combat, "Port", new Vector2(16f, -40f), new Vector2(156f, 8f), out _);
-            ammoNameText = CreateText(combat, font, "STANDART GÜLLE", 16, Cream, FontStyle.Bold, new Vector2(182f, -10f), new Vector2(316f, 24f), TextAnchor.UpperCenter);
-            ammoStockText = CreateText(combat, font, "", 12, Muted, FontStyle.Normal, new Vector2(182f, -37f), new Vector2(316f, 21f), TextAnchor.UpperCenter);
-            starboardText = CreateText(combat, font, "SANCAK HAZIR", 13, Cream, FontStyle.Bold, new Vector2(508f, -12f), new Vector2(156f, 21f), TextAnchor.UpperRight);
-            starboardFill = CreateBar(combat, "Starboard", new Vector2(508f, -40f), new Vector2(156f, 8f), out _);
-            harpoonText = CreateText(combat, font, "ZIPKIN", 13, Cream, FontStyle.Normal, new Vector2(16f, -64f), new Vector2(648f, 21f), TextAnchor.UpperCenter);
-            harpoonFill = CreateBar(combat, "Harpoon", new Vector2(260f, -88f), new Vector2(160f, 6f), out _);
-            consumableStockText = CreateText(combat, font, "", 12, Muted, FontStyle.Normal, new Vector2(16f, -108f), new Vector2(648f, 28f), TextAnchor.UpperCenter);
-            // Separate navigation/repair line above weapons and docking prompts.
-            RectTransform helm = CreateCard("Helm", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 186f), new Vector2(680f, 32f));
-            harborLockText = CreateText(helm, font, "", 13, Cream, FontStyle.Normal, new Vector2(12f, -7f), new Vector2(656f, 20f), TextAnchor.UpperCenter);
+            RectTransform combat = CreateCard("Combat", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 24f), new Vector2(704f, 168f));
+            portText = CreateText(combat, font, "İSKELE HAZIR", 12, Cream, FontStyle.Bold, new Vector2(12f, -10f), new Vector2(140f, 20f));
+            portFill = CreateBar(combat, "Port", new Vector2(12f, -32f), new Vector2(140f, 7f), out _);
+            ammoNameText = CreateText(combat, font, "", 13, Cream, FontStyle.Bold, new Vector2(160f, -8f), new Vector2(384f, 21f), TextAnchor.UpperCenter);
+            harpoonText = CreateText(combat, font, "", 11, Muted, FontStyle.Normal, new Vector2(160f, -30f), new Vector2(384f, 18f), TextAnchor.UpperCenter);
+            harpoonFill = CreateBar(combat, "Harpoon", new Vector2(282f, -49f), new Vector2(140f, 6f), out _);
+            starboardText = CreateText(combat, font, "SANCAK HAZIR", 12, Cream, FontStyle.Bold, new Vector2(552f, -10f), new Vector2(140f, 20f), TextAnchor.UpperRight);
+            starboardFill = CreateBar(combat, "Starboard", new Vector2(552f, -32f), new Vector2(140f, 7f), out _);
+            string[] keys = { "1", "2", "3", "SHIFT+1", "SHIFT+2", "4", "5", "6", "7", "8" };
+            string[] names = { "GÜLLE", "ZİNCİR", "SAÇMA", "2 KG", "4 KG", "TONİK", "TORTUGA", "ROM", "RÜZGÂR", "ZIRH" };
+            for (int i = 0; i < hotbar.Length; i++)
+                hotbar[i] = CreateHotbarSlot(combat, i, keys[i], names[i]);
+
+            RectTransform helm = CreateCard("Helm", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 202f), new Vector2(704f, 32f));
+            harborLockText = CreateText(helm, font, "", 13, Cream, FontStyle.Normal, new Vector2(12f, -7f), new Vector2(680f, 20f), TextAnchor.UpperCenter);
 
             GameObject notifications = new("Notifications", typeof(RectTransform));
             notifications.transform.SetParent(transform, false);
@@ -513,12 +523,6 @@ namespace Seaborn.UI
             silverText.text = $"SILVER   {(wallet != null ? wallet.Silver : 0)}  •  GOLD   {(goldWallet != null ? goldWallet.Gold : 0)}";
             int value = cargo != null ? cargo.UnsecuredSilverValue : 0;
             string capacity = cargo == null || cargo.MaximumSilverValue == int.MaxValue ? "" : $" / {cargo.MaximumSilverValue}";
-            consumableStockText.text =
-                $"4 TONİK ×{consumables?.TortugaTonics ?? 0}   " +
-                $"5 TORTUGA ×{consumables?.LightsOfTortuga ?? 0}   " +
-                $"6 ROM ×{consumables?.CorsairRum ?? 0}   " +
-                $"7 RÜZGÂR ×{consumables?.GaleElixirs ?? 0}   " +
-                $"8 ZIRH ×{consumables?.IronbarkBrews ?? 0}";
             string active = "";
             if (consumables != null)
             {
@@ -561,7 +565,7 @@ namespace Seaborn.UI
 
             AmmunitionType selected = broadside != null ? broadside.SelectedAmmunition : AmmunitionType.Standard;
             ammoNameText.text = AmmoLabel(selected);
-            ammoStockText.text = broadside == null ? "1 GÜLLE 0   2 ZİNCİR 0   3 SAÇMA 0" : $"1 GÜLLE {broadside.GetAmmunitionStock(AmmunitionType.Standard)}   2 ZİNCİR {broadside.GetAmmunitionStock(AmmunitionType.Chain)}   3 SAÇMA {broadside.GetAmmunitionStock(AmmunitionType.Grapeshot)}";
+
 
             float reload = harpoons != null ? harpoons.ReloadProgress : 0f;
             string harpoonName =
@@ -571,16 +575,23 @@ namespace Seaborn.UI
                           ? "AĞIR"
                           : "HAFİF")
                     : "Zıpkın";
-            harpoonText.text =
-                $"{harpoonName}   " +
-                $"2KG {harpoons?.LightHarpoonStock ?? 0}  •  " +
-                $"4KG {harpoons?.HeavyHarpoonStock ?? 0}";
+            harpoonText.text = $"ZIPKIN  •  {harpoonName}  •  SHIFT + SOL TIK";
+            RefreshHotbar(selected);
             SetBar(harpoonFill, reload);
             bool locked =
                 broadside != null &&
                 broadside.IsBlockedBySafeHarbor;
             harborLockText.gameObject.SetActive(true);
-            if (locked)
+            PrototypeHarborDockingDirector docking = PrototypeHarborDockingDirector.Instance;
+            if (PrototypeExpeditionRegionDirector.IsHarborScene &&
+                docking != null &&
+                docking.NearbyStation != PrototypeHarborStation.None &&
+                docking.DockedStation == PrototypeHarborStation.None)
+            {
+                harborLockText.text = $"E  •  {PrototypeHarborDockingDirector.StationLabel(docking.NearbyStation)} — YANAŞ";
+                harborLockText.color = Gold;
+            }
+            else if (locked)
             {
                 harborLockText.text =
                     "SİLAHLAR LİMANDA KİLİTLİ";
@@ -615,6 +626,71 @@ namespace Seaborn.UI
                     $"{helm}  •  R SAHA TAMİRİ";
                 harborLockText.color = Muted;
             }
+        }
+
+
+        private HotbarSlot CreateHotbarSlot(RectTransform parent, int index, string key, string label)
+        {
+            GameObject root = new GameObject("Slot " + label, typeof(RectTransform), typeof(Image));
+            root.transform.SetParent(parent, false);
+            RectTransform rect = root.GetComponent<RectTransform>();
+            rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(0f, 1f);
+            rect.anchoredPosition = new Vector2(12f + index * 68f, -64f);
+            rect.sizeDelta = new Vector2(62f, 94f);
+            Image background = root.GetComponent<Image>();
+            background.raycastTarget = false;
+            background.color = NavyLight;
+            CreateText(rect, interfaceFont, key, 10, Muted, FontStyle.Bold,
+                new Vector2(5f, -3f), new Vector2(54f, 14f));
+            CreateText(rect, interfaceFont, label, 10, Cream, FontStyle.Normal,
+                new Vector2(2f, -76f), new Vector2(58f, 16f), TextAnchor.UpperCenter);
+            GameObject iconObject = new GameObject("Icon", typeof(RectTransform), typeof(SeabornHotbarIcon));
+            iconObject.transform.SetParent(rect, false);
+            RectTransform iconRect = iconObject.GetComponent<RectTransform>();
+            iconRect.anchorMin = iconRect.anchorMax = iconRect.pivot = new Vector2(0f, 1f);
+            iconRect.anchoredPosition = new Vector2(15f, -20f);
+            iconRect.sizeDelta = new Vector2(32f, 32f);
+            SeabornHotbarIcon icon = iconObject.GetComponent<SeabornHotbarIcon>();
+            icon.Kind = index;
+            icon.raycastTarget = false;
+            Text count = CreateText(rect, interfaceFont, "0", 14, Cream, FontStyle.Bold,
+                new Vector2(3f, -55f), new Vector2(56f, 19f), TextAnchor.UpperRight);
+            Text timer = CreateText(rect, interfaceFont, "", 11, Success, FontStyle.Bold,
+                new Vector2(3f, -38f), new Vector2(56f, 17f), TextAnchor.UpperRight);
+            RectTransform stripe = CreateBar(rect, "Selected", new Vector2(2f, -91f), new Vector2(58f, 3f), out _);
+            // Use the track itself: tiny bars have no room for the normal fill inset.
+            GameObject selected = stripe.parent.gameObject;
+            selected.GetComponent<Image>().color = Gold;
+            stripe.gameObject.SetActive(false);
+            selected.SetActive(false);
+            return new HotbarSlot { Background = background, Selection = selected, Count = count, Timer = timer, Icon = icon };
+        }
+
+        private void RefreshHotbar(AmmunitionType selected)
+        {
+            SetSlot(0, broadside?.GetAmmunitionStock(AmmunitionType.Standard) ?? 0, broadside != null && selected == AmmunitionType.Standard);
+            SetSlot(1, broadside?.GetAmmunitionStock(AmmunitionType.Chain) ?? 0, broadside != null && selected == AmmunitionType.Chain);
+            SetSlot(2, broadside?.GetAmmunitionStock(AmmunitionType.Grapeshot) ?? 0, broadside != null && selected == AmmunitionType.Grapeshot);
+            SetSlot(3, harpoons?.LightHarpoonStock ?? 0, harpoons != null && harpoons.SelectedHarpoonId == "light_2kg");
+            SetSlot(4, harpoons?.HeavyHarpoonStock ?? 0, harpoons != null && harpoons.SelectedHarpoonId == "heavy_4kg");
+            SetSlot(5, consumables?.TortugaTonics ?? 0, false, consumables?.TonicCooldownRemaining ?? 0f);
+            SetSlot(6, consumables?.LightsOfTortuga ?? 0, false, consumables?.ConcealmentRemaining ?? 0f);
+            SetSlot(7, consumables?.CorsairRum ?? 0, false, consumables?.CorsairRumRemaining ?? 0f);
+            SetSlot(8, consumables?.GaleElixirs ?? 0, false, consumables?.GaleElixirRemaining ?? 0f);
+            SetSlot(9, consumables?.IronbarkBrews ?? 0, false, consumables?.IronbarkBrewRemaining ?? 0f);
+        }
+
+        private void SetSlot(int index, int stock, bool selected, float seconds = 0f)
+        {
+            HotbarSlot slot = hotbar[index];
+            if (slot == null) return;
+            slot.Count.text = stock.ToString();
+            slot.Count.color = stock > 0 ? Cream : Muted;
+            slot.Icon.color = stock > 0 ? Cream : new Color(0.42f, 0.46f, 0.47f, 1f);
+            slot.Selection.SetActive(selected);
+            slot.Background.color = selected ? new Color(0.24f, 0.22f, 0.17f, 0.95f) : NavyLight;
+            slot.Timer.text = seconds > 0f ? $"{Mathf.CeilToInt(seconds)}s" : "";
+            slot.Timer.color = index == 5 ? Gold : Success;
         }
 
         private static string RudderLabel(
