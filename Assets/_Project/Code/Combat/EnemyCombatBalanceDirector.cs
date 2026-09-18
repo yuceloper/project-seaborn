@@ -17,16 +17,23 @@ namespace Seaborn.Combat
         {
             EnemyCombatBalanceDirector existing =
                 FindFirstObjectByType<EnemyCombatBalanceDirector>();
-            if (existing != null) return;
+            if (existing != null)
+            {
+                DontDestroyOnLoad(existing.gameObject);
+                return;
+            }
 
             GameObject root = new("Enemy Combat Balance Director");
             root.AddComponent<EnemyCombatBalanceDirector>();
+            DontDestroyOnLoad(root);
         }
 
         private void Update()
         {
             if (Time.unscaledTime < nextScanTime) return;
-            nextScanTime = Time.unscaledTime + 0.5f;
+            nextScanTime = Time.unscaledTime + 0.25f;
+
+            PruneDestroyedEnemies();
 
             EnemyShipController[] enemies =
                 FindObjectsByType<EnemyShipController>(FindObjectsSortMode.None);
@@ -41,6 +48,9 @@ namespace Seaborn.Combat
                     continue;
                 }
 
+                // Scene/prefab instances still serialize the old prototype hull.
+                // Force the authored combat baseline every time a newly loaded
+                // enemy is discovered, then preserve its archetype multiplier.
                 ShipHealth health = enemy.GetComponent<ShipHealth>();
                 health?.SetBaseMaximumHealth(EnemyBaseHull, true);
 
@@ -62,6 +72,25 @@ namespace Seaborn.Combat
                 }
 
                 tuned[enemy] = enemy.Archetype;
+            }
+        }
+
+        private void PruneDestroyedEnemies()
+        {
+            if (tuned.Count == 0) return;
+
+            List<EnemyShipController> stale = null;
+            foreach (EnemyShipController enemy in tuned.Keys)
+            {
+                if (enemy != null) continue;
+                stale ??= new List<EnemyShipController>();
+                stale.Add(enemy);
+            }
+
+            if (stale == null) return;
+            foreach (EnemyShipController enemy in stale)
+            {
+                tuned.Remove(enemy);
             }
         }
     }
