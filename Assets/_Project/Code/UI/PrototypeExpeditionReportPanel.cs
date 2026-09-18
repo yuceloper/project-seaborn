@@ -152,6 +152,7 @@ namespace Seaborn.UI
             Button button = item.GetComponent<Button>();
             button.targetGraphic = image;
             Text label = Label(item.transform, Vector2.zero, size, 16, FontStyle.Bold);
+            label.text = title;
             label.color = SeabornUiSkin.Ivory;
             label.alignment = TextAnchor.MiddleCenter;
             return button;
