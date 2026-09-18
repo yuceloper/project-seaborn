@@ -7,7 +7,7 @@ namespace Seaborn.Combat
     [DisallowMultipleComponent]
     public sealed class EnemyCombatBalanceDirector : MonoBehaviour
     {
-        private readonly Dictionary<int, EnemyShipArchetype> tuned = new();
+        private readonly Dictionary<EnemyShipController, EnemyShipArchetype> tuned = new();
         private float nextScanTime;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -33,8 +33,7 @@ namespace Seaborn.Combat
             {
                 if (enemy == null || !enemy.gameObject.activeInHierarchy) continue;
 
-                int id = enemy.GetInstanceID();
-                if (tuned.TryGetValue(id, out EnemyShipArchetype applied) &&
+                if (tuned.TryGetValue(enemy, out EnemyShipArchetype applied) &&
                     applied == enemy.Archetype)
                 {
                     continue;
@@ -57,7 +56,7 @@ namespace Seaborn.Combat
                         break;
                 }
 
-                tuned[id] = enemy.Archetype;
+                tuned[enemy] = enemy.Archetype;
             }
         }
     }
