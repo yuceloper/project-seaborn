@@ -22,7 +22,16 @@ namespace Seaborn.Ship
         [SerializeField, Min(0f)] private float spreadingSpeed = 0.24f;
         [SerializeField, Min(0.05f)] private float sampleDistance = 0.22f;
 
+        [Header("Bow wash")]
+        [SerializeField] private bool bowWashEnabled = true;
+        [SerializeField, Min(0f)] private float bowOffset = 1.8f;
+        [SerializeField, Min(0.1f)] private float bowWashLength = 1.65f;
+        [SerializeField, Min(0.05f)] private float bowWashHalfWidth = 0.17f;
+        [SerializeField, Range(0f, 1f)] private float bowWashOpacity = 0.65f;
+
         private const int MaxSamples = 192;
+        private const int BowSegments = 8;
+        private const int VertexCapacity = (MaxSamples + 1) * 2 + (BowSegments + 1) * 4;
         private struct Sample
         {
             public Vector3 position, right;
@@ -31,11 +40,13 @@ namespace Seaborn.Ship
         }
 
         private readonly List<Sample> samples = new List<Sample>(MaxSamples);
-        private readonly List<Vector3> vertices = new List<Vector3>(MaxSamples * 2);
-        private readonly List<Vector2> uvs = new List<Vector2>(MaxSamples * 2);
-        private readonly List<Color> colors = new List<Color>(MaxSamples * 2);
-        private readonly List<int> triangles = new List<int>((MaxSamples - 1) * 6);
+        private readonly List<Vector3> vertices = new List<Vector3>(VertexCapacity);
+        private readonly List<Vector2> uvs = new List<Vector2>(VertexCapacity);
+        private readonly List<Color> colors = new List<Color>(VertexCapacity);
+        private readonly List<int> triangles = new List<int>(MaxSamples * 6 + BowSegments * 12);
         private Rigidbody body;
+        private ShipMotor motor;
+        private float bowStrength;
         private Mesh mesh;
         private Material material;
         private GameObject ribbon;
@@ -47,6 +58,7 @@ namespace Seaborn.Ship
         private void Awake()
         {
             body = GetComponent<Rigidbody>();
+            motor = GetComponent<ShipMotor>();
             Shader shader = Resources.Load<Shader>("SeabornSurfaceWake");
             if (shader == null || !shader.isSupported)
             {
@@ -140,6 +152,10 @@ namespace Seaborn.Ship
             }
             else startsRun = true;
 
+            float bowTarget = bowWashEnabled
+                ? Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.6f, Mathf.Max(0.7f, fullWakeSpeed), speed))
+                : 0f;
+            bowStrength = Mathf.Lerp(bowStrength, bowTarget, 1f - Mathf.Exp(-4f * Time.deltaTime));
             BuildRibbon(now, stern, right, strength, moving);
         }
 
@@ -162,6 +178,15 @@ namespace Seaborn.Ship
                 }, now, height, false);
             }
 
+            if (bowWashEnabled && bowStrength > 0.005f)
+            {
+                Vector3 forward = Vector3.ProjectOnPlane(transform.forward, Vector3.up).normalized;
+                Vector3 bow = transform.position + forward * bowOffset;
+                bow.y = height;
+                AddBowWash(bow, forward, right, -1f);
+                AddBowWash(bow, forward, right, 1f);
+            }
+
             mesh.Clear();
             mesh.SetVertices(vertices);
             mesh.SetUVs(0, uvs);
@@ -174,8 +199,10 @@ namespace Seaborn.Ship
         {
             float age = Mathf.Max(0f, now - sample.born);
             float life = Mathf.Clamp01(age / Mathf.Max(0.1f, lifetime));
+            float spreadTime = Mathf.Max(0.1f, lifetime * 0.9f);
+            float spread = spreadingSpeed * spreadTime * (1f - Mathf.Exp(-age / spreadTime));
             float width = wakeHalfWidth * Mathf.Lerp(0.8f, 1.2f, sample.strength) +
-                age * spreadingSpeed * Mathf.Lerp(0.5f, 1f, sample.strength);
+                spread * Mathf.Lerp(0.5f, 1f, sample.strength);
             Vector3 center = sample.position;
             center.y = height;
             int index = vertices.Count;
@@ -185,15 +212,53 @@ namespace Seaborn.Ship
             uvs.Add(new Vector2(1f, sample.distance));
             float alpha = Mathf.Pow(1f - life, 1.6f) * sample.strength;
             if (breakBefore) alpha = 0f;
-            Color color = new Color(1f, 1f, 1f, alpha);
+            // R encodes normalized foam age; A remains opacity.
+            Color color = new Color(life, 1f, 1f, alpha);
             colors.Add(color); colors.Add(color);
             if (index < 2 || breakBefore) return;
             triangles.Add(index - 2); triangles.Add(index); triangles.Add(index - 1);
             triangles.Add(index - 1); triangles.Add(index); triangles.Add(index + 1);
         }
 
+        // Short surface ribbons follow the hull; historical stern foam stays in world space.
+        private void AddBowWash(Vector3 bow, Vector3 forward, Vector3 right, float side)
+        {
+            int first = vertices.Count;
+            float helm = motor != null ? motor.RudderNormalized : 0f;
+            float sideStrength = Mathf.Clamp(1f - helm * side * 0.18f, 0.82f, 1.18f);
+
+            for (int i = 0; i <= BowSegments; i++)
+            {
+                float t = i / (float)BowSegments;
+                float spread = Mathf.SmoothStep(0f, 1f, t);
+                float lateral = Mathf.Lerp(0.16f, 0.86f, spread);
+                Vector3 center = bow - forward * (t * bowWashLength) + right * (side * lateral);
+                float derivative = (0.86f - 0.16f) * 6f * t * (1f - t);
+                Vector3 tangent = (-forward * bowWashLength + right * (side * derivative)).normalized;
+                Vector3 across = Vector3.Cross(Vector3.up, tangent);
+                float width = bowWashHalfWidth * Mathf.Lerp(0.5f, 1f, bowStrength) *
+                    Mathf.Lerp(0.65f, 1f, spread);
+                int index = vertices.Count;
+                vertices.Add(center - across * width);
+                vertices.Add(center + across * width);
+                float along = travelled + t * bowWashLength;
+                uvs.Add(new Vector2(0f, along));
+                uvs.Add(new Vector2(1f, along));
+                float envelope = Mathf.Sin(t * Mathf.PI);
+                // Explicit endpoint zeros avoid a hard seam or tiny negative alpha.
+                if (i == 0 || i == BowSegments) envelope = 0f;
+                float alpha = Mathf.Clamp01(envelope * bowStrength * bowWashOpacity * sideStrength);
+                Color color = new Color(t * 0.65f, 1f, 1f, alpha);
+                colors.Add(color); colors.Add(color);
+                if (index == first) continue;
+                triangles.Add(index - 2); triangles.Add(index); triangles.Add(index - 1);
+                triangles.Add(index - 1); triangles.Add(index); triangles.Add(index + 1);
+            }
+        }
+
         private void OnDisable()
         {
+            bowStrength = 0f;
             samples.Clear();
             startsRun = true;
             if (mesh != null) mesh.Clear();

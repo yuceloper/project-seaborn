@@ -120,7 +120,7 @@ namespace Seaborn.Atmosphere
             );
             SetFloat(
                 "_SunGlintStrength",
-                profile.GlintStrength
+                profile.GlintStrength * 0.78f
             );
             SetFloat(
                 "_WaveAmplitudeA",
@@ -132,6 +132,16 @@ namespace Seaborn.Atmosphere
             );
             SetFloat("_WaveSpeedA", profile.WaveSpeedA);
             SetFloat("_WaveSpeedB", profile.WaveSpeedB);
+
+            // Calm harbor -> open sea -> rough western waters.
+            float roughness = Mathf.InverseLerp(0.12f, 0.22f, profile.LargeWave);
+            SetFloat("_RippleStrength", Mathf.Lerp(0.12f, 0.22f, roughness));
+            SetFloat("_RippleScale", 1.15f);
+            SetFloat("_SkyReflection", Mathf.Lerp(0.38f, 0.28f, roughness));
+            SetFloat("_WhitecapStrength", Mathf.Lerp(0.008f, 0.045f, roughness));
+            SetFloat("_SunGlintPower", 48f);
+            SetFloat("_FresnelPower", 4.5f);
+
 
             Debug.Log(
                 $"Bölgesel atmosfer: {profile.Label}.",
@@ -276,9 +286,9 @@ namespace Seaborn.Atmosphere
             public static AtmosphereProfile Harbor() =>
                 new(
                     "Seaborn Limanı",
-                    new Color(0.025f, 0.15f, 0.18f),
-                    new Color(0.075f, 0.31f, 0.32f),
-                    new Color(0.22f, 0.39f, 0.39f),
+                    new Color(0.018f, 0.105f, 0.16f),
+                    new Color(0.055f, 0.29f, 0.32f),
+                    new Color(0.28f, 0.43f, 0.5f),
                     new Color(1f, 0.68f, 0.38f),
                     0.32f,
                     0.12f,
@@ -300,9 +310,9 @@ namespace Seaborn.Atmosphere
             public static AtmosphereProfile Central() =>
                 new(
                     "Merkez Sular",
-                    new Color(0.025f, 0.16f, 0.2f),
-                    new Color(0.06f, 0.31f, 0.35f),
-                    new Color(0.18f, 0.38f, 0.42f),
+                    new Color(0.014f, 0.075f, 0.15f),
+                    new Color(0.04f, 0.24f, 0.30f),
+                    new Color(0.26f, 0.43f, 0.56f),
                     new Color(1f, 0.72f, 0.42f),
                     0.28f,
                     0.18f,
@@ -324,9 +334,9 @@ namespace Seaborn.Atmosphere
             public static AtmosphereProfile East() =>
                 new(
                     "Doğu Avları",
-                    new Color(0.018f, 0.19f, 0.23f),
-                    new Color(0.055f, 0.39f, 0.4f),
-                    new Color(0.25f, 0.5f, 0.5f),
+                    new Color(0.012f, 0.115f, 0.20f),
+                    new Color(0.05f, 0.35f, 0.38f),
+                    new Color(0.28f, 0.49f, 0.57f),
                     new Color(1f, 0.81f, 0.5f),
                     0.36f,
                     0.14f,
@@ -348,9 +358,9 @@ namespace Seaborn.Atmosphere
             public static AtmosphereProfile West() =>
                 new(
                     "Batı Sınırı",
-                    new Color(0.018f, 0.075f, 0.105f),
-                    new Color(0.045f, 0.19f, 0.23f),
-                    new Color(0.12f, 0.24f, 0.29f),
+                    new Color(0.012f, 0.055f, 0.10f),
+                    new Color(0.04f, 0.16f, 0.23f),
+                    new Color(0.20f, 0.30f, 0.40f),
                     new Color(0.74f, 0.66f, 0.54f),
                     0.16f,
                     0.22f,

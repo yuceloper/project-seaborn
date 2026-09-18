@@ -25,19 +25,23 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _FresnelPower: 3.6
-    - _SunGlintPower: 128
-    - _SunGlintStrength: 0.28
+    - _FresnelPower: 4.5
+    - _SunGlintPower: 48
+    - _SunGlintStrength: 0.30
     - _WaveAmplitudeA: 0.18
     - _WaveAmplitudeB: 0.06
     - _WaveScaleA: 0.22
     - _WaveScaleB: 0.46
     - _WaveSpeedA: 0.7
     - _WaveSpeedB: 1.15
+    - _RippleStrength: 0.17
+    - _RippleScale: 1.15
+    - _SkyReflection: 0.34
+    - _WhitecapStrength: 0.028
     m_Colors:
-    - _DeepColor: {r: 0.025, g: 0.16, b: 0.2, a: 1}
-    - _HorizonColor: {r: 0.18, g: 0.38, b: 0.42, a: 1}
-    - _ShallowColor: {r: 0.06, g: 0.31, b: 0.35, a: 1}
-    - _SunGlintColor: {r: 1, g: 0.72, b: 0.42, a: 1}
+    - _DeepColor: {r: 0.014, g: 0.075, b: 0.15, a: 1}
+    - _HorizonColor: {r: 0.26, g: 0.43, b: 0.56, a: 1}
+    - _ShallowColor: {r: 0.04, g: 0.24, b: 0.30, a: 1}
+    - _SunGlintColor: {r: 1, g: 0.87, b: 0.68, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
