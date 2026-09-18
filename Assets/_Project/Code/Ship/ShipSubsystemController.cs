@@ -66,12 +66,17 @@ namespace Seaborn.Ship
             switch (damageInfo.AmmunitionType)
             {
                 case AmmunitionType.Chain:
+                    // Chain shot is primarily a mobility weapon. A strong
+                    // broadside should cripple sails over roughly two passes,
+                    // not erase them with the first projectile that connects.
                     sailDamage =
-                        damageInfo.Amount * 1.35f;
+                        damageInfo.Amount * 0.35f;
                     break;
                 case AmmunitionType.Grapeshot:
+                    // Grapeshot trades hull damage and range for crew pressure.
+                    // Several pellets need to land before reload penalties become severe.
                     crewDamage =
-                        damageInfo.Amount * 0.75f;
+                        damageInfo.Amount * 0.55f;
                     break;
             }
 

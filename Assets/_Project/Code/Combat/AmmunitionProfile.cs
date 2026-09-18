@@ -49,20 +49,20 @@ namespace Seaborn.Combat
             {
                 case AmmunitionType.Chain:
                     return new AmmunitionProfile(
-                        0.68f,
-                        0.82f,
-                        1.2f,
-                        1.18f,
+                        0.5f,
+                        0.85f,
+                        1.1f,
+                        1.08f,
                         1,
                         1.08f
                     );
 
                 case AmmunitionType.Grapeshot:
                     return new AmmunitionProfile(
-                        0.28f,
-                        0.56f,
-                        1.65f,
-                        0.88f,
+                        0.18f,
+                        0.58f,
+                        1.45f,
+                        0.92f,
                         3,
                         0.62f
                     );

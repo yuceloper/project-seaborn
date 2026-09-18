@@ -8,7 +8,7 @@ namespace Seaborn.Ship
     public sealed class ShipHealth : MonoBehaviour, IDamageable
     {
         [SerializeField, Min(1f)]
-        private float maximumHealth = 100f;
+        private float maximumHealth = 2500f;
 
         public event Action<float, float> HealthChanged;
         public event Action<DamageInfo> Damaged;

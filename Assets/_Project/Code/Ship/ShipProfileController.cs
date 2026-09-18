@@ -10,9 +10,7 @@ namespace Seaborn.Ship
     [DefaultExecutionOrder(-100)]
     public sealed class ShipProfileController : MonoBehaviour
     {
-        // Keeps current prototype damage tuning playable until the
-        // cannon/ammunition catalogue is connected end-to-end.
-        private const float PrototypeHealthScale = 0.05f;
+        private const float HealthScale = 1f;
 
         [SerializeField] private string shipId = "starter_sloop";
         [SerializeField] private bool restoreHealthWhenApplied = true;
@@ -69,7 +67,7 @@ namespace Seaborn.Ship
             health?.SetBaseMaximumHealth(
                 (definition.maximumHealth +
                  InstalledDeckExtensions * 250f) *
-                PrototypeHealthScale,
+                HealthScale,
                 restoreHealthWhenApplied
             );
 
@@ -106,7 +104,7 @@ namespace Seaborn.Ship
             health?.SetBaseMaximumHealth(
                 (Definition.maximumHealth +
                  InstalledDeckExtensions * 250f) *
-                PrototypeHealthScale,
+                HealthScale,
                 restoreHealth
             );
 
