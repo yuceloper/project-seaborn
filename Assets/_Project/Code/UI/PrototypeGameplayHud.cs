@@ -16,11 +16,11 @@ namespace Seaborn.UI
     [DisallowMultipleComponent]
     public sealed class PrototypeGameplayHud : MonoBehaviour
     {
-        private static readonly Color Navy = new(0.055f, 0.061f, 0.065f, 0.84f);
-        private static readonly Color NavyLight = new(0.13f, 0.15f, 0.16f, 0.88f);
-        private static readonly Color Gold = new(0.74f, 0.64f, 0.43f, 1f);
-        private static readonly Color Cream = new(0.93f, 0.91f, 0.85f, 1f);
-        private static readonly Color Muted = new(0.68f, 0.73f, 0.73f, 1f);
+        private static readonly Color Navy = SeabornUiSkin.Teal;
+        private static readonly Color NavyLight = SeabornUiSkin.TealRaised;
+        private static readonly Color Gold = SeabornUiSkin.Brass;
+        private static readonly Color Cream = SeabornUiSkin.Ivory;
+        private static readonly Color Muted = new(0.66f, 0.76f, 0.73f, 1f);
         private static readonly Color Success = new(0.3f, 0.76f, 0.57f, 1f);
         private static readonly Color Danger = new(0.82f, 0.28f, 0.22f, 1f);
 
@@ -217,8 +217,9 @@ namespace Seaborn.UI
             crewFill = CreateBar(ship, "Crew", new Vector2(168f, -102f), new Vector2(138f, 6f), out _);
 
             RectTransform expedition = CreateCard("Expedition", new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -24f), new Vector2(440f, 100f));
-            expeditionStateText = CreateText(expedition, font, "GÜVENLİ LİMAN", 16, Cream, FontStyle.Bold, new Vector2(14f, -9f), new Vector2(412f, 23f), TextAnchor.UpperCenter);
-            expeditionDetailText = CreateText(expedition, font, "SEFERE HAZIRLAN", 13, Muted, FontStyle.Normal, new Vector2(14f, -37f), new Vector2(412f, 42f), TextAnchor.UpperCenter);
+            SeabornUiSkin.Style(expedition.GetComponent<Image>(), SeabornUiSurface.Parchment);
+            expeditionStateText = CreateText(expedition, font, "GÜVENLİ LİMAN", 16, SeabornUiSkin.Ink, FontStyle.Bold, new Vector2(14f, -9f), new Vector2(412f, 23f), TextAnchor.UpperCenter);
+            expeditionDetailText = CreateText(expedition, font, "SEFERE HAZIRLAN", 13, SeabornUiSkin.InkMuted, FontStyle.Normal, new Vector2(14f, -37f), new Vector2(412f, 42f), TextAnchor.UpperCenter);
             pressureFill = CreateBar(expedition, "Pressure", new Vector2(14f, -88f), new Vector2(412f, 6f), out _);
             pressureTrack = pressureFill.parent.gameObject;
 
@@ -279,8 +280,7 @@ namespace Seaborn.UI
                 new Vector2(22f, -39f);
             minimapArea.sizeDelta =
                 new Vector2(220f, 132f);
-            mapObject.GetComponent<Image>().color =
-                NavyLight;
+            SeabornUiSkin.Style(mapObject.GetComponent<Image>(), SeabornUiSurface.Chart);
 
             CreateText(
                 minimapArea,
@@ -638,8 +638,7 @@ namespace Seaborn.UI
             rect.anchoredPosition = new Vector2(12f + index * 68f, -64f);
             rect.sizeDelta = new Vector2(62f, 94f);
             Image background = root.GetComponent<Image>();
-            background.raycastTarget = false;
-            background.color = NavyLight;
+            SeabornUiSkin.Style(background, SeabornUiSurface.Slot);
             CreateText(rect, interfaceFont, key, 10, Muted, FontStyle.Bold,
                 new Vector2(5f, -3f), new Vector2(54f, 14f));
             CreateText(rect, interfaceFont, label, 10, Cream, FontStyle.Normal,
@@ -688,7 +687,9 @@ namespace Seaborn.UI
             slot.Count.color = stock > 0 ? Cream : Muted;
             slot.Icon.color = stock > 0 ? Cream : new Color(0.42f, 0.46f, 0.47f, 1f);
             slot.Selection.SetActive(selected);
-            slot.Background.color = selected ? new Color(0.24f, 0.22f, 0.17f, 0.95f) : NavyLight;
+            SeabornUiSkin.Style(slot.Background, selected
+                ? SeabornUiSurface.SlotSelected
+                : SeabornUiSurface.Slot);
             slot.Timer.text = seconds > 0f ? $"{Mathf.CeilToInt(seconds)}s" : "";
             slot.Timer.color = index == 5 ? Gold : Success;
         }
@@ -776,8 +777,7 @@ namespace Seaborn.UI
             rect.anchorMax = new Vector2(1f, 1f);
             rect.pivot = new Vector2(1f, 1f);
             rect.sizeDelta = new Vector2(360f, 58f);
-            card.GetComponent<Image>().color = Navy;
-            card.GetComponent<Image>().raycastTarget = false;
+            SeabornUiSkin.Style(card.GetComponent<Image>(), SeabornUiSurface.Enamel);
 
             GameObject stripe = new("Accent", typeof(RectTransform), typeof(Image));
             stripe.transform.SetParent(card.transform, false);
@@ -1059,8 +1059,7 @@ namespace Seaborn.UI
             rect.pivot = pivot;
             rect.anchoredPosition = position;
             rect.sizeDelta = size;
-            card.GetComponent<Image>().color = Navy;
-            card.GetComponent<Image>().raycastTarget = false;
+            SeabornUiSkin.Style(card.GetComponent<Image>(), SeabornUiSurface.Enamel);
 
             GameObject accent = new("Accent", typeof(RectTransform), typeof(Image));
             accent.transform.SetParent(card.transform, false);
@@ -1068,8 +1067,8 @@ namespace Seaborn.UI
             accentRect.anchorMin = new Vector2(0f, 1f);
             accentRect.anchorMax = new Vector2(0f, 1f);
             accentRect.pivot = new Vector2(0f, 1f);
-            accentRect.sizeDelta = new Vector2(38f, 2f);
-            accentRect.anchoredPosition = new Vector2(14f, 0f);
+            accentRect.sizeDelta = new Vector2(42f, 3f);
+            accentRect.anchoredPosition = new Vector2(18f, -6f);
             accent.GetComponent<Image>().color = Gold;
             accent.GetComponent<Image>().raycastTarget = false;
             return rect;
@@ -1132,8 +1131,7 @@ namespace Seaborn.UI
             rect.pivot = new Vector2(0f, 1f);
             rect.anchoredPosition = position;
             rect.sizeDelta = dimensions;
-            background.GetComponent<Image>().color = NavyLight;
-            background.GetComponent<Image>().raycastTarget = false;
+            SeabornUiSkin.Style(background.GetComponent<Image>(), SeabornUiSurface.Chart);
 
             GameObject fill = new(name + " Fill", typeof(RectTransform), typeof(Image));
             fill.transform.SetParent(background.transform, false);
