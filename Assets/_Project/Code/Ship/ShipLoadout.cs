@@ -10,7 +10,7 @@ namespace Seaborn.Ship
     [DisallowMultipleComponent]
     public sealed class ShipLoadout : MonoBehaviour
     {
-        private const float PrototypeCannonDamageScale = 0.25f;
+        private const float CannonDamageScale = 1f;
 
         [SerializeField] private string cannonId = "iron_6lb";
         [SerializeField, Min(1)] private int installedCannons = 6;
@@ -191,7 +191,7 @@ namespace Seaborn.Ship
                 Mathf.Min(ship.cannonRange, cannon.range),
                 cannon.reloadDuration,
                 cannon.damage *
-                    PrototypeCannonDamageScale
+                    CannonDamageScale
             );
 
             ShipMotor motor =
