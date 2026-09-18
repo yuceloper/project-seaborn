@@ -15,11 +15,11 @@ namespace Seaborn.UI
     [DisallowMultipleComponent]
     public sealed class PrototypeGameplayHud : MonoBehaviour
     {
-        private static readonly Color Navy = new(0.025f, 0.075f, 0.105f, 0.96f);
-        private static readonly Color NavyLight = new(0.06f, 0.15f, 0.18f, 0.94f);
-        private static readonly Color Gold = new(0.86f, 0.68f, 0.3f, 1f);
-        private static readonly Color Cream = new(0.91f, 0.88f, 0.76f, 1f);
-        private static readonly Color Muted = new(0.57f, 0.68f, 0.68f, 1f);
+        private static readonly Color Navy = new(0.055f, 0.061f, 0.065f, 0.84f);
+        private static readonly Color NavyLight = new(0.13f, 0.15f, 0.16f, 0.88f);
+        private static readonly Color Gold = new(0.74f, 0.64f, 0.43f, 1f);
+        private static readonly Color Cream = new(0.93f, 0.91f, 0.85f, 1f);
+        private static readonly Color Muted = new(0.68f, 0.73f, 0.73f, 1f);
         private static readonly Color Success = new(0.3f, 0.76f, 0.57f, 1f);
         private static readonly Color Danger = new(0.82f, 0.28f, 0.22f, 1f);
 
@@ -49,6 +49,10 @@ namespace Seaborn.UI
         private RectTransform pressureFill;
         private Text silverText;
         private Text cargoText;
+        private Text consumableStockText;
+        private Text activeBuffText;
+        private GameObject pressureTrack;
+        private RectTransform resourceCard;
         private Text ammoNameText;
         private Text ammoStockText;
         private Text portText;
@@ -116,10 +120,9 @@ namespace Seaborn.UI
             {
                 hudGroup.alpha =
                     harborInterfaceOpen ? 0f : 1f;
-                hudGroup.interactable =
-                    !harborInterfaceOpen;
-                hudGroup.blocksRaycasts =
-                    !harborInterfaceOpen;
+                // Passive HUD must never intercept harbor or aiming input.
+                hudGroup.interactable = false;
+                hudGroup.blocksRaycasts = false;
             }
 
             if (harborInterfaceOpen)
@@ -182,6 +185,8 @@ namespace Seaborn.UI
         private void BuildInterface()
         {
             hudGroup = gameObject.AddComponent<CanvasGroup>();
+            hudGroup.interactable = false;
+            hudGroup.blocksRaycasts = false;
             Canvas canvas = gameObject.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             canvas.sortingOrder = 60;
@@ -189,26 +194,27 @@ namespace Seaborn.UI
             CanvasScaler scaler = gameObject.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1920f, 1080f);
-            scaler.matchWidthOrHeight = 0.5f;
+            scaler.matchWidthOrHeight = 1f;
 
             Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             interfaceFont = font;
 
-            RectTransform ship = CreateCard("Ship", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(24f, -24f), new Vector2(330f, 132f));
-            shipNameText = CreateText(ship, font, "ANA GEMİ", 15, Gold, FontStyle.Bold, new Vector2(16f, -11f), new Vector2(298f, 22f));
-            hullText = CreateText(ship, font, "GÖVDE", 13, Cream, FontStyle.Normal, new Vector2(16f, -39f), new Vector2(298f, 22f));
-            hullFill = CreateBar(ship, "Hull", new Vector2(16f, -70f), new Vector2(298f, 12f), out hullFillImage);
-            sailText = CreateText(ship, font, "YELKEN %100", 10, Muted, FontStyle.Bold, new Vector2(16f, -91f), new Vector2(140f, 16f));
-            sailFill = CreateBar(ship, "Sail", new Vector2(16f, -112f), new Vector2(140f, 7f), out _);
-            crewText = CreateText(ship, font, "MÜRETTEBAT %100", 10, Muted, FontStyle.Bold, new Vector2(174f, -91f), new Vector2(140f, 16f), TextAnchor.UpperRight);
-            crewFill = CreateBar(ship, "Crew", new Vector2(174f, -112f), new Vector2(140f, 7f), out _);
+            RectTransform ship = CreateCard("Ship", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(24f, -24f), new Vector2(320f, 118f));
+            shipNameText = CreateText(ship, font, "ANA GEMİ", 17, Cream, FontStyle.Bold, new Vector2(14f, -10f), new Vector2(292f, 23f));
+            hullText = CreateText(ship, font, "GÖVDE", 14, Cream, FontStyle.Normal, new Vector2(14f, -36f), new Vector2(292f, 20f));
+            hullFill = CreateBar(ship, "Hull", new Vector2(14f, -60f), new Vector2(292f, 10f), out hullFillImage);
+            sailText = CreateText(ship, font, "YELKEN %100", 12, Muted, FontStyle.Normal, new Vector2(14f, -78f), new Vector2(138f, 18f));
+            sailFill = CreateBar(ship, "Sail", new Vector2(14f, -102f), new Vector2(138f, 6f), out _);
+            crewText = CreateText(ship, font, "MÜRETTEBAT %100", 12, Muted, FontStyle.Normal, new Vector2(168f, -78f), new Vector2(138f, 18f), TextAnchor.UpperRight);
+            crewFill = CreateBar(ship, "Crew", new Vector2(168f, -102f), new Vector2(138f, 6f), out _);
 
-            RectTransform expedition = CreateCard("Expedition", new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -24f), new Vector2(500f, 112f));
-            expeditionStateText = CreateText(expedition, font, "GÜVENLİ LİMAN", 16, Gold, FontStyle.Bold, new Vector2(16f, -10f), new Vector2(468f, 24f), TextAnchor.UpperCenter);
-            expeditionDetailText = CreateText(expedition, font, "SEFERE HAZIRLAN", 12, Cream, FontStyle.Normal, new Vector2(16f, -38f), new Vector2(468f, 46f), TextAnchor.UpperCenter);
-            pressureFill = CreateBar(expedition, "Pressure", new Vector2(16f, -94f), new Vector2(468f, 7f), out _);
+            RectTransform expedition = CreateCard("Expedition", new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -24f), new Vector2(440f, 100f));
+            expeditionStateText = CreateText(expedition, font, "GÜVENLİ LİMAN", 16, Cream, FontStyle.Bold, new Vector2(14f, -9f), new Vector2(412f, 23f), TextAnchor.UpperCenter);
+            expeditionDetailText = CreateText(expedition, font, "SEFERE HAZIRLAN", 13, Muted, FontStyle.Normal, new Vector2(14f, -37f), new Vector2(412f, 42f), TextAnchor.UpperCenter);
+            pressureFill = CreateBar(expedition, "Pressure", new Vector2(14f, -88f), new Vector2(412f, 6f), out _);
+            pressureTrack = pressureFill.parent.gameObject;
 
-            RectTransform target = CreateCard("Target", new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -148f), new Vector2(440f, 104f));
+            RectTransform target = CreateCard("Target", new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -136f), new Vector2(440f, 104f));
             targetPanel = target.gameObject;
             targetNameText = CreateText(target, font, "HEDEF", 14, Gold, FontStyle.Bold, new Vector2(14f, -9f), new Vector2(265f, 20f));
             targetStateText = CreateText(target, font, "PASİF", 11, Muted, FontStyle.Bold, new Vector2(290f, -10f), new Vector2(136f, 20f), TextAnchor.UpperRight);
@@ -219,9 +225,11 @@ namespace Seaborn.UI
             targetCrewFill = CreateBar(target, "Target Crew", new Vector2(230f, -80f), new Vector2(196f, 7f), out _);
             targetPanel.SetActive(false);
 
-            RectTransform resources = CreateCard("Resources", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-24f, -24f), new Vector2(310f, 150f));
-            silverText = CreateText(resources, font, "SILVER  0", 16, Gold, FontStyle.Bold, new Vector2(16f, -12f), new Vector2(278f, 24f), TextAnchor.UpperRight);
-            cargoText = CreateText(resources, font, "GÜVENCESİZ YÜK  0", 13, Cream, FontStyle.Normal, new Vector2(16f, -45f), new Vector2(278f, 96f), TextAnchor.UpperRight);
+            RectTransform resources = CreateCard("Resources", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-24f, -24f), new Vector2(300f, 122f));
+            resourceCard = resources;
+            silverText = CreateText(resources, font, "0 SILVER", 17, Cream, FontStyle.Bold, new Vector2(14f, -10f), new Vector2(272f, 24f), TextAnchor.UpperRight);
+            cargoText = CreateText(resources, font, "AMBAR BOŞ", 13, Muted, FontStyle.Normal, new Vector2(14f, -40f), new Vector2(272f, 36f), TextAnchor.UpperRight);
+            activeBuffText = CreateText(resources, font, "", 12, Success, FontStyle.Normal, new Vector2(14f, -82f), new Vector2(272f, 32f), TextAnchor.UpperRight);
 
             RectTransform minimap = CreateCard(
                 "Navigation",
@@ -359,16 +367,19 @@ namespace Seaborn.UI
                 TextAnchor.UpperCenter
             );
 
-            RectTransform combat = CreateCard("Combat", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 24f), new Vector2(780f, 116f));
-            portText = CreateText(combat, font, "İSKELE HAZIR", 12, Cream, FontStyle.Bold, new Vector2(18f, -14f), new Vector2(178f, 22f));
-            portFill = CreateBar(combat, "Port", new Vector2(18f, -43f), new Vector2(178f, 10f), out _);
-            ammoNameText = CreateText(combat, font, "STANDART GÜLLE", 15, Gold, FontStyle.Bold, new Vector2(214f, -11f), new Vector2(352f, 22f), TextAnchor.UpperCenter);
-            ammoStockText = CreateText(combat, font, "1: 0   2: 0   3: 0", 12, Muted, FontStyle.Normal, new Vector2(214f, -39f), new Vector2(352f, 22f), TextAnchor.UpperCenter);
-            harpoonText = CreateText(combat, font, "Zıpkın  0", 12, Cream, FontStyle.Bold, new Vector2(214f, -68f), new Vector2(352f, 20f), TextAnchor.UpperCenter);
-            harpoonFill = CreateBar(combat, "Harpoon", new Vector2(292f, -94f), new Vector2(196f, 7f), out _);
-            starboardText = CreateText(combat, font, "SANCAK HAZIR", 12, Cream, FontStyle.Bold, new Vector2(584f, -14f), new Vector2(178f, 22f), TextAnchor.UpperRight);
-            starboardFill = CreateBar(combat, "Starboard", new Vector2(584f, -43f), new Vector2(178f, 10f), out _);
-            harborLockText = CreateText(combat, font, "SİLAHLAR LİMANDA KİLİTLİ", 12, Gold, FontStyle.Bold, new Vector2(18f, -83f), new Vector2(744f, 20f), TextAnchor.UpperCenter);
+            RectTransform combat = CreateCard("Combat", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 24f), new Vector2(680f, 152f));
+            portText = CreateText(combat, font, "İSKELE HAZIR", 13, Cream, FontStyle.Bold, new Vector2(16f, -12f), new Vector2(156f, 21f));
+            portFill = CreateBar(combat, "Port", new Vector2(16f, -40f), new Vector2(156f, 8f), out _);
+            ammoNameText = CreateText(combat, font, "STANDART GÜLLE", 16, Cream, FontStyle.Bold, new Vector2(182f, -10f), new Vector2(316f, 24f), TextAnchor.UpperCenter);
+            ammoStockText = CreateText(combat, font, "", 12, Muted, FontStyle.Normal, new Vector2(182f, -37f), new Vector2(316f, 21f), TextAnchor.UpperCenter);
+            starboardText = CreateText(combat, font, "SANCAK HAZIR", 13, Cream, FontStyle.Bold, new Vector2(508f, -12f), new Vector2(156f, 21f), TextAnchor.UpperRight);
+            starboardFill = CreateBar(combat, "Starboard", new Vector2(508f, -40f), new Vector2(156f, 8f), out _);
+            harpoonText = CreateText(combat, font, "ZIPKIN", 13, Cream, FontStyle.Normal, new Vector2(16f, -64f), new Vector2(648f, 21f), TextAnchor.UpperCenter);
+            harpoonFill = CreateBar(combat, "Harpoon", new Vector2(260f, -88f), new Vector2(160f, 6f), out _);
+            consumableStockText = CreateText(combat, font, "", 12, Muted, FontStyle.Normal, new Vector2(16f, -108f), new Vector2(648f, 28f), TextAnchor.UpperCenter);
+            // Separate navigation/repair line above weapons and docking prompts.
+            RectTransform helm = CreateCard("Helm", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 186f), new Vector2(680f, 32f));
+            harborLockText = CreateText(helm, font, "", 13, Cream, FontStyle.Normal, new Vector2(12f, -7f), new Vector2(656f, 20f), TextAnchor.UpperCenter);
 
             GameObject notifications = new("Notifications", typeof(RectTransform));
             notifications.transform.SetParent(transform, false);
@@ -376,7 +387,7 @@ namespace Seaborn.UI
             notificationRoot.anchorMin = new Vector2(1f, 1f);
             notificationRoot.anchorMax = new Vector2(1f, 1f);
             notificationRoot.pivot = new Vector2(1f, 1f);
-            notificationRoot.anchoredPosition = new Vector2(-24f, -138f);
+            notificationRoot.anchoredPosition = new Vector2(-24f, -164f);
             notificationRoot.sizeDelta = new Vector2(360f, 260f);
         }
 
@@ -406,7 +417,7 @@ namespace Seaborn.UI
                     : "ANA GEMİ";
             string captainLabel =
                 captainProgression != null
-                    ? $"  •  KAPTAN SV. {captainProgression.Level}"
+                    ? $"  •  SV. {captainProgression.Level}"
                     : "";
             shipNameText.text = reserve
                 ? "YEDEK GEMİ" + captainLabel
@@ -436,6 +447,7 @@ namespace Seaborn.UI
         private void RefreshExpedition()
         {
             PrototypeExpeditionDirector director = PrototypeExpeditionDirector.Instance;
+            pressureTrack.SetActive(director != null && director.IsActive);
             PrototypeExpeditionRegionDirector regions =
                 PrototypeExpeditionRegionDirector.Instance;
             if (director == null)
@@ -488,10 +500,10 @@ namespace Seaborn.UI
                 board?.SelectedDailyContract;
             if (active == null)
             {
-                return "\nGÜNLÜK  •  LİMAN İDARESİNDEN GÖREV SEÇ";
+                return "";
             }
 
-            return $"\nGÜNLÜK  •  " +
+            return $"\nGÖREV  •  " +
                 $"{active.Definition.Title.ToUpperInvariant()}  " +
                 $"{active.Current}/{active.Definition.Target}";
         }
@@ -500,14 +512,13 @@ namespace Seaborn.UI
         {
             silverText.text = $"SILVER   {(wallet != null ? wallet.Silver : 0)}  •  GOLD   {(goldWallet != null ? goldWallet.Gold : 0)}";
             int value = cargo != null ? cargo.UnsecuredSilverValue : 0;
-            string capacity = cargo == null || cargo.MaximumSilverValue == int.MaxValue ? "SINIRSIZ" : cargo.MaximumSilverValue.ToString();
-            string special = consumables != null
-                ? $"4 T:{consumables.TortugaTonics}  " +
-                  $"5 L:{consumables.LightsOfTortuga}  " +
-                  $"6 R:{consumables.CorsairRum}  " +
-                  $"7 G:{consumables.GaleElixirs}  " +
-                  $"8 I:{consumables.IronbarkBrews}"
-                : "4 T:0  5 L:0  6 R:0  7 G:0  8 I:0";
+            string capacity = cargo == null || cargo.MaximumSilverValue == int.MaxValue ? "" : $" / {cargo.MaximumSilverValue}";
+            consumableStockText.text =
+                $"4 TONİK ×{consumables?.TortugaTonics ?? 0}   " +
+                $"5 TORTUGA ×{consumables?.LightsOfTortuga ?? 0}   " +
+                $"6 ROM ×{consumables?.CorsairRum ?? 0}   " +
+                $"7 RÜZGÂR ×{consumables?.GaleElixirs ?? 0}   " +
+                $"8 ZIRH ×{consumables?.IronbarkBrews ?? 0}";
             string active = "";
             if (consumables != null)
             {
@@ -524,12 +535,13 @@ namespace Seaborn.UI
                     active +=
                         $"IRON {consumables.IronbarkBrewRemaining:0}s";
             }
-            cargoText.text =
-                $"GÜVENCESİZ YÜK   {value} / {capacity}\n" +
-                $"BATIŞTA KAYBEDİLİR\n{special}" +
-                (string.IsNullOrEmpty(active)
-                    ? ""
-                    : $"\n{active}");
+            cargoText.text = value > 0
+                ? $"GÜVENCESİZ YÜK  {value}{capacity}\nLimanda güvenceye al"
+                : "AMBAR BOŞ";
+            cargoText.color = value > 0 ? Gold : Muted;
+            activeBuffText.text = active.Trim();
+            resourceCard.sizeDelta = new Vector2(300f, string.IsNullOrEmpty(activeBuffText.text) ? 84f : 122f);
+
         }
 
         private void RefreshCombat()
@@ -549,7 +561,7 @@ namespace Seaborn.UI
 
             AmmunitionType selected = broadside != null ? broadside.SelectedAmmunition : AmmunitionType.Standard;
             ammoNameText.text = AmmoLabel(selected);
-            ammoStockText.text = broadside == null ? "1: 0   2: 0   3: 0" : $"1: {broadside.GetAmmunitionStock(AmmunitionType.Standard)}   2: {broadside.GetAmmunitionStock(AmmunitionType.Chain)}   3: {broadside.GetAmmunitionStock(AmmunitionType.Grapeshot)}";
+            ammoStockText.text = broadside == null ? "1 GÜLLE 0   2 ZİNCİR 0   3 SAÇMA 0" : $"1 GÜLLE {broadside.GetAmmunitionStock(AmmunitionType.Standard)}   2 ZİNCİR {broadside.GetAmmunitionStock(AmmunitionType.Chain)}   3 SAÇMA {broadside.GetAmmunitionStock(AmmunitionType.Grapeshot)}";
 
             float reload = harpoons != null ? harpoons.ReloadProgress : 0f;
             string harpoonName =
@@ -689,6 +701,7 @@ namespace Seaborn.UI
             rect.pivot = new Vector2(1f, 1f);
             rect.sizeDelta = new Vector2(360f, 58f);
             card.GetComponent<Image>().color = Navy;
+            card.GetComponent<Image>().raycastTarget = false;
 
             GameObject stripe = new("Accent", typeof(RectTransform), typeof(Image));
             stripe.transform.SetParent(card.transform, false);
@@ -971,16 +984,18 @@ namespace Seaborn.UI
             rect.anchoredPosition = position;
             rect.sizeDelta = size;
             card.GetComponent<Image>().color = Navy;
+            card.GetComponent<Image>().raycastTarget = false;
 
             GameObject accent = new("Accent", typeof(RectTransform), typeof(Image));
             accent.transform.SetParent(card.transform, false);
             RectTransform accentRect = accent.GetComponent<RectTransform>();
             accentRect.anchorMin = new Vector2(0f, 1f);
-            accentRect.anchorMax = new Vector2(1f, 1f);
-            accentRect.pivot = new Vector2(0.5f, 1f);
-            accentRect.sizeDelta = new Vector2(0f, 3f);
-            accentRect.anchoredPosition = Vector2.zero;
+            accentRect.anchorMax = new Vector2(0f, 1f);
+            accentRect.pivot = new Vector2(0f, 1f);
+            accentRect.sizeDelta = new Vector2(38f, 2f);
+            accentRect.anchoredPosition = new Vector2(14f, 0f);
             accent.GetComponent<Image>().color = Gold;
+            accent.GetComponent<Image>().raycastTarget = false;
             return rect;
         }
 
@@ -1042,6 +1057,7 @@ namespace Seaborn.UI
             rect.anchoredPosition = position;
             rect.sizeDelta = dimensions;
             background.GetComponent<Image>().color = NavyLight;
+            background.GetComponent<Image>().raycastTarget = false;
 
             GameObject fill = new(name + " Fill", typeof(RectTransform), typeof(Image));
             fill.transform.SetParent(background.transform, false);
@@ -1060,7 +1076,9 @@ namespace Seaborn.UI
         {
             if (fill == null) return;
             Vector2 maximum = fill.anchorMax;
-            maximum.x = Mathf.Clamp01(value);
+            value = Mathf.Clamp01(value);
+            fill.gameObject.SetActive(value > 0f);
+            maximum.x = value;
             fill.anchorMax = maximum;
             fill.offsetMax = new Vector2(value <= 0f ? 0f : -2f, -2f);
         }
