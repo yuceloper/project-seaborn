@@ -186,6 +186,17 @@ namespace Seaborn.UI
                 return;
             }
 
+            int cannons = broadside.GetBroadsideCannonCount(side);
+            dial.Label.text = $"{(side == BroadsideSide.Port ? "İSKELE" : "SANCAK")} · {cannons}";
+            if (cannons == 0)
+            {
+                dial.Progress.fillAmount = 0f;
+                dial.Progress.color = Muted;
+                dial.Time.text = "TOP YOK";
+                dial.Time.color = Muted;
+                dial.Root.localScale = Vector3.one;
+                return;
+            }
             float progress = broadside.GetReloadProgress(side);
             float remaining = broadside.GetCooldownRemaining(side);
             bool ready = progress >= 0.999f;
@@ -260,3 +271,4 @@ namespace Seaborn.UI
         }
     }
 }
+

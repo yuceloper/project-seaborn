@@ -1,5 +1,7 @@
 # Combat Balance Pass — September 2026
 
+> Historical tuning record: the hull baselines and per-broadside cannon counts below are superseded by [Combat foundation repair](COMBAT_FOUNDATION_REPAIR.md). The follow-up repair tariff remains current.
+
 ## Goal
 
 Move ship combat away from one-volley kills and create enough time for positioning, ammunition choice, subsystem pressure and reload timing to matter.

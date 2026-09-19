@@ -58,7 +58,8 @@ namespace Seaborn.Combat.Loot
             dropped = true;
             PrototypeShipwreckLootPickup.Create(
                 transform.position,
-                player
+                player,
+                GetComponent<EnemyShipController>()?.Archetype ?? EnemyShipArchetype.Marauder
             );
         }
     }
@@ -81,7 +82,8 @@ namespace Seaborn.Combat.Loot
 
         public static void Create(
             Vector3 position,
-            Transform playerTransform)
+            Transform playerTransform,
+            EnemyShipArchetype archetype = EnemyShipArchetype.Marauder)
         {
             GameObject pickup =
                 new GameObject("Shipwreck Loot");
@@ -97,17 +99,19 @@ namespace Seaborn.Combat.Loot
                     PrototypeShipwreckLootPickup>();
             component.Initialize(
                 playerTransform,
-                SceneManager.GetActiveScene().name
+                SceneManager.GetActiveScene().name,
+                archetype
             );
         }
 
         private void Initialize(
             Transform playerTransform,
-            string sceneName)
+            string sceneName,
+            EnemyShipArchetype archetype)
         {
             player = playerTransform;
             sourceScene = sceneName;
-            ConfigureRewards(sceneName);
+            ConfigureRewards(sceneName, archetype);
             expiresAt = Time.time + Lifetime;
             baseHeight = transform.position.y;
             ResolvePlayerComponents();
@@ -202,24 +206,19 @@ namespace Seaborn.Combat.Loot
             Destroy(gameObject);
         }
 
-        private void ConfigureRewards(string sceneName)
+        private void ConfigureRewards(string sceneName, EnemyShipArchetype archetype)
         {
-            if (sceneName == "PrototypeWesternReach")
+            int baseSilver = archetype switch
             {
-                silverReward = 55;
-                ammunitionReward = 8;
-                return;
-            }
-
-            if (sceneName == "PrototypeEasternReach")
-            {
-                silverReward = 30;
-                ammunitionReward = 4;
-                return;
-            }
-
-            silverReward = 35;
-            ammunitionReward = 6;
+                EnemyShipArchetype.Skirmisher => 80,
+                EnemyShipArchetype.Gunship => 180,
+                _ => 110
+            };
+            float regionMultiplier = sceneName == "PrototypeWesternReach" ? 1.5f
+                : sceneName == "PrototypeEasternReach" ? 0.9f : 1f;
+            silverReward = Mathf.RoundToInt(baseSilver * regionMultiplier);
+            ammunitionReward = sceneName == "PrototypeWesternReach" ? 8
+                : sceneName == "PrototypeEasternReach" ? 4 : 6;
         }
 
         private void ResolvePlayer()
@@ -471,3 +470,4 @@ namespace Seaborn.Combat.Loot
         }
     }
 }
+

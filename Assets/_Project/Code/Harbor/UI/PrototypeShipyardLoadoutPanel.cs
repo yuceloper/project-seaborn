@@ -1,4 +1,5 @@
 using Seaborn.Equipment;
+using Seaborn.Combat;
 using Seaborn.Hunting;
 using Seaborn.Progression;
 using Seaborn.Ship;
@@ -279,11 +280,15 @@ namespace Seaborn.Harbor.UI
                         loadout.InstalledCannons)
                     : 0;
 
+            BroadsideController battery = player != null
+                ? player.GetComponentInChildren<BroadsideController>() : null;
+            int portCount = battery != null ? battery.GetBroadsideCannonCount(BroadsideSide.Port) : 0;
+            int starboardCount = battery != null ? battery.GetBroadsideCannonCount(BroadsideSide.Starboard) : 0;
             currentText.text = loadout != null
                 ? $"Kurulu: {loadout.Cannon?.displayName ?? loadout.CannonId}" +
                   $"  {loadout.InstalledCannons}/{cannonCapacity}" +
                   $"  •  Depoda {storedCannons}\n" +
-                  $"Yelken: {loadout.Sail?.displayName ?? loadout.SailId}"
+                  $"Aktif borda: İskele {portCount} / Sancak {starboardCount}"
                 : "Loadout hazırlanıyor";
 
             RefreshCannonRow(
@@ -563,3 +568,4 @@ namespace Seaborn.Harbor.UI
         }
     }
 }
+

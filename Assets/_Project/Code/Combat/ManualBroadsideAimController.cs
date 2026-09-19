@@ -54,6 +54,7 @@ namespace Seaborn.Combat
             IsInsideFiringArc &&
             !IsCoolingDown &&
             broadsideController != null &&
+            broadsideController.GetBroadsideCannonCount(SelectedBroadside) > 0 &&
             broadsideController.GetAmmunitionStock(
                 broadsideController.SelectedAmmunition
             ) > 0;
@@ -226,3 +227,4 @@ namespace Seaborn.Combat
         }
     }
 }
+
