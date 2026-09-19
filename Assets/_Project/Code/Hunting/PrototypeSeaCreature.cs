@@ -454,72 +454,22 @@ namespace Seaborn.Hunting
             string scene =
                 SceneManager.GetActiveScene().name;
 
-            if (scene == "PrototypeWesternReach")
+            // Twenty independent hunt slots spread across a 5 x 4 sea grid.
+            for (int row = 0; row < 4; row++)
             {
-                Spawn(
-                    "Tideback - Smuggler's Wake",
-                    new Vector3(22f, 0.74f, -18f),
-                    310f
-                );
-                Debug.Log(
-                    "Batı Sınırı av profili: seyrek av, " +
-                    "yoğun korsan riski."
-                );
-                return;
-            }
-
-            if (scene == "PrototypeEasternReach")
-            {
-                Vector3[] positions =
+                for (int column = 0; column < 5; column++)
                 {
-                    new(-20f, 0.74f, -15f),
-                    new(-8f, 0.74f, -5f),
-                    new(12f, 0.74f, -12f),
-                    new(22f, 0.74f, 5f),
-                    new(-18f, 0.74f, 18f),
-                    new(8f, 0.74f, 20f)
-                };
-
-                for (int i = 0;
-                     i < positions.Length;
-                     i++)
-                {
-                    Spawn(
-                        $"Tideback - East {i + 1}",
-                        positions[i],
-                        45f + i * 53f
-                    );
+                    int index = row * 5 + column;
+                    Vector3 position = new Vector3(
+                        -48f + column * 24f + (row % 2 == 0 ? -3f : 3f),
+                        0.74f,
+                        -36f + row * 24f);
+                    Spawn($"Tideback - {scene} {index + 1}",
+                        position, (45f + index * 53f) % 360f);
                 }
-
-                SpawnLeviathan(
-                    new Vector3(25f, 0.74f, 32f)
-                );
-                Debug.Log(
-                    "Doğu Avları profili: zengin sürüler " +
-                    "ve Stormjaw izi."
-                );
-                return;
             }
-
-            Spawn(
-                "Tideback - Central North",
-                new Vector3(14f, 0.74f, 16f),
-                210f
-            );
-            Spawn(
-                "Tideback - Central East",
-                new Vector3(23f, 0.74f, -4f),
-                285f
-            );
-            Spawn(
-                "Tideback - Central West",
-                new Vector3(-17f, 0.74f, 7f),
-                75f
-            );
-            Debug.Log(
-                "Merkez Sular av profili: dengeli " +
-                "başlangıç karşılaşmaları."
-            );
+            SpawnLeviathan(new Vector3(25f, 0.74f, 54f));
+            Debug.Log($"{scene} av nüfusu: 20 Tideback, 1 Stormjaw.");
         }
 
         private static void SpawnLeviathan(
