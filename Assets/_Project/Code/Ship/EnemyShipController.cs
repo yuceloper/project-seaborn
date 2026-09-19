@@ -34,9 +34,6 @@ namespace Seaborn.Ship
         private float forwardSpeed = 3f;
 
         [SerializeField, Min(0f)]
-        private float broadsideSpeed = 1.5f;
-
-        [SerializeField, Min(0f)]
         private float turnSpeed = 38f;
 
         [Header("Combat")]
@@ -84,17 +81,19 @@ namespace Seaborn.Ship
         private ShipSubsystemController subsystems;
         private float engagementStartTime;
         private float aimPreparation;
-        private enum AttackPhase { Approach, AttackRun, Disengage }
+        private enum AttackPhase { Approach, Align, Hold }
         private AttackPhase attackPhase;
         private Vector3 runHeading;
-        private float phaseEndsAt;
-        private bool firedThisRun;
+        private float targetLostAt = -1f;
+        private RigidbodyConstraints navigationConstraints;
+        private const float CombatExitDelay = 5f;
 
         private void Awake()
         {
             shipRigidbody = GetComponent<Rigidbody>();
             shipRigidbody.constraints |= RigidbodyConstraints.FreezeRotationX |
                 RigidbodyConstraints.FreezeRotationZ;
+            navigationConstraints = shipRigidbody.constraints;
             shipRigidbody.interpolation = RigidbodyInterpolation.Interpolate;
             broadsideController =
                 GetComponent<BroadsideController>();
@@ -120,7 +119,6 @@ namespace Seaborn.Ship
                     preferredRange = 6.2f;
                     retreatDistance = 3.6f;
                     forwardSpeed = 4.5f;
-                    broadsideSpeed = 2.5f;
                     turnSpeed = 62f;
                     fireRange = 8.5f;
                     fireAlignment = 0.76f;
@@ -142,7 +140,6 @@ namespace Seaborn.Ship
                     preferredRange = 9f;
                     retreatDistance = 6f;
                     forwardSpeed = 2.2f;
-                    broadsideSpeed = 1.05f;
                     turnSpeed = 27f;
                     fireRange = 12f;
                     fireAlignment = 0.86f;
@@ -164,7 +161,6 @@ namespace Seaborn.Ship
                     preferredRange = 5.5f;
                     retreatDistance = 3.5f;
                     forwardSpeed = 3.5f;
-                    broadsideSpeed = 1.8f;
                     turnSpeed = 44f;
                     fireRange = 7.2f;
                     fireAlignment = 0.74f;
@@ -204,7 +200,15 @@ namespace Seaborn.Ship
                 target == null ||
                 shipHealth.IsSunk)
             {
+                if (IsAggressive) SetPassive();
                 StopMoving();
+                return;
+            }
+
+            ShipHealth targetHealth = target.GetComponentInChildren<ShipHealth>();
+            if (targetHealth != null && targetHealth.IsSunk)
+            {
+                SetPassive();
                 return;
             }
 
@@ -214,8 +218,7 @@ namespace Seaborn.Ship
             if (consumables != null &&
                 consumables.IsConcealed)
             {
-                aimPreparation = 0f;
-                StopMoving();
+                WaitForCombatExit();
                 return;
             }
 
@@ -225,8 +228,13 @@ namespace Seaborn.Ship
 
             float distance = toTarget.magnitude;
 
-            if (distance > detectionRange ||
-                distance <= Mathf.Epsilon)
+            if (distance > detectionRange)
+            {
+                WaitForCombatExit();
+                return;
+            }
+            targetLostAt = -1f;
+            if (distance <= Mathf.Epsilon)
             {
                 aimPreparation = 0f;
                 StopMoving();
@@ -248,59 +256,60 @@ namespace Seaborn.Ship
 
         private void Navigate(Vector3 targetDirection, float distance)
         {
-            float effectiveRange = Mathf.Min(fireRange, broadsideController.MaximumRange);
-            float runRange = Mathf.Min(preferredRange, effectiveRange * 0.8f);
-            float clearance = Mathf.Min(retreatDistance, runRange * 0.65f);
-
-            if (attackPhase != AttackPhase.Disengage && distance < clearance)
-                BeginDisengage(targetDirection);
-
-            if (attackPhase == AttackPhase.Disengage)
+            if (attackPhase == AttackPhase.Hold)
             {
-                SteerAndMove(runHeading, forwardSpeed);
-                if (Time.time >= phaseEndsAt)
-                {
-                    attackPhase = AttackPhase.Approach;
-                    aimPreparation = 0f;
-                }
+                StopMoving();
                 return;
             }
 
             if (attackPhase == AttackPhase.Approach)
             {
-                if (distance > runRange + 1.5f)
+                float effectiveRange = Mathf.Min(fireRange, broadsideController.MaximumRange);
+                float positionRange = Mathf.Min(preferredRange, effectiveRange * 0.8f);
+                if (distance > positionRange + 0.5f)
                 {
                     SteerAndMove(targetDirection, forwardSpeed);
                     return;
                 }
+                if (distance < positionRange * 0.6f)
+                {
+                    SteerAndMove(-targetDirection, forwardSpeed);
+                    return;
+                }
                 runHeading = Vector3.Cross(Vector3.up, targetDirection);
                 if (Vector3.Dot(runHeading, transform.forward) < 0f) runHeading = -runHeading;
-                // Commit to a straight firing pass. Do not recompute the tangent
-                // around the player every physics tick (the old perpetual orbit).
-                attackPhase = AttackPhase.AttackRun;
-                phaseEndsAt = Time.time + 6f;
-                firedThisRun = false;
-                aimPreparation = 0f;
+                attackPhase = AttackPhase.Align;
             }
 
-            SteerAndMove(runHeading, broadsideSpeed);
-            if (Time.time >= phaseEndsAt) BeginDisengage(targetDirection);
+            // Rotate once at the chosen location, then hold both position and yaw.
+            StopMoving();
+            Quaternion desired = Quaternion.LookRotation(runHeading, Vector3.up);
+            Quaternion next = Quaternion.RotateTowards(shipRigidbody.rotation, desired,
+                turnSpeed * (subsystems != null ? subsystems.TurnMultiplier : 1f) * Time.fixedDeltaTime);
+            shipRigidbody.MoveRotation(next);
+            if (Quaternion.Angle(shipRigidbody.rotation, desired) <= 3f)
+            {
+                attackPhase = AttackPhase.Hold;
+                shipRigidbody.constraints = navigationConstraints |
+                    RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionZ |
+                    RigidbodyConstraints.FreezeRotationY;
+                aimPreparation = 0f;
+            }
         }
 
-        private void BeginDisengage(Vector3 targetDirection)
+        private void WaitForCombatExit()
         {
-            attackPhase = AttackPhase.Disengage;
-            Vector3 escape = -targetDirection + transform.forward * 0.75f;
-            runHeading = escape.sqrMagnitude > 0.01f ? escape.normalized : -targetDirection;
-            phaseEndsAt = Time.time + 4f;
+            StopMoving();
             aimPreparation = 0f;
+            if (targetLostAt < 0f) targetLostAt = Time.time;
+            if (Time.time - targetLostAt >= CombatExitDelay) SetPassive();
         }
 
         private void PrepareAndFire(
             Vector3 targetDirection,
             float distance)
         {
-            if (attackPhase != AttackPhase.AttackRun || firedThisRun)
+            if (attackPhase != AttackPhase.Hold)
             {
                 aimPreparation = 0f;
                 return;
@@ -380,9 +389,7 @@ namespace Seaborn.Ship
                     0.82f))
             {
                 aimPreparation = 0f;
-                firedThisRun = true;
-                // Allow the physical salvo to finish before breaking away.
-                phaseEndsAt = Time.time + 1f;
+
             }
         }
 
@@ -435,10 +442,11 @@ namespace Seaborn.Ship
         {
             IsAggressive = false;
             attackPhase = AttackPhase.Approach;
-            firedThisRun = false;
+            targetLostAt = -1f;
             aimPreparation = 0f;
             if (shipRigidbody != null)
             {
+                shipRigidbody.constraints = navigationConstraints;
                 StopMoving();
             }
         }
@@ -464,6 +472,7 @@ namespace Seaborn.Ship
             // that duplicate, so always bind the living ship
             // that actually caused the damage.
             target = attacker.transform;
+            targetLostAt = -1f;
 
             if (IsAggressive)
             {
