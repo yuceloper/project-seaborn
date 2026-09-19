@@ -53,6 +53,18 @@ namespace Seaborn.UI
             TryBind();
         }
 
+        private static bool IsDialAlive(ReloadDial dial)
+        {
+            // ReloadDial is a managed wrapper; its Unity objects can be destroyed on travel.
+            return dial != null && dial.Root != null && dial.Progress != null &&
+                dial.Time != null && dial.Label != null;
+        }
+
+        private void OnDestroy()
+        {
+            RemoveOldDials();
+        }
+
         private void Update()
         {
             if (PrototypeHarborUiCoordinator.IsOpen)
@@ -64,8 +76,8 @@ namespace Seaborn.UI
             bool bindingLost =
                 broadside == null ||
                 combatRoot == null ||
-                portDial == null ||
-                starboardDial == null;
+                !IsDialAlive(portDial) ||
+                !IsDialAlive(starboardDial);
 
             if (bindingLost && Time.unscaledTime >= nextBindTime)
             {
@@ -73,7 +85,9 @@ namespace Seaborn.UI
                 TryBind();
             }
 
-            SetVisible(combatRoot != null);
+            bool ready = combatRoot != null && IsDialAlive(portDial) && IsDialAlive(starboardDial);
+            SetVisible(ready);
+            if (!ready) return;
             RefreshDial(portDial, BroadsideSide.Port);
             RefreshDial(starboardDial, BroadsideSide.Starboard);
         }
@@ -93,7 +107,7 @@ namespace Seaborn.UI
             RectTransform nextCombatRoot = combat as RectTransform;
             if (nextCombatRoot == null) return;
 
-            if (combatRoot == nextCombatRoot && portDial != null && starboardDial != null)
+            if (combatRoot == nextCombatRoot && IsDialAlive(portDial) && IsDialAlive(starboardDial))
                 return;
 
             RemoveOldDials();
@@ -175,7 +189,7 @@ namespace Seaborn.UI
 
         private void RefreshDial(ReloadDial dial, BroadsideSide side)
         {
-            if (dial == null) return;
+            if (!IsDialAlive(dial)) return;
 
             if (broadside == null)
             {
