@@ -1,6 +1,7 @@
 using Seaborn.Combat;
 using Seaborn.Combat.Damage;
 using UnityEngine;
+using Seaborn.World;
 
 namespace Seaborn.Ship
 {
@@ -87,6 +88,58 @@ namespace Seaborn.Ship
         private float targetLostAt = -1f;
         private RigidbodyConstraints navigationConstraints;
         private const float CombatExitDelay = 5f;
+        private Vector3 patrolDestination;
+        private Vector3 lastSeenPosition;
+        private bool hasPatrolDestination;
+        private float patrolDeadline;
+        private float outOfFireRangeAt = -1f;
+        private const float BoundaryMargin = 8f;
+        private static float NavigationLimit =>
+            PrototypeExpeditionRegionDirector.MapEdge - BoundaryMargin;
+
+        private static Vector3 ClampToMap(Vector3 position)
+        {
+            position.x = Mathf.Clamp(position.x, -NavigationLimit, NavigationLimit);
+            position.z = Mathf.Clamp(position.z, -NavigationLimit, NavigationLimit);
+            return position;
+        }
+
+        private void EnforceMapBounds()
+        {
+            Vector3 position = shipRigidbody.position;
+            Vector3 bounded = ClampToMap(position);
+            if ((position - bounded).sqrMagnitude > 0.0001f)
+            {
+                shipRigidbody.position = bounded;
+                StopMoving();
+            }
+        }
+
+        private void Patrol()
+        {
+            Vector3 delta = patrolDestination - shipRigidbody.position;
+            delta.y = 0f;
+            if (!hasPatrolDestination || delta.sqrMagnitude < 9f || Time.time >= patrolDeadline)
+            {
+                // Local waypoints keep each ship roaming rather than crossing the entire map.
+                Vector2 offset = Random.insideUnitCircle.normalized * Random.Range(14f, 30f);
+                patrolDestination = ClampToMap(shipRigidbody.position +
+                    new Vector3(offset.x, 0f, offset.y));
+                hasPatrolDestination = true;
+                patrolDeadline = Time.time + 25f;
+                delta = patrolDestination - shipRigidbody.position;
+                delta.y = 0f;
+            }
+            SteerAndMove(delta.normalized, forwardSpeed * 0.55f);
+        }
+
+        private void ResumeApproach()
+        {
+            shipRigidbody.constraints = navigationConstraints;
+            attackPhase = AttackPhase.Approach;
+            aimPreparation = 0f;
+            outOfFireRangeAt = -1f;
+        }
 
         private void Awake()
         {
@@ -196,12 +249,17 @@ namespace Seaborn.Ship
 
         private void FixedUpdate()
         {
-            if (!IsAggressive ||
-                target == null ||
-                shipHealth.IsSunk)
+            if (shipHealth.IsSunk)
             {
                 if (IsAggressive) SetPassive();
                 StopMoving();
+                return;
+            }
+            EnforceMapBounds();
+            if (IsAggressive && target == null) SetPassive();
+            if (!IsAggressive)
+            {
+                Patrol();
                 return;
             }
 
@@ -228,12 +286,15 @@ namespace Seaborn.Ship
 
             float distance = toTarget.magnitude;
 
-            if (distance > detectionRange)
+            if (distance > detectionRange ||
+                Mathf.Abs(target.position.x) > NavigationLimit ||
+                Mathf.Abs(target.position.z) > NavigationLimit)
             {
                 WaitForCombatExit();
                 return;
             }
             targetLostAt = -1f;
+            lastSeenPosition = ClampToMap(target.position);
             if (distance <= Mathf.Epsilon)
             {
                 aimPreparation = 0f;
@@ -243,6 +304,14 @@ namespace Seaborn.Ship
 
             Vector3 targetDirection =
                 toTarget / distance;
+
+            float effectiveRange = Mathf.Min(fireRange, broadsideController.MaximumRange);
+            if (attackPhase != AttackPhase.Approach && distance > effectiveRange + 1f)
+            {
+                if (outOfFireRangeAt < 0f) outOfFireRangeAt = Time.time;
+                if (Time.time - outOfFireRangeAt >= 1.5f) ResumeApproach();
+            }
+            else outOfFireRangeAt = -1f;
 
             Navigate(
                 targetDirection,
@@ -299,10 +368,23 @@ namespace Seaborn.Ship
 
         private void WaitForCombatExit()
         {
-            StopMoving();
+            if (targetLostAt < 0f)
+            {
+                targetLostAt = Time.time;
+                ResumeApproach();
+            }
             aimPreparation = 0f;
-            if (targetLostAt < 0f) targetLostAt = Time.time;
-            if (Time.time - targetLostAt >= CombatExitDelay) SetPassive();
+            if (Time.time - targetLostAt >= CombatExitDelay)
+            {
+                SetPassive();
+                Patrol();
+                return;
+            }
+            // Search only the last visible location; never track a concealed target.
+            Vector3 delta = lastSeenPosition - shipRigidbody.position;
+            delta.y = 0f;
+            if (delta.sqrMagnitude > 9f) SteerAndMove(delta.normalized, forwardSpeed);
+            else StopMoving();
         }
 
         private void PrepareAndFire(
@@ -428,6 +510,10 @@ namespace Seaborn.Ship
             Vector3 planarVelocity = Vector3.ProjectOnPlane(shipRigidbody.linearVelocity, Vector3.up);
             Vector3 nextVelocity = Vector3.MoveTowards(planarVelocity, desiredVelocity,
                 2f * Time.fixedDeltaTime);
+            // Limit the predicted next step too, including acceleration and turning drift.
+            Vector3 boundedNext = ClampToMap(shipRigidbody.position + nextVelocity * Time.fixedDeltaTime);
+            nextVelocity = Vector3.ProjectOnPlane(
+                (boundedNext - shipRigidbody.position) / Time.fixedDeltaTime, Vector3.up);
             shipRigidbody.linearVelocity = nextVelocity + Vector3.up * shipRigidbody.linearVelocity.y;
             shipRigidbody.angularVelocity = Vector3.zero;
         }
@@ -441,6 +527,8 @@ namespace Seaborn.Ship
         public void SetPassive()
         {
             IsAggressive = false;
+            hasPatrolDestination = false;
+            outOfFireRangeAt = -1f;
             attackPhase = AttackPhase.Approach;
             targetLostAt = -1f;
             aimPreparation = 0f;
@@ -472,6 +560,7 @@ namespace Seaborn.Ship
             // that duplicate, so always bind the living ship
             // that actually caused the damage.
             target = attacker.transform;
+            lastSeenPosition = ClampToMap(target.position);
             targetLostAt = -1f;
 
             if (IsAggressive)
