@@ -42,17 +42,26 @@ model/hardpoint üretimi sonraki çalışmadır. Gizli sanal toplara geri dönü
 
 ### Düşman konum alma — kullanıcı kararıyla güncel davranış
 
-Düşman yalnızca çatışmanın başında hareket ederek menzile gelir, bulunduğu yerde
-bir kez bordasını açar ve durur. Çatışma boyunca yatay konumu ve dönüşü kilitlidir.
-Salvodan sonra ayrılma, yeniden yaklaşma veya hedefin çevresinde dönme yoktur.
-Hedef ateş yayından/menzilinden çıkarsa ateşi bekler; yer değiştirmez.
-Hedef uygun açıya dönerse bağımsız borda dolumlarıyla ateşe devam eder.
+Pasif düşmanlar mevcut konumlarından 14–30 birim uzakta rastgele ara hedefler
+seçerek normal hızlarının %55'iyle devriye gezer. Hedefe 3 birim yaklaşınca veya
+25 saniyede ulaşamayınca yeni hedef seçilir. Saldırıya karşılık verme kuralı korunur.
 
-Hedefin algılama menzili dışında veya görünmez olarak kesintisiz 5 saniye kalması
-çatışmayı bitirir. Yeni hasar bu kayıp sayacını sıfırlar. Hedefin yok olması,
-batması veya SetPassive çağrısı da kilidi kaldırır. Yeniden saldırıya uğradığında
-yeni çatışma için bir kez daha konum alabilir. Kilit yalnızca yatay konum ve yaw
-içindir; batışta normal fizik kısıtları geri yüklenir.
+Çatışmada menzile gelip bir kez bordasını açar, yatay konumunu ve dönüşünü kilitler.
+Ateş yayı dışına çıkmak tek başına yörünge hareketi başlatmaz. Hedef etkin ateş
+menzilinin 1 birim ötesinde 1.5 saniye kalırsa kilit açılır, yeniden yaklaşır ve
+pozisyon alır. Bu pay, menzil kenarında sürekli dur/kalk geçişini azaltır.
+
+Hedef algılama menzilinden veya düşmanın seyir alanından çıkar ya da gizlenirse,
+yalnızca son görülen konuma doğru en fazla 5 saniye arama yapılır. Sonra kilit
+kaldırılır ve devriye devam eder. Gizli hedefin güncel konumu izlenmez.
+Hedefin yok olması, batması veya SetPassive çağrısı da devriyeye dönüş sağlar.
+Düşmanın kendisi batmışsa devriye yapılmaz.
+
+Seyir alanı ortak MapEdge (82) değerinden 8 birim içeridedir: X/Z ±74.
+Ara hedefler ve hesaplanan sonraki fizik adımı bu alana sıkıştırılır; dış
+çarpışma itişleri sonraki fizik adımında düzeltilir. Sınır dışındaki oyuncuyu
+kovalamak yerine arama/devriye geçişi yapılır. Bu alan kontrolüdür; ada ve gemiler
+için yol bulma/engel kaçınma henüz eklenmedi.
 
 ### Can ve ekonomi başlangıç değerleri
 
@@ -80,10 +89,13 @@ Bunlar final ekonomi değildir; 15–25 dakikalık sefer ölçümü hâlâ gerek
    üç azalmalı, yalnız iskele dolumu başlamalı. Sağ için tersini doğrula.
 3. İsabet alırken sabit gemi yerinden sıçramamalı; hareketli gemi eski konumuna
    geri çekilmemeli. Gerçek gövde çarpışmasının çalıştığını ayrıca kontrol et.
-4. Tek düşmana saldır: bir kez menzile gelip bordasını açmalı ve durmalı.
-   Birkaç salvo boyunca konumu ve yönü değişmemeli. Ateş yayından çıkıp geri
-   dön: yeniden konum almadan ateşe devam etmeli. Algılama menzilinden 5 saniye
-   uzaklaş, sonra yeniden saldır: yeni çatışmada yeniden konum alabilmeli.
+4. Saldırmadan bekle: düşmanlar farklı ara hedeflerle devriye gezmeli.
+   Tek düşmana saldır: menzile gelip bordasını açmalı, birkaç salvo sabit kalmalı.
+   Ateş menzilinden 1.5 saniye uzaklaş: yeniden yaklaşmalı ve durmalı.
+   Algılama alanından çık veya gizlen: son görülen noktayı arayıp 5 saniye
+   sonunda devriyeye dönmeli. Tekrar saldırıda yeniden konum alabilmeli.
+   Dört harita kenarı ve köşelerde devriye/takip sırasında merkez X/Z ±74
+   içinde kalmalı. Oyuncu harita değiştirince eski hedef referansı kalmamalı.
    Pasife alınma ve batışta fizik kilidinin kalktığını kontrol et.
 5. Avcı, Yağmacı ve Topçu'yu ayrı dene. Salvo/hasar/yelken/mürettebat kaybını kaydet.
 6. Merkezde enkaz ödüllerini ve limana dönüş raporunu doğrula. Aynı karşılaşmadan
