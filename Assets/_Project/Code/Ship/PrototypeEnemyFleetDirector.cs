@@ -120,44 +120,34 @@ namespace Seaborn.Ship
             {
                 return new[]
                 {
-                    EnemyShipArchetype.Skirmisher
+                    EnemyShipArchetype.Skirmisher,
+                    EnemyShipArchetype.Skirmisher,
+                    EnemyShipArchetype.Marauder,
+                    EnemyShipArchetype.Skirmisher,
+                    EnemyShipArchetype.Marauder
                 };
             }
 
             return new[]
             {
                 EnemyShipArchetype.Skirmisher,
-                EnemyShipArchetype.Marauder
+                EnemyShipArchetype.Marauder,
+                EnemyShipArchetype.Skirmisher,
+                EnemyShipArchetype.Marauder,
+                EnemyShipArchetype.Gunship
             };
         }
 
         private static Vector3[]
             ProfilePositions(string scene)
         {
-            if (scene == "PrototypeWesternReach")
-            {
-                return new[]
-                {
-                    new Vector3(-25f, 0.5f, -15f),
-                    new Vector3(-10f, 0.5f, 10f),
-                    new Vector3(15f, 0.5f, -5f),
-                    new Vector3(25f, 0.5f, 20f),
-                    new Vector3(-20f, 0.5f, 28f)
-                };
-            }
-
-            if (scene == "PrototypeEasternReach")
-            {
-                return new[]
-                {
-                    new Vector3(-25f, 0.5f, 24f)
-                };
-            }
-
             return new[]
             {
-                new Vector3(-18f, 0.5f, 16f),
-                new Vector3(18f, 0.5f, 23f)
+                new Vector3(-38f, 0.5f, -24f),
+                new Vector3(34f, 0.5f, -22f),
+                new Vector3(-32f, 0.5f, 24f),
+                new Vector3(36f, 0.5f, 26f),
+                new Vector3(0f, 0.5f, 44f)
             };
         }
 
