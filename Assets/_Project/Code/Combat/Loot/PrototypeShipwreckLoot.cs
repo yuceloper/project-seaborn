@@ -47,6 +47,11 @@ namespace Seaborn.Combat.Loot
             }
         }
 
+        public void ResetForRespawn()
+        {
+            dropped = false;
+        }
+
         private void HandleSunk()
         {
             if (dropped ||

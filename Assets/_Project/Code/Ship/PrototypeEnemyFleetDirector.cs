@@ -88,6 +88,11 @@ namespace Seaborn.Ship
                 Destroy(existing[i].gameObject);
             }
 
+            var population = Seaborn.World.PrototypePopulationDirector.EnsureCreated();
+            foreach (var ship in FindObjectsByType<EnemyShipController>(FindObjectsSortMode.None))
+            {
+                if (ship.gameObject.activeInHierarchy) population.RegisterShip(ship);
+            }
             initialized = true;
             Debug.Log(
                 $"{MapLabel(scene)} filosu hazır: " +

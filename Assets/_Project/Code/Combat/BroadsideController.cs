@@ -68,6 +68,14 @@ namespace Seaborn.Combat
         public bool IsBlockedBySafeHarbor =>
             !PrototypeSafeHarborProtection.AllowsWeapons(gameObject);
 
+        public void RestoreEnemyLife(int standard, int chain, int grapeshot)
+        {
+            StopAllCoroutines();
+            nextPortFireTime = nextStarboardFireTime = 0f;
+            portReloadDuration = starboardReloadDuration = 0f;
+            RestorePersistentState(selectedAmmunition, standard, chain, grapeshot);
+        }
+
         public bool TrySelectAmmunition(AmmunitionType ammunitionType)
         {
             if (selectedAmmunition == ammunitionType) return false;

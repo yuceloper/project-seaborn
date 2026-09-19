@@ -444,6 +444,8 @@ namespace Seaborn.Hunting
         public static void EnsureSpawned(
             Vector3 playerPosition)
         {
+            if (SceneManager.GetActiveScene().name == "PrototypeHarbor") return;
+            if (!Seaborn.World.PrototypePopulationDirector.EnsureCreated().TryInitializeHunts()) return;
             if (UnityEngine.Object.FindFirstObjectByType<
                     PrototypeSeaCreature>() != null)
             {
@@ -550,6 +552,8 @@ namespace Seaborn.Hunting
             );
             creature.AddComponent<
                 PrototypeLeviathanBehavior>();
+            Seaborn.World.PrototypePopulationDirector.EnsureCreated()
+                .RegisterHunt(seaCreature, position, 300f, SpawnLeviathan);
         }
 
         private static void Spawn(
@@ -562,8 +566,9 @@ namespace Seaborn.Hunting
             creature.transform.position = position;
             creature.transform.rotation =
                 Quaternion.Euler(0f, heading, 0f);
-            creature.AddComponent<
-                PrototypeSeaCreature>();
+            var target = creature.AddComponent<PrototypeSeaCreature>();
+            Seaborn.World.PrototypePopulationDirector.EnsureCreated()
+                .RegisterHunt(target, position, 60f, next => Spawn(creatureName, next, heading));
         }
     }
 }
