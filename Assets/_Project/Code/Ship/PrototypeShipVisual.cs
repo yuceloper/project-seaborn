@@ -346,7 +346,7 @@ namespace Seaborn.Ship
                 false
             );
             instance.name = "Seaborn Sloop Production Visual";
-            TuneProductionRenderers(instance);
+            // Preserve the authored textured material colors; no runtime warm tint.
 
             foreach (Collider visualCollider in
                      instance.GetComponentsInChildren<Collider>(true))
@@ -392,26 +392,6 @@ namespace Seaborn.Ship
             return true;
         }
 
-
-        private static void TuneProductionRenderers(
-            GameObject instance)
-        {
-            Color visibilityTint =
-                new Color(1.18f, 1.12f, 1.05f, 1f);
-
-            foreach (Renderer renderer in
-                     instance.GetComponentsInChildren<Renderer>(true))
-            {
-                MaterialPropertyBlock properties =
-                    new MaterialPropertyBlock();
-                renderer.GetPropertyBlock(properties);
-                properties.SetColor(
-                    "_BaseColor",
-                    visibilityTint
-                );
-                renderer.SetPropertyBlock(properties);
-            }
-        }
 
         private static Bounds CalculateBoundsInRoot(
             GameObject target,
