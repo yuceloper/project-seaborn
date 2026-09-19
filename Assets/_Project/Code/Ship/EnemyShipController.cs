@@ -9,7 +9,9 @@ namespace Seaborn.Ship
     {
         Skirmisher,
         Gunship,
-        Marauder
+        Marauder,
+        FishingBoat,
+        Merchant
     }
 
     [RequireComponent(typeof(Rigidbody))]
@@ -58,6 +60,9 @@ namespace Seaborn.Ship
             get;
             private set;
         } = EnemyShipArchetype.Marauder;
+
+        public bool IsCivilian => Archetype == EnemyShipArchetype.FishingBoat ||
+            Archetype == EnemyShipArchetype.Merchant;
 
         public bool IsAggressive { get; private set; }
 
@@ -166,6 +171,16 @@ namespace Seaborn.Ship
 
             switch (archetype)
             {
+                case EnemyShipArchetype.FishingBoat:
+                case EnemyShipArchetype.Merchant:
+                    bool fishing = archetype == EnemyShipArchetype.FishingBoat;
+                    name = fishing ? "Kıyı Balıkçısı" : "Yük Tüccarı";
+                    forwardSpeed = fishing ? 3.8f : 2.8f;
+                    turnSpeed = fishing ? 55f : 35f;
+                    detectionRange = 25f;
+                    shipHealth.SetRuntimeMaximumHealthMultiplier(fishing ? 0.48f : 0.88f, true);
+                    break;
+
                 case EnemyShipArchetype.Skirmisher:
                     name = "Razorwind Skirmisher";
                     detectionRange = 25f;
@@ -313,6 +328,19 @@ namespace Seaborn.Ship
             }
             else outOfFireRangeAt = -1f;
 
+            if (IsCivilian)
+            {
+                aimPreparation = 0f;
+                Vector3 escape = ClampToMap(shipRigidbody.position - targetDirection * 18f);
+                Vector3 direction = escape - shipRigidbody.position;
+                direction.y = 0f;
+                // Turn along the edge instead of pushing against a clamped boundary.
+                if (direction.sqrMagnitude < 16f)
+                    direction = Vector3.ProjectOnPlane(-shipRigidbody.position, Vector3.up);
+                SteerAndMove(direction.normalized, forwardSpeed);
+                return;
+            }
+
             Navigate(
                 targetDirection,
                 distance
@@ -374,6 +402,12 @@ namespace Seaborn.Ship
                 ResumeApproach();
             }
             aimPreparation = 0f;
+            if (IsCivilian)
+            {
+                SetPassive();
+                Patrol();
+                return;
+            }
             if (Time.time - targetLostAt >= CombatExitDelay)
             {
                 SetPassive();
@@ -391,7 +425,7 @@ namespace Seaborn.Ship
             Vector3 targetDirection,
             float distance)
         {
-            if (attackPhase != AttackPhase.Hold)
+            if (IsCivilian || attackPhase != AttackPhase.Hold)
             {
                 aimPreparation = 0f;
                 return;

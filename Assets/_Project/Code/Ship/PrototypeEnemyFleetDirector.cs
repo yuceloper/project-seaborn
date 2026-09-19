@@ -96,7 +96,7 @@ namespace Seaborn.Ship
             initialized = true;
             Debug.Log(
                 $"{MapLabel(scene)} filosu hazır: " +
-                $"{archetypes.Length} düşman gemisi.",
+                $"{archetypes.Length} gemi (3 korsan, 2 sivil).",
                 this
             );
         }
@@ -104,36 +104,12 @@ namespace Seaborn.Ship
         private static EnemyShipArchetype[]
             ProfileArchetypes(string scene)
         {
-            if (scene == "PrototypeWesternReach")
-            {
-                return new[]
-                {
-                    EnemyShipArchetype.Marauder,
-                    EnemyShipArchetype.Gunship,
-                    EnemyShipArchetype.Skirmisher,
-                    EnemyShipArchetype.Gunship,
-                    EnemyShipArchetype.Marauder
-                };
-            }
-
-            if (scene == "PrototypeEasternReach")
-            {
-                return new[]
-                {
-                    EnemyShipArchetype.Skirmisher,
-                    EnemyShipArchetype.Skirmisher,
-                    EnemyShipArchetype.Marauder,
-                    EnemyShipArchetype.Skirmisher,
-                    EnemyShipArchetype.Marauder
-                };
-            }
-
             return new[]
             {
+                EnemyShipArchetype.FishingBoat,
+                EnemyShipArchetype.Merchant,
                 EnemyShipArchetype.Skirmisher,
-                EnemyShipArchetype.Marauder,
-                EnemyShipArchetype.Skirmisher,
-                EnemyShipArchetype.Marauder,
+                scene == "PrototypeWesternReach" ? EnemyShipArchetype.Gunship : EnemyShipArchetype.Marauder,
                 EnemyShipArchetype.Gunship
             };
         }

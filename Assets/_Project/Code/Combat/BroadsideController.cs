@@ -268,7 +268,8 @@ namespace Seaborn.Combat
 
         private bool CanFire(BroadsideSide side)
         {
-            return !IsBlockedBySafeHarbor &&
+            var npc = GetComponent<Seaborn.Ship.EnemyShipController>();
+            return (npc == null || !npc.IsCivilian) && !IsBlockedBySafeHarbor &&
                    GetCooldownRemaining(side) <= 0f &&
                    GetAmmunitionStock(selectedAmmunition) > 0;
         }
@@ -280,7 +281,8 @@ namespace Seaborn.Combat
 
         public int GetBroadsideCannonCount(BroadsideSide side)
         {
-            return GetFiringMuzzles(side).Length;
+            var npc = GetComponent<Seaborn.Ship.EnemyShipController>();
+            return npc != null && npc.IsCivilian ? 0 : GetFiringMuzzles(side).Length;
         }
 
         private Transform[] GetFiringMuzzles(BroadsideSide side)

@@ -215,6 +215,8 @@ namespace Seaborn.UI
         {
             return archetype switch
             {
+                EnemyShipArchetype.FishingBoat => new Color(0.48f, 0.85f, 0.65f),
+                EnemyShipArchetype.Merchant => new Color(0.86f, 0.83f, 0.59f),
                 EnemyShipArchetype.Skirmisher =>
                     new Color(0.45f, 0.88f, 0.9f),
                 EnemyShipArchetype.Gunship =>

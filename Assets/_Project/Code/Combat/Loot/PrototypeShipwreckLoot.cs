@@ -215,6 +215,8 @@ namespace Seaborn.Combat.Loot
         {
             int baseSilver = archetype switch
             {
+                EnemyShipArchetype.FishingBoat => 20,
+                EnemyShipArchetype.Merchant => 100,
                 EnemyShipArchetype.Skirmisher => 80,
                 EnemyShipArchetype.Gunship => 180,
                 _ => 110
@@ -222,7 +224,8 @@ namespace Seaborn.Combat.Loot
             float regionMultiplier = sceneName == "PrototypeWesternReach" ? 1.5f
                 : sceneName == "PrototypeEasternReach" ? 0.9f : 1f;
             silverReward = Mathf.RoundToInt(baseSilver * regionMultiplier);
-            ammunitionReward = sceneName == "PrototypeWesternReach" ? 8
+            ammunitionReward = archetype == EnemyShipArchetype.FishingBoat ||
+                archetype == EnemyShipArchetype.Merchant ? 0 : sceneName == "PrototypeWesternReach" ? 8
                 : sceneName == "PrototypeEasternReach" ? 4 : 6;
         }
 
