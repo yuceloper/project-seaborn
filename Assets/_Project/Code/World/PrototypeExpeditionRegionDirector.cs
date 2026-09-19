@@ -37,7 +37,8 @@ namespace Seaborn.World
             "PrototypeWesternReach";
         private const string EastScene =
             "PrototypeEasternReach";
-        private const float Edge = 82f;
+        public const float MapEdge = 82f;
+        private const float Edge = MapEdge;
 
         public static PrototypeExpeditionRegionDirector
             Instance { get; private set; }

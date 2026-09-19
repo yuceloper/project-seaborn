@@ -54,6 +54,8 @@ namespace Seaborn.Ship
         private ShipMotor shipMotor;
         private float motionPhase;
         private float turnLean;
+        private EnemyShipController npc;
+        private EnemyShipArchetype builtArchetype;
 
         private void Awake()
         {
@@ -90,11 +92,9 @@ namespace Seaborn.Ship
                 }
             }
 
-            bool isEnemy =
-                name.IndexOf(
-                    "Enemy",
-                    StringComparison.OrdinalIgnoreCase
-                ) >= 0;
+            npc = GetComponent<EnemyShipController>();
+            bool isEnemy = npc != null;
+            if (isEnemy) builtArchetype = npc.Archetype;
 
             Transform staleVisual =
                 transform.Find("Ship Visual");
@@ -133,6 +133,21 @@ namespace Seaborn.Ship
 
         private void LateUpdate()
         {
+            if (npc != null && npc.Archetype != builtArchetype)
+            {
+                // Fleet configuration may arrive after Awake or after cloning a ship.
+                builtArchetype = npc.Archetype;
+                if (visualRoot != null)
+                {
+                    visualRoot.gameObject.SetActive(false);
+                    Destroy(visualRoot.gameObject);
+                }
+                foreach (var mesh in meshes) if (mesh != null) Destroy(mesh);
+                foreach (var material in materials) if (material != null) Destroy(material);
+                meshes.Clear();
+                materials.Clear();
+                BuildVisual(true);
+            }
             if (motionRoot == null)
             {
                 return;
@@ -266,6 +281,12 @@ namespace Seaborn.Ship
                 0.42f
             );
 
+            if (isEnemy)
+            {
+                BuildNpcVisual(deckMaterial, darkMaterial);
+                return;
+            }
+
             PrototypeModularShipAssembler assembler =
                 GetComponent<
                     PrototypeModularShipAssembler>();
@@ -329,6 +350,110 @@ namespace Seaborn.Ship
         }
 
 
+        private void BuildNpcVisual(Material deck, Material dark)
+        {
+            EnemyShipArchetype role = npc.Archetype;
+            bool fishing = role == EnemyShipArchetype.FishingBoat;
+            bool merchant = role == EnemyShipArchetype.Merchant;
+            bool gunship = role == EnemyShipArchetype.Gunship;
+            Color hull = fishing ? new Color(0.12f, 0.37f, 0.42f)
+                : merchant ? new Color(0.30f, 0.20f, 0.12f)
+                : gunship ? new Color(0.14f, 0.17f, 0.20f) : new Color(0.25f, 0.10f, 0.08f);
+            Color canvas = fishing ? new Color(0.83f, 0.76f, 0.56f)
+                : merchant ? new Color(0.87f, 0.82f, 0.65f)
+                : gunship ? new Color(0.37f, 0.43f, 0.48f)
+                : role == EnemyShipArchetype.Skirmisher ? new Color(0.22f, 0.55f, 0.58f)
+                : new Color(0.60f, 0.16f, 0.12f);
+            ApplyEnemyPalette(hull, canvas, merchant ? new Color(0.12f, 0.34f, 0.55f)
+                : fishing ? new Color(0.67f, 0.45f, 0.18f) : new Color(0.84f, 0.58f, 0.21f));
+
+            // A tapered mesh replaces the rectangular hull sections. Physics stays on the ship root.
+            CreateHull(hullMaterial);
+            Part("Deck", new Vector3(0f, 0.30f, -0.15f), new Vector3(1.55f, 0.12f, 3.8f), deck);
+            for (int side = -1; side <= 1; side += 2)
+            {
+                Beam("Bulwark", new Vector3(side * 0.94f, 0.52f, -1.65f),
+                    new Vector3(side * 0.88f, 0.52f, 1.35f), 0.065f, accentMaterial);
+                for (int i = 0; i < 6; i++)
+                    Part("Rail Post", new Vector3(side * 0.91f, 0.43f, -1.5f + i * 0.5f),
+                        new Vector3(0.05f, 0.30f, 0.05f), deck);
+            }
+            if (fishing)
+            {
+                Part("Wheelhouse", new Vector3(0f, 0.78f, -1.15f), new Vector3(0.95f, 0.85f, 0.85f), deck);
+                Part("Blue Cabin Roof", new Vector3(0f, 1.25f, -1.15f), new Vector3(1.15f, 0.12f, 1.05f), hullMaterial);
+                Part("Cabin Window", new Vector3(0f, 0.88f, -0.71f), new Vector3(0.66f, 0.25f, 0.02f), dark);
+                for (int side = -1; side <= 1; side += 2)
+                {
+                    Beam("Net Boom", new Vector3(side * 0.55f, 0.55f, 0.15f),
+                        new Vector3(side * 1.55f, 1.65f, 0.65f), 0.045f, deck);
+                    for (int strand = 0; strand < 5; strand++)
+                    {
+                        float z = -0.15f + strand * 0.24f;
+                        Beam("Fishing Net", new Vector3(side * 1.15f, 1.1f, z),
+                            new Vector3(side * 0.8f, 0.35f, z), 0.012f, dark);
+                    }
+                    for (int row = 0; row < 4; row++)
+                        Beam("Net Weave", new Vector3(side * (0.8f + row * 0.115f), 0.35f + row * 0.25f, -0.15f),
+                            new Vector3(side * (0.8f + row * 0.115f), 0.35f + row * 0.25f, 0.81f), 0.012f, dark);
+                }
+                Part("Canvas Awning", new Vector3(0f, 1.40f, 0.60f), new Vector3(1.3f, 0.07f, 1.25f), sailMaterial);
+                for (int i = 0; i < 3; i++)
+                    Part("Fish Crate", new Vector3(-0.45f + i * 0.45f, 0.52f, 1.45f), new Vector3(0.36f, 0.30f, 0.50f), deck);
+                return;
+            }
+
+            Part("Stern Cabin", new Vector3(0f, 0.73f, -1.55f),
+                new Vector3(1.22f, merchant ? 0.80f : 0.58f, 0.95f), hullMaterial);
+            Part("Cabin Roof", new Vector3(0f, merchant ? 1.18f : 1.06f, -1.55f),
+                new Vector3(1.35f, 0.10f, 1.10f), accentMaterial);
+            BuildNpcMast(0.65f, merchant || gunship ? 3.35f : 2.95f, dark);
+            if (merchant || gunship) BuildNpcMast(-0.9f, 2.65f, dark);
+            Beam("Bowsprit", new Vector3(0f, 0.5f, 1.7f), new Vector3(0f, 0.85f, 3.15f), 0.045f, deck);
+            if (merchant)
+            {
+                for (int i = 0; i < 6; i++)
+                    Part("Cargo Crate", new Vector3(i % 2 == 0 ? -0.46f : 0.46f, 0.66f, -0.55f + i / 2 * 0.63f),
+                        new Vector3(0.64f, 0.57f, 0.53f), i % 2 == 0 ? deck : accentMaterial);
+                return;
+            }
+            var assembler = GetComponent<PrototypeModularShipAssembler>();
+            if (assembler == null) assembler = gameObject.AddComponent<PrototypeModularShipAssembler>();
+            assembler.BuildHardpointsOnly(motionRoot, dark);
+            CreateCannons(dark);
+            if (gunship)
+                Part("Raised Gun Deck", new Vector3(0f, 0.42f, -0.1f), new Vector3(1.65f, 0.16f, 2.7f), deck);
+        }
+
+        private void BuildNpcMast(float z, float height, Material timber)
+        {
+            Beam("Mast", new Vector3(0f, 0.35f, z), new Vector3(0f, height, z), 0.055f, timber);
+            Beam("Yard", new Vector3(-0.95f, height - 0.35f, z),
+                new Vector3(0.95f, height - 0.35f, z), 0.035f, timber);
+            Vector3 a = new Vector3(-0.9f, height - 0.4f, z);
+            Vector3 b = new Vector3(0.9f, height - 0.4f, z);
+            Vector3 c = new Vector3(-0.72f, height - 1.6f, z + 0.22f);
+            Vector3 d = new Vector3(0.72f, height - 1.6f, z + 0.22f);
+            CreateSail("Canvas Port", new[] {a, c, b}, sailMaterial);
+            CreateSail("Canvas Starboard", new[] {b, c, d}, sailMaterial);
+            Beam("Rigging", new Vector3(-0.85f, 0.5f, z - 0.6f), new Vector3(0f, height - 0.15f, z), 0.012f, timber);
+            Beam("Rigging", new Vector3(0.85f, 0.5f, z - 0.6f), new Vector3(0f, height - 0.15f, z), 0.012f, timber);
+            Part("Pennant", new Vector3(0.25f, height - 0.12f, z), new Vector3(0.5f, 0.22f, 0.035f), accentMaterial);
+        }
+
+        private void Part(string label, Vector3 position, Vector3 scale, Material material)
+        {
+            CreatePrimitivePart(label, PrimitiveType.Cube, position, scale, Quaternion.identity, material);
+        }
+
+        private void Beam(string label, Vector3 from, Vector3 to, float radius, Material material)
+        {
+            Vector3 delta = to - from;
+            CreatePrimitivePart(label, PrimitiveType.Cylinder, (from + to) * 0.5f,
+                new Vector3(radius * 2f, delta.magnitude * 0.5f, radius * 2f),
+                Quaternion.FromToRotation(Vector3.up, delta.normalized), material);
+        }
+
         private bool TryBuildProductionVisual()
         {
             GameObject template =
@@ -346,7 +471,7 @@ namespace Seaborn.Ship
                 false
             );
             instance.name = "Seaborn Sloop Production Visual";
-            TuneProductionRenderers(instance);
+            // Preserve the authored textured material colors; no runtime warm tint.
 
             foreach (Collider visualCollider in
                      instance.GetComponentsInChildren<Collider>(true))
@@ -392,26 +517,6 @@ namespace Seaborn.Ship
             return true;
         }
 
-
-        private static void TuneProductionRenderers(
-            GameObject instance)
-        {
-            Color visibilityTint =
-                new Color(1.18f, 1.12f, 1.05f, 1f);
-
-            foreach (Renderer renderer in
-                     instance.GetComponentsInChildren<Renderer>(true))
-            {
-                MaterialPropertyBlock properties =
-                    new MaterialPropertyBlock();
-                renderer.GetPropertyBlock(properties);
-                properties.SetColor(
-                    "_BaseColor",
-                    visibilityTint
-                );
-                renderer.SetPropertyBlock(properties);
-            }
-        }
 
         private static Bounds CalculateBoundsInRoot(
             GameObject target,

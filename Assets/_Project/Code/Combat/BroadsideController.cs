@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using Seaborn.Expeditions;
 using UnityEngine;
 
@@ -47,6 +48,7 @@ namespace Seaborn.Combat
         private float crewReloadMultiplier = 1f;
 
         public event Action AmmunitionStateChanged;
+        public event Action<AmmunitionType, int> AmmunitionConsumed;
         public event Action<BroadsideSide> BroadsideFired;
 
         public AmmunitionType SelectedAmmunition => selectedAmmunition;
@@ -65,6 +67,14 @@ namespace Seaborn.Combat
             crewReloadMultiplier;
         public bool IsBlockedBySafeHarbor =>
             !PrototypeSafeHarborProtection.AllowsWeapons(gameObject);
+
+        public void RestoreEnemyLife(int standard, int chain, int grapeshot)
+        {
+            StopAllCoroutines();
+            nextPortFireTime = nextStarboardFireTime = 0f;
+            portReloadDuration = starboardReloadDuration = 0f;
+            RestorePersistentState(selectedAmmunition, standard, chain, grapeshot);
+        }
 
         public bool TrySelectAmmunition(AmmunitionType ammunitionType)
         {
@@ -202,11 +212,16 @@ namespace Seaborn.Combat
         {
             if (!CanFire(side)) return false;
 
-            Transform[] muzzles = GetMuzzles(side);
+            Vector3 toTarget = Vector3.ProjectOnPlane(targetPoint - transform.position, Vector3.up);
+            Vector3 outward = side == BroadsideSide.Port ? -transform.right : transform.right;
+            // Reject a stale tracked aim point on the opposite side of the hull.
+            if (toTarget.sqrMagnitude < 0.01f || Vector3.Dot(outward, toTarget.normalized) < 0.5f)
+                return false;
+            Transform[] muzzles = GetFiringMuzzles(side);
             if (cannonballPrefab == null || muzzles == null || muzzles.Length == 0) return false;
 
             int loadedCannons = Mathf.Min(
-                InstalledCannons,
+                muzzles.Length,
                 GetAmmunitionStock(selectedAmmunition)
             );
             if (loadedCannons <= 0) return false;
@@ -214,6 +229,7 @@ namespace Seaborn.Combat
             AmmunitionType firedType = selectedAmmunition;
             AmmunitionProfile profile = AmmunitionProfile.Get(firedType);
             ConsumeAmmunition(firedType, loadedCannons);
+            AmmunitionConsumed?.Invoke(firedType, loadedCannons);
             SetReload(side, profile.ReloadMultiplier);
             StartCoroutine(FireBroadsideAt(
                 muzzles,
@@ -224,6 +240,8 @@ namespace Seaborn.Combat
                 loadedCannons
             ));
 
+            if (GetComponent<ManualBroadsideAimController>() != null)
+                PrototypeCameraShake.Request(0.02f, 0.08f);
             BroadsideFired?.Invoke(side);
             AmmunitionStateChanged?.Invoke();
             return true;
@@ -250,7 +268,8 @@ namespace Seaborn.Combat
 
         private bool CanFire(BroadsideSide side)
         {
-            return !IsBlockedBySafeHarbor &&
+            var npc = GetComponent<Seaborn.Ship.EnemyShipController>();
+            return (npc == null || !npc.IsCivilian) && !IsBlockedBySafeHarbor &&
                    GetCooldownRemaining(side) <= 0f &&
                    GetAmmunitionStock(selectedAmmunition) > 0;
         }
@@ -258,6 +277,32 @@ namespace Seaborn.Combat
         private Transform[] GetMuzzles(BroadsideSide side)
         {
             return side == BroadsideSide.Port ? portMuzzles : starboardMuzzles;
+        }
+
+        public int GetBroadsideCannonCount(BroadsideSide side)
+        {
+            var npc = GetComponent<Seaborn.Ship.EnemyShipController>();
+            return npc != null && npc.IsCivilian ? 0 : GetFiringMuzzles(side).Length;
+        }
+
+        private Transform[] GetFiringMuzzles(BroadsideSide side)
+        {
+            // InstalledCannons is the total ship loadout. Alternate assignments
+            // port/starboard; an odd final cannon belongs to port.
+            int budget = side == BroadsideSide.Port
+                ? (InstalledCannons + 1) / 2 : InstalledCannons / 2;
+            var result = new List<Transform>();
+            Transform[] candidates = GetMuzzles(side);
+            if (candidates == null) return result.ToArray();
+            foreach (Transform muzzle in candidates)
+            {
+                if (result.Count >= budget) break;
+                if (muzzle == null || !muzzle.gameObject.activeInHierarchy || result.Contains(muzzle)) continue;
+                float localX = transform.InverseTransformPoint(muzzle.position).x;
+                if (side == BroadsideSide.Port ? localX >= 0f : localX <= 0f) continue;
+                result.Add(muzzle);
+            }
+            return result.ToArray();
         }
 
         private void SetReload(BroadsideSide side, float reloadMultiplier)
@@ -292,15 +337,9 @@ namespace Seaborn.Combat
             float spreadRadius = Mathf.Lerp(1.8f, 0.12f, accuracy) * profile.SpreadMultiplier;
             int firedCannons = 0;
 
-            int validMuzzleCount = CountValidMuzzles(muzzles);
-            if (validMuzzleCount <= 0) yield break;
-
             for (int cannonIndex = 0; cannonIndex < loadedCannons; cannonIndex++)
             {
-                Transform muzzle = GetValidMuzzle(
-                    muzzles,
-                    cannonIndex % validMuzzleCount
-                );
+                Transform muzzle = muzzles[cannonIndex];
                 if (muzzle == null) continue;
 
                 Vector3 baseDirection = targetPoint - muzzle.position;
@@ -308,7 +347,7 @@ namespace Seaborn.Combat
                 if (baseDirection.sqrMagnitude <= Mathf.Epsilon) continue;
 
                 PrototypeCombatVfx.PlayMuzzleBurst(muzzle.position, baseDirection.normalized);
-                PrototypeCameraShake.Request(0.06f, 0.08f);
+
 
                 for (int projectileIndex = 0;
                      projectileIndex < profile.ProjectilesPerCannon;
@@ -342,7 +381,7 @@ namespace Seaborn.Combat
             toTarget.y = 0f;
             if (toTarget.sqrMagnitude <= Mathf.Epsilon) return;
 
-            float maximumRange = projectileRange * profile.RangeMultiplier;
+            float maximumRange = projectileRange * profile.RangeMultiplier * skillRangeMultiplier;
             float distance = Mathf.Clamp(toTarget.magnitude, 0.1f, maximumRange);
             Vector3 clampedTarget = muzzle.position + toTarget.normalized * distance;
             clampedTarget.y = targetPoint.y;
@@ -368,29 +407,6 @@ namespace Seaborn.Combat
             projectile.LaunchAt(transform, clampedTarget, duration, height);
         }
 
-        private static Transform GetValidMuzzle(
-            Transform[] muzzles,
-            int validIndex)
-        {
-            int current = 0;
-            foreach (Transform muzzle in muzzles)
-            {
-                if (muzzle == null) continue;
-                if (current == validIndex) return muzzle;
-                current++;
-            }
-
-            return null;
-        }
-
-        private static int CountValidMuzzles(Transform[] muzzles)
-        {
-            int count = 0;
-            foreach (Transform muzzle in muzzles)
-                if (muzzle != null) count++;
-            return count;
-        }
-
         private void ConsumeAmmunition(AmmunitionType ammunitionType, int amount)
         {
             SetAmmunitionStock(
@@ -411,3 +427,4 @@ namespace Seaborn.Combat
         }
     }
 }
+

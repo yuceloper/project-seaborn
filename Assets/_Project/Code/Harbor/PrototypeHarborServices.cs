@@ -30,8 +30,11 @@ namespace Seaborn.Harbor
         MonoBehaviour
     {
         [Header("Repair")]
-        [SerializeField, Min(1)]
-        private int silverPerHealthPoint = 1;
+        // New field names intentionally replace the serialized prototype 1 Silver/HP tariff.
+        [SerializeField, Min(0.001f)]
+        private float hullRepairSilverPerPoint = 0.025f;
+        [SerializeField, Min(0.001f)]
+        private float subsystemRepairSilverPerPoint = 0.1f;
 
         [Header("Supply bundles")]
         [SerializeField, Min(1)]
@@ -76,10 +79,10 @@ namespace Seaborn.Harbor
                 );
                 float subsystemDamage =
                     subsystems != null
-                        ? subsystems.MissingIntegrity * 0.5f
+                        ? subsystems.MissingIntegrity * Mathf.Max(0.001f, subsystemRepairSilverPerPoint)
                         : 0f;
                 return Mathf.CeilToInt(
-                    missingHealth * silverPerHealthPoint +
+                    missingHealth * Mathf.Max(0.001f, hullRepairSilverPerPoint) +
                     subsystemDamage
                 );
             }

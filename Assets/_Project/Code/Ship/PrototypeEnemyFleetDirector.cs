@@ -88,10 +88,15 @@ namespace Seaborn.Ship
                 Destroy(existing[i].gameObject);
             }
 
+            var population = Seaborn.World.PrototypePopulationDirector.EnsureCreated();
+            foreach (var ship in FindObjectsByType<EnemyShipController>(FindObjectsSortMode.None))
+            {
+                if (ship.gameObject.activeInHierarchy) population.RegisterShip(ship);
+            }
             initialized = true;
             Debug.Log(
                 $"{MapLabel(scene)} filosu hazır: " +
-                $"{archetypes.Length} düşman gemisi.",
+                $"{archetypes.Length} gemi (3 korsan, 2 sivil).",
                 this
             );
         }
@@ -99,60 +104,26 @@ namespace Seaborn.Ship
         private static EnemyShipArchetype[]
             ProfileArchetypes(string scene)
         {
-            if (scene == "PrototypeWesternReach")
-            {
-                return new[]
-                {
-                    EnemyShipArchetype.Marauder,
-                    EnemyShipArchetype.Gunship,
-                    EnemyShipArchetype.Skirmisher,
-                    EnemyShipArchetype.Gunship,
-                    EnemyShipArchetype.Marauder
-                };
-            }
-
-            if (scene == "PrototypeEasternReach")
-            {
-                return new[]
-                {
-                    EnemyShipArchetype.Skirmisher
-                };
-            }
-
             return new[]
             {
+                EnemyShipArchetype.FishingBoat,
+                EnemyShipArchetype.Merchant,
                 EnemyShipArchetype.Skirmisher,
-                EnemyShipArchetype.Marauder
+                scene == "PrototypeWesternReach" ? EnemyShipArchetype.Gunship : EnemyShipArchetype.Marauder,
+                EnemyShipArchetype.Gunship
             };
         }
 
         private static Vector3[]
             ProfilePositions(string scene)
         {
-            if (scene == "PrototypeWesternReach")
-            {
-                return new[]
-                {
-                    new Vector3(-25f, 0.5f, -15f),
-                    new Vector3(-10f, 0.5f, 10f),
-                    new Vector3(15f, 0.5f, -5f),
-                    new Vector3(25f, 0.5f, 20f),
-                    new Vector3(-20f, 0.5f, 28f)
-                };
-            }
-
-            if (scene == "PrototypeEasternReach")
-            {
-                return new[]
-                {
-                    new Vector3(-25f, 0.5f, 24f)
-                };
-            }
-
             return new[]
             {
-                new Vector3(-18f, 0.5f, 16f),
-                new Vector3(18f, 0.5f, 23f)
+                new Vector3(-38f, 0.5f, -24f),
+                new Vector3(34f, 0.5f, -22f),
+                new Vector3(-32f, 0.5f, 24f),
+                new Vector3(36f, 0.5f, 26f),
+                new Vector3(0f, 0.5f, 44f)
             };
         }
 
