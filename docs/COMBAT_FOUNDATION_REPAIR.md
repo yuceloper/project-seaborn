@@ -40,15 +40,19 @@ hardpoint yoksa daha fazla kurulu top ek atış üretmez. Sahiplik silinmez; HUD
 tersane gerçek aktif borda adetlerini gösterir. Diğer gemi sınıfları için yeterli
 model/hardpoint üretimi sonraki çalışmadır. Gizli sanal toplara geri dönülmemeli.
 
-### Düşman manevrası
+### Düşman konum alma — kullanıcı kararıyla güncel davranış
 
-Yaklaşma → sabit doğrultulu borda geçişi → mesafe açma → yeniden yaklaşma.
-Geçiş doğrultusu başlangıçta seçilir, her kare oyuncunun çevresine çevrilmez.
-Bir geçişte en fazla bir salvo; başarısız yaklaşma altı saniyede sonlanır.
-Salvodan bir saniye sonra mesafe açılır, kaçış rotası dört saniye korunur.
-Fazla yakınlık erken ayrılma üretir. Hız değişimi ivmeyle uygulanır; dönme
-sırasında hız azalır. Ateş için gerçek seçili mühimmat menzili de kontrol edilir.
-Bu ilk davranış turudur; tam engelden kaçınma/filo koordinasyonu içermez.
+Düşman yalnızca çatışmanın başında hareket ederek menzile gelir, bulunduğu yerde
+bir kez bordasını açar ve durur. Çatışma boyunca yatay konumu ve dönüşü kilitlidir.
+Salvodan sonra ayrılma, yeniden yaklaşma veya hedefin çevresinde dönme yoktur.
+Hedef ateş yayından/menzilinden çıkarsa ateşi bekler; yer değiştirmez.
+Hedef uygun açıya dönerse bağımsız borda dolumlarıyla ateşe devam eder.
+
+Hedefin algılama menzili dışında veya görünmez olarak kesintisiz 5 saniye kalması
+çatışmayı bitirir. Yeni hasar bu kayıp sayacını sıfırlar. Hedefin yok olması,
+batması veya SetPassive çağrısı da kilidi kaldırır. Yeniden saldırıya uğradığında
+yeni çatışma için bir kez daha konum alabilir. Kilit yalnızca yatay konum ve yaw
+içindir; batışta normal fizik kısıtları geri yüklenir.
 
 ### Can ve ekonomi başlangıç değerleri
 
@@ -76,8 +80,11 @@ Bunlar final ekonomi değildir; 15–25 dakikalık sefer ölçümü hâlâ gerek
    üç azalmalı, yalnız iskele dolumu başlamalı. Sağ için tersini doğrula.
 3. İsabet alırken sabit gemi yerinden sıçramamalı; hareketli gemi eski konumuna
    geri çekilmemeli. Gerçek gövde çarpışmasının çalıştığını ayrıca kontrol et.
-4. Tek düşmanla durağan ve hareketli hedef olarak savaş. En az üç yaklaşmada
-   borda geçişi, salvo fırsatı ve ayrılma gözlenmeli; kesintisiz orbit olmamalı.
+4. Tek düşmana saldır: bir kez menzile gelip bordasını açmalı ve durmalı.
+   Birkaç salvo boyunca konumu ve yönü değişmemeli. Ateş yayından çıkıp geri
+   dön: yeniden konum almadan ateşe devam etmeli. Algılama menzilinden 5 saniye
+   uzaklaş, sonra yeniden saldır: yeni çatışmada yeniden konum alabilmeli.
+   Pasife alınma ve batışta fizik kilidinin kalktığını kontrol et.
 5. Avcı, Yağmacı ve Topçu'yu ayrı dene. Salvo/hasar/yelken/mürettebat kaybını kaydet.
 6. Merkezde enkaz ödüllerini ve limana dönüş raporunu doğrula. Aynı karşılaşmadan
    önceki kayıtla süre, harcanan gülle ve onarım giderini karşılaştır.
