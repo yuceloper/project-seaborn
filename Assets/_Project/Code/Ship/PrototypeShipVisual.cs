@@ -235,6 +235,10 @@ namespace Seaborn.Ship
                 TryBuildFishingBoatVisual())
                 return;
 
+            if (isEnemy && npc.Archetype == EnemyShipArchetype.Merchant &&
+                TryBuildMerchantBoatVisual())
+                return;
+
             if (!isEnemy && TryBuildProductionVisual())
             {
                 Material productionCannonMaterial =
@@ -465,6 +469,21 @@ namespace Seaborn.Ship
             // The editor-generated prefab already has scale, heading and waterline correction.
             GameObject instance = Instantiate(prefab, motionRoot, false);
             instance.name = "Meshy Fishing Boat Visual";
+            foreach (Collider collider in instance.GetComponentsInChildren<Collider>(true))
+            {
+                collider.enabled = false;
+                Destroy(collider);
+            }
+            return true;
+        }
+
+        private bool TryBuildMerchantBoatVisual()
+        {
+            GameObject prefab = Resources.Load<GameObject>("SeabornMerchantBoatVisual");
+            if (prefab == null) return false;
+            // The editor-generated prefab already has scale, heading and waterline correction.
+            GameObject instance = Instantiate(prefab, motionRoot, false);
+            instance.name = "Meshy Merchant Boat Visual";
             foreach (Collider collider in instance.GetComponentsInChildren<Collider>(true))
             {
                 collider.enabled = false;
