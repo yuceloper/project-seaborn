@@ -120,6 +120,30 @@ namespace Seaborn.Hunting
             BuildVisual();
         }
 
+        private void Start()
+        {
+            // Spawners finish Configure/AddComponent after Awake. Select the normal hunt
+            // visual here so Stormjaw keeps its own body and crown, including on respawn.
+            if (GetComponent<PrototypeLeviathanBehavior>() != null ||
+                IsMovementExternallyControlled || transform.localScale.x >= 1.5f)
+                return;
+            GameObject prefab = Resources.Load<GameObject>("SeabornWhaleVisual");
+            if (prefab == null || visualRoot == null) return;
+            foreach (Transform child in visualRoot)
+            {
+                child.gameObject.SetActive(false);
+                Destroy(child.gameObject);
+            }
+            GameObject instance = Instantiate(prefab, visualRoot, false);
+            instance.name = "Meshy Whale Visual";
+            foreach (Collider collider in instance.GetComponentsInChildren<Collider>(true))
+            {
+                collider.enabled = false;
+                Destroy(collider);
+            }
+            // Keep the existing root target collider, movement, bobbing and sink flow.
+        }
+
         private void Update()
         {
             if (IsHarvested ||
@@ -522,3 +546,4 @@ namespace Seaborn.Hunting
         }
     }
 }
+
