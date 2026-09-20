@@ -96,8 +96,10 @@ namespace Seaborn.Editor
                 root = new GameObject("Seaborn Fishing Boat Visual");
                 var visual = Object.Instantiate(model, root.transform);
                 visual.name = "Fishing Boat Model";
-                // Meshy source length is along X. The boat root travels along +Z.
-                visual.transform.localRotation = Quaternion.Euler(0f, 90f, 0f);
+                // Preserve the FBX importer's axis correction (the Meshy model has an authored -90 X rotation).
+                // Apply heading in parent space without replacing that correction.
+                visual.transform.localRotation = Quaternion.Euler(0f, 90f, 0f) *
+                    visual.transform.localRotation;
                 foreach (var collider in visual.GetComponentsInChildren<Collider>(true))
                     Object.DestroyImmediate(collider);
                 foreach (var renderer in visual.GetComponentsInChildren<Renderer>(true))
