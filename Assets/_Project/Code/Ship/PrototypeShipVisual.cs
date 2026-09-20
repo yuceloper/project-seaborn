@@ -247,6 +247,10 @@ namespace Seaborn.Ship
                 TryBuildCrimsonCorsairVisual())
                 return;
 
+            if (isEnemy && npc.Archetype == EnemyShipArchetype.Marauder &&
+                TryBuildDuskwindVisual())
+                return;
+
             if (!isEnemy && TryBuildProductionVisual())
             {
                 Material productionCannonMaterial =
@@ -542,6 +546,35 @@ namespace Seaborn.Ship
 
             GameObject instance = Instantiate(prefab, motionRoot, false);
             instance.name = "Meshy CrimsonCorsair Visual";
+            foreach (Collider collider in instance.GetComponentsInChildren<Collider>(true))
+            {
+                collider.enabled = false;
+                Destroy(collider);
+            }
+            var port = new Transform[3];
+            var starboard = new Transform[3];
+            for (int i = 0; i < 3; i++)
+            {
+                port[i] = instance.transform.Find("Port Muzzle " + i);
+                starboard[i] = instance.transform.Find("Starboard Muzzle " + i);
+            }
+            broadside.SetRuntimeMuzzles(port, starboard);
+            return true;
+        }
+
+        private bool TryBuildDuskwindVisual()
+        {
+            GameObject prefab = Resources.Load<GameObject>("SeabornDuskwindVisual");
+            var broadside = GetComponent<Seaborn.Combat.BroadsideController>();
+            if (prefab == null || broadside == null) return false;
+            // Reject incomplete prefabs before creating a visual or replacing live muzzles.
+            for (int i = 0; i < 3; i++)
+                if (prefab.transform.Find("Port Muzzle " + i) == null ||
+                    prefab.transform.Find("Starboard Muzzle " + i) == null)
+                    return false;
+
+            GameObject instance = Instantiate(prefab, motionRoot, false);
+            instance.name = "Meshy Duskwind Visual";
             foreach (Collider collider in instance.GetComponentsInChildren<Collider>(true))
             {
                 collider.enabled = false;
@@ -1025,5 +1058,6 @@ namespace Seaborn.Ship
         }
     }
 }
+
 
 
