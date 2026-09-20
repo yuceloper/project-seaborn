@@ -97,8 +97,9 @@ namespace Seaborn.Editor
                 var visual = Object.Instantiate(model, root.transform);
                 visual.name = "Fishing Boat Model";
                 // Preserve the FBX importer's axis correction (the Meshy model has an authored -90 X rotation).
-                // Apply heading in parent space without replacing that correction.
-                visual.transform.localRotation = Quaternion.Euler(0f, 90f, 0f) *
+                // The fishing boat's bow needs a further 180-degree turn to face ship-local +Z.
+                // Preserve the imported upright correction when rebuilding the prefab.
+                visual.transform.localRotation = Quaternion.Euler(0f, 270f, 0f) *
                     visual.transform.localRotation;
                 foreach (var collider in visual.GetComponentsInChildren<Collider>(true))
                     Object.DestroyImmediate(collider);
