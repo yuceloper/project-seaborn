@@ -231,6 +231,10 @@ namespace Seaborn.Ship
             motionRoot = motionObject.transform;
             motionRoot.SetParent(visualRoot, false);
 
+            if (isEnemy && npc.Archetype == EnemyShipArchetype.FishingBoat &&
+                TryBuildFishingBoatVisual())
+                return;
+
             if (!isEnemy && TryBuildProductionVisual())
             {
                 Material productionCannonMaterial =
@@ -452,6 +456,21 @@ namespace Seaborn.Ship
             CreatePrimitivePart(label, PrimitiveType.Cylinder, (from + to) * 0.5f,
                 new Vector3(radius * 2f, delta.magnitude * 0.5f, radius * 2f),
                 Quaternion.FromToRotation(Vector3.up, delta.normalized), material);
+        }
+
+        private bool TryBuildFishingBoatVisual()
+        {
+            GameObject prefab = Resources.Load<GameObject>("SeabornFishingBoatVisual");
+            if (prefab == null) return false;
+            // The editor-generated prefab already has scale, heading and waterline correction.
+            GameObject instance = Instantiate(prefab, motionRoot, false);
+            instance.name = "Meshy Fishing Boat Visual";
+            foreach (Collider collider in instance.GetComponentsInChildren<Collider>(true))
+            {
+                collider.enabled = false;
+                Destroy(collider);
+            }
+            return true;
         }
 
         private bool TryBuildProductionVisual()
