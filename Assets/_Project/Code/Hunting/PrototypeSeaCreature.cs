@@ -122,12 +122,12 @@ namespace Seaborn.Hunting
 
         private void Start()
         {
-            // Spawners finish Configure/AddComponent after Awake. Select the normal hunt
-            // visual here so Stormjaw keeps its own body and crown, including on respawn.
-            if (GetComponent<PrototypeLeviathanBehavior>() != null ||
-                IsMovementExternallyControlled || transform.localScale.x >= 1.5f)
+            // Select after the spawner adds the boss component and applies its 1.7 scale.
+            bool isBoss = GetComponent<PrototypeLeviathanBehavior>() != null;
+            if (!isBoss && (IsMovementExternallyControlled || transform.localScale.x >= 1.5f))
                 return;
-            GameObject prefab = Resources.Load<GameObject>("SeabornWhaleVisual");
+            GameObject prefab = Resources.Load<GameObject>(
+                isBoss ? "SeabornStormjawVisual" : "SeabornWhaleVisual");
             if (prefab == null || visualRoot == null) return;
             foreach (Transform child in visualRoot)
             {
@@ -135,7 +135,7 @@ namespace Seaborn.Hunting
                 Destroy(child.gameObject);
             }
             GameObject instance = Instantiate(prefab, visualRoot, false);
-            instance.name = "Meshy Whale Visual";
+            instance.name = isBoss ? "Meshy Stormjaw Visual" : "Meshy Whale Visual";
             foreach (Collider collider in instance.GetComponentsInChildren<Collider>(true))
             {
                 collider.enabled = false;
@@ -546,4 +546,5 @@ namespace Seaborn.Hunting
         }
     }
 }
+
 
