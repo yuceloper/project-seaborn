@@ -132,7 +132,8 @@ namespace Seaborn.Progression
 
             SpendUpgradeMaterials(track);
             SetLevel(track, level + 1);
-            ApplyModifiers(true);
+            // Buying equipment must not replace the paid repair service.
+            ApplyModifiers(false);
             EquipmentChanged?.Invoke();
             return ShipUpgradeResult.Completed;
         }

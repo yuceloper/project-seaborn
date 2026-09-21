@@ -1,5 +1,6 @@
 using System;
 using Seaborn.Combat;
+using Seaborn.Equipment;
 using Seaborn.Expeditions;
 using Seaborn.Hunting;
 using Seaborn.Ship;
@@ -121,6 +122,9 @@ namespace Seaborn.Harbor
         public int GetBundleSize(
             PrototypeHarborServiceType serviceType)
         {
+            if (TryGetAmmunitionDefinition(serviceType, out AmmunitionDefinition definition))
+                return definition.bundleSize;
+
             switch (serviceType)
             {
                 case PrototypeHarborServiceType
@@ -144,6 +148,9 @@ namespace Seaborn.Harbor
         public int GetServiceCost(
             PrototypeHarborServiceType serviceType)
         {
+            if (TryGetAmmunitionDefinition(serviceType, out AmmunitionDefinition definition))
+                return definition.silverPricePerBundle;
+
             switch (serviceType)
             {
                 case PrototypeHarborServiceType.Repair:
@@ -165,6 +172,20 @@ namespace Seaborn.Harbor
                 default:
                     return 0;
             }
+        }
+
+        private static bool TryGetAmmunitionDefinition(
+            PrototypeHarborServiceType serviceType, out AmmunitionDefinition definition)
+        {
+            string id = serviceType switch
+            {
+                PrototypeHarborServiceType.StandardAmmunition => "standard",
+                PrototypeHarborServiceType.ChainAmmunition => "chain",
+                PrototypeHarborServiceType.GrapeshotAmmunition => "grapeshot",
+                _ => null
+            };
+            definition = null;
+            return id != null && EquipmentCatalog.TryGetAmmunition(id, out definition);
         }
 
         public PrototypeHarborServiceResult TryRepair()

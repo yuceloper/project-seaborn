@@ -62,6 +62,8 @@ namespace Seaborn.Ship
             }
 
             Definition = definition;
+            GetComponentInChildren<PrototypeHuntCargo>()?.SetRuntimeCapacity(
+                Mathf.Max(1, definition.cargoCapacity));
 
             ShipHealth health = GetComponentInChildren<ShipHealth>();
             health?.SetBaseMaximumHealth(

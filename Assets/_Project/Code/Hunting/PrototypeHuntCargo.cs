@@ -46,6 +46,15 @@ namespace Seaborn.Hunting
 
         private int runtimeCapacity = int.MaxValue;
 
+        private void Start()
+        {
+            // The hunting bootstrap can attach cargo after the ship profile has already applied.
+            var profile = GetComponentInParent<Seaborn.Ship.ShipProfileController>();
+            if (profile != null && profile.Definition != null)
+                SetRuntimeCapacity(Mathf.Max(1, profile.Definition.cargoCapacity));
+        }
+
+
         public void SetRuntimeCapacity(int capacity)
         {
             runtimeCapacity = Mathf.Max(1, capacity);

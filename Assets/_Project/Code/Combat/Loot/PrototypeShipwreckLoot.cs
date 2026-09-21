@@ -216,10 +216,10 @@ namespace Seaborn.Combat.Loot
             int baseSilver = archetype switch
             {
                 EnemyShipArchetype.FishingBoat => 20,
-                EnemyShipArchetype.Merchant => 100,
-                EnemyShipArchetype.Skirmisher => 80,
-                EnemyShipArchetype.Gunship => 180,
-                _ => 110
+                EnemyShipArchetype.Merchant => 65,
+                EnemyShipArchetype.Skirmisher => 110,
+                EnemyShipArchetype.Gunship => 210,
+                _ => 145
             };
             float regionMultiplier = sceneName == "PrototypeWesternReach" ? 1.5f
                 : sceneName == "PrototypeEasternReach" ? 0.9f : 1f;
