@@ -119,8 +119,8 @@ namespace Seaborn.Ship
         {
             return new[]
             {
-                new Vector3(-38f, 0.5f, -24f),
-                new Vector3(34f, 0.5f, -22f),
+                new Vector3(-38f, 0.5f, -42f),
+                new Vector3(8f, 0.5f, -12f),
                 new Vector3(-32f, 0.5f, 24f),
                 new Vector3(36f, 0.5f, 26f),
                 new Vector3(0f, 0.5f, 44f)

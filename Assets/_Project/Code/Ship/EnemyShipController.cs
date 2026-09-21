@@ -96,6 +96,9 @@ namespace Seaborn.Ship
         private Vector3 patrolDestination;
         private Vector3 lastSeenPosition;
         private bool hasPatrolDestination;
+        private Vector3 patrolHome;
+        private bool merchantOutbound;
+        private BroadsideSide preparingSide;
         private float patrolDeadline;
         private float outOfFireRangeAt = -1f;
         private const float BoundaryMargin = 8f;
@@ -127,8 +130,13 @@ namespace Seaborn.Ship
             if (!hasPatrolDestination || delta.sqrMagnitude < 9f || Time.time >= patrolDeadline)
             {
                 // Local waypoints keep each ship roaming rather than crossing the entire map.
-                Vector2 offset = Random.insideUnitCircle.normalized * Random.Range(14f, 30f);
-                patrolDestination = ClampToMap(shipRigidbody.position +
+                Vector2 offset = Random.insideUnitCircle * (IsCivilian ? 10f : 14f);
+                if (Archetype == EnemyShipArchetype.Merchant)
+                {
+                    merchantOutbound = !merchantOutbound;
+                    offset = merchantOutbound ? new Vector2(12f, 18f) : new Vector2(-12f, -18f);
+                }
+                patrolDestination = ClampToMap(patrolHome +
                     new Vector3(offset.x, 0f, offset.y));
                 hasPatrolDestination = true;
                 patrolDeadline = Time.time + 25f;
@@ -148,6 +156,7 @@ namespace Seaborn.Ship
 
         private void Awake()
         {
+            patrolHome = transform.position;
             shipRigidbody = GetComponent<Rigidbody>();
             shipRigidbody.constraints |= RigidbodyConstraints.FreezeRotationX |
                 RigidbodyConstraints.FreezeRotationZ;
@@ -168,6 +177,7 @@ namespace Seaborn.Ship
             EnemyShipArchetype archetype)
         {
             Archetype = archetype;
+            patrolHome = transform.position;
 
             switch (archetype)
             {
@@ -443,65 +453,35 @@ namespace Seaborn.Ship
 
             if (!hasFiringSolution)
             {
-                aimPreparation = Mathf.Max(
-                    0f,
-                    aimPreparation -
-                    Time.fixedDeltaTime
-                );
+                aimPreparation = 0f;
                 return;
             }
 
-            PredictedAimPoint = target.position;
-
-            Rigidbody trackedTargetRigidbody =
-                target.GetComponent<Rigidbody>();
-
-            if (trackedTargetRigidbody != null)
+            BroadsideSide side = sideAlignment >= 0f
+                ? BroadsideSide.Starboard : BroadsideSide.Port;
+            if (broadsideController.GetCooldownRemaining(side) > 0f ||
+                broadsideController.GetAmmunitionStock(broadsideController.SelectedAmmunition) <= 0)
             {
-                PredictedAimPoint +=
-                    trackedTargetRigidbody.linearVelocity *
-                    movementPrediction;
+                aimPreparation = 0f;
+                return;
             }
-
-            PredictedAimPoint =
-                new Vector3(
-                    PredictedAimPoint.x,
-                    transform.position.y + 0.25f,
-                    PredictedAimPoint.z
-                );
-
+            if (side != preparingSide) aimPreparation = 0f;
+            preparingSide = side;
+            // Show an honest preparation window, then lock aim so movement can dodge it.
+            if (aimPreparation <= 0f || aimPreparation < Mathf.Max(0f, aimPreparationTime - 0.4f))
+            {
+                Vector3 point = target.position;
+                Rigidbody tracked = target.GetComponent<Rigidbody>();
+                if (tracked != null) point += tracked.linearVelocity * movementPrediction;
+                point.y = transform.position.y + 0.25f;
+                PredictedAimPoint = point;
+            }
             aimPreparation += Time.fixedDeltaTime;
-
-            if (aimPreparation < aimPreparationTime)
-            {
-                return;
-            }
-
-            BroadsideSide side =
-                sideAlignment >= 0f
-                    ? BroadsideSide.Starboard
-                    : BroadsideSide.Port;
-
-            Vector3 predictedTarget =
-                target.position;
-
-            Rigidbody targetRigidbody =
-                target.GetComponent<Rigidbody>();
-
-            if (targetRigidbody != null)
-            {
-                predictedTarget +=
-                    targetRigidbody.linearVelocity *
-                    movementPrediction;
-            }
-
-            predictedTarget.y =
-                transform.position.y + 0.25f;
-            PredictedAimPoint = predictedTarget;
+            if (aimPreparation < aimPreparationTime) return;
 
             if (broadsideController.TryFireAt(
                     side,
-                    predictedTarget,
+                    PredictedAimPoint,
                     0.82f))
             {
                 aimPreparation = 0f;
@@ -635,4 +615,3 @@ namespace Seaborn.Ship
         }
     }
 }
-

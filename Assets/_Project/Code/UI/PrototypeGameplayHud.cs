@@ -71,6 +71,12 @@ namespace Seaborn.UI
         private Text targetSailText;
         private Text targetCrewText;
         private RectTransform targetHullFill;
+        private RectTransform targetDamageFill;
+        private ShipHealth displayedTarget;
+        private float previousTargetHull;
+        private float delayedTargetHull;
+        private float targetDamageUntil;
+        private float targetRefreshTime;
         private RectTransform targetSailFill;
         private RectTransform targetCrewFill;
         private Image targetHullImage;
@@ -250,6 +256,11 @@ namespace Seaborn.UI
             targetNameText = CreateText(target,font,"",15,Cream,FontStyle.Bold,new(25,-14),new(230,21));
             targetStateText = CreateText(target,font,"",11,Gold,FontStyle.Normal,new(252,-17),new(112,20),TextAnchor.UpperRight);
             targetHullFill = CreateBar(target,"Target Hull",new(25,-40),new(340,9),out targetHullImage);
+            // A duplicate fill shares the background, behind the immediate health fill.
+            targetDamageFill = Instantiate(targetHullFill, targetHullFill.parent);
+            targetDamageFill.name = "Recent Damage";
+            targetDamageFill.SetAsFirstSibling();
+            targetDamageFill.GetComponent<Image>().color = Gold;
             targetSailText = CreateText(target,font,"",10,Cream,FontStyle.Normal,new(25,-53),new(150,16));
             targetCrewText = CreateText(target,font,"",10,Cream,FontStyle.Normal,new(212,-53),new(150,16),TextAnchor.UpperRight);
             targetSailFill = CreateBar(target,"Target Sail",new(25,-71),new(150,5),out _);
@@ -428,7 +439,7 @@ namespace Seaborn.UI
                     (harbor
                         ? "TİCARET VE HAZIRLIK MERKEZİ"
                         : "SİSTEMLER HAZIRLANIYOR") +
-                    DailyContractLine();
+                    ExpeditionContractLine();
                 SetBar(pressureFill, 0f);
                 return;
             }
@@ -445,25 +456,32 @@ namespace Seaborn.UI
             int seconds = Mathf.FloorToInt(director.ElapsedTime);
             expeditionDetailText.text =
                 (director.IsActive
-                    ? $"{danger}   •   {seconds / 60:00}:{seconds % 60:00}   •   HEDEF {director.CurrentUnsecuredValue} / {director.RecommendedReturnValue}"
+                    ? $"{danger}   •   {seconds / 60:00}:{seconds % 60:00}   •   YÜK {director.CurrentUnsecuredValue} SILVER"
                     : director.State == PrototypeExpeditionState.AtHarbor
                         ? $"{danger}   •   SEFERE HAZIRLAN"
                         : $"{danger}   •   SÜRE {seconds / 60:00}:{seconds % 60:00}") +
-                DailyContractLine();
+                ExpeditionContractLine();
             SetBar(pressureFill, director.PressureNormalized);
         }
 
-        private static string DailyContractLine()
+        private string ExpeditionContractLine()
         {
             PrototypeContractBoard board =
                 PrototypeContractBoard.Instance;
             PrototypeContractProgress active =
-                board?.SelectedDailyContract;
+                board?.SelectedExpeditionContract;
             if (active == null)
             {
                 return "";
             }
 
+            if (active.Definition.Objective == PrototypeContractObjective.DeliverPirateWreck)
+            {
+                if (active.RewardClaimed) return "\nÖDÜL ALINDI • TERSANEDE TOP GELİŞTİR";
+                if (cargo != null && cargo.PirateWreckCount > 0)
+                    return "\nENKAZ ALINDI • GÜNEYDEN LİMANA DÖN";
+                return "\nKORSAN AVI • KUZEY • ENKAZ: E";
+            }
             return $"\nGÖREV  •  " +
                 $"{active.Definition.Title.ToUpperInvariant()}  " +
                 $"{active.Current}/{active.Definition.Target}";
@@ -622,6 +640,10 @@ namespace Seaborn.UI
             slot.Count.text = stock.ToString();
             slot.Count.color = stock > 0 ? Cream : Muted;
             slot.Icon.color = stock > 0 ? Color.white : new Color(0.5f,0.5f,0.5f,0.75f);
+            ManualBroadsideAimController aiming = boundPlayer != null
+                ? boundPlayer.GetComponent<ManualBroadsideAimController>() : null;
+            if (index >= 5 && seconds <= 0f && aiming != null && aiming.IsAiming)
+                slot.Icon.color *= new Color(1f, 1f, 1f, 0.55f);
             slot.Selection.SetActive(selected);
             slot.Background.enabled = !selected;
             slot.Timer.text = seconds > 0f ? $"{Mathf.CeilToInt(seconds)}s" : "";
@@ -878,6 +900,7 @@ namespace Seaborn.UI
                 return;
             }
 
+            ManualBroadsideAimController aim = boundPlayer.GetComponent<ManualBroadsideAimController>();
             EnemyShipController[] enemies =
                 FindObjectsByType<EnemyShipController>(
                     FindObjectsSortMode.None
@@ -911,8 +934,9 @@ namespace Seaborn.UI
                     continue;
                 }
 
-                float score = distance -
-                    (enemy.IsAggressive ? 100f : 0f);
+                float score = aim != null && aim.IsAiming
+                    ? Vector3.Distance(aim.CurrentAimPoint, enemy.transform.position)
+                    : distance - (enemy.IsAggressive ? 100f : 0f);
                 if (score < bestScore)
                 {
                     bestScore = score;
@@ -921,7 +945,7 @@ namespace Seaborn.UI
             }
 
             targetPanel.SetActive(selected != null);
-            if (selected == null) return;
+            if (selected == null) { displayedTarget = null; return; }
 
             ShipHealth health =
                 selected.GetComponent<ShipHealth>();
@@ -933,6 +957,17 @@ namespace Seaborn.UI
                 health.CurrentHealth /
                 Mathf.Max(1f, health.MaximumHealth)
             );
+            float elapsed = Mathf.Clamp(Time.unscaledTime - targetRefreshTime, 0f, 0.2f);
+            targetRefreshTime = Time.unscaledTime;
+            if (displayedTarget != health || hull > previousTargetHull)
+                delayedTargetHull = hull;
+            else if (hull < previousTargetHull) targetDamageUntil = Time.unscaledTime + 0.45f;
+            displayedTarget = health;
+            previousTargetHull = hull;
+            if (Time.unscaledTime >= targetDamageUntil)
+                delayedTargetHull = Mathf.MoveTowards(delayedTargetHull, hull, elapsed * 0.45f);
+            SetBar(targetDamageFill, delayedTargetHull);
+
             float sail = systems != null
                 ? systems.SailNormalized
                 : 1f;
@@ -943,7 +978,7 @@ namespace Seaborn.UI
             targetNameText.text =
                 RoleLabel(selected.Archetype);
             targetStateText.text = selected.IsAggressive
-                ? "ÇATIŞMADA"
+                ? (selected.IsPreparingShot ? "SALVO HAZIRLIĞI" : "ÇATIŞMADA")
                 : "PASİF";
             targetStateText.color = selected.IsAggressive
                 ? Danger

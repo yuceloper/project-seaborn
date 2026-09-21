@@ -95,7 +95,7 @@ namespace Seaborn.World
             float limit = PrototypeExpeditionRegionDirector.MapEdge - 12f;
             for (int attempt = 0; attempt < 24; attempt++)
             {
-                Vector2 offset = UnityEngine.Random.insideUnitCircle * 30f;
+                Vector2 offset = UnityEngine.Random.insideUnitCircle * 10f;
                 Vector3 candidate = new Vector3(
                     Mathf.Clamp(home.x + offset.x, -limit, limit), home.y,
                     Mathf.Clamp(home.z + offset.y, -limit, limit));

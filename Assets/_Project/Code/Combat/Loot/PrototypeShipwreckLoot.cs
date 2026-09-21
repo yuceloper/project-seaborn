@@ -84,6 +84,7 @@ namespace Seaborn.Combat.Loot
         private float expiresAt;
         private float baseHeight;
         private bool collected;
+        private bool pirateWreck;
 
         public static void Create(
             Vector3 position,
@@ -116,6 +117,8 @@ namespace Seaborn.Combat.Loot
         {
             player = playerTransform;
             sourceScene = sceneName;
+            pirateWreck = archetype != EnemyShipArchetype.FishingBoat &&
+                archetype != EnemyShipArchetype.Merchant;
             ConfigureRewards(sceneName, archetype);
             expiresAt = Time.time + Lifetime;
             baseHeight = transform.position.y;
@@ -183,11 +186,8 @@ namespace Seaborn.Combat.Loot
                 return;
             }
 
+            if (!cargo.TryAddWreck(silverReward, pirateWreck)) return;
             collected = true;
-            cargo.AddCatch(
-                "Düşman gemisi enkazı",
-                silverReward
-            );
             broadside.AddAmmunition(
                 AmmunitionType.Standard,
                 ammunitionReward
@@ -359,6 +359,14 @@ namespace Seaborn.Combat.Loot
 
         private void OnGUI()
         {
+            if (player != null && UnityEngine.Camera.main != null)
+            {
+                float distance = HorizontalDistance(transform.position, player.position);
+                Vector3 screen = UnityEngine.Camera.main.WorldToScreenPoint(transform.position + Vector3.up);
+                if (distance > InteractionRadius && distance <= 24f && screen.z > 0f)
+                    GUI.Box(new Rect(screen.x - 85f, Screen.height - screen.y - 25f, 170f, 25f),
+                        $"ENKAZ • {distance:0} m");
+            }
             if (player == null ||
                 HorizontalDistance(
                     transform.position,
@@ -392,7 +400,9 @@ namespace Seaborn.Combat.Loot
 
             GUI.Label(
                 prompt,
-                "E — ENKAZ GANİMETİNİ TOPLA",
+                cargo != null && cargo.RemainingCapacity < silverReward
+                    ? "AMBARDA YER YOK — LİMANA TESLİM ET"
+                    : "E — ENKAZI TOPLA • LİMANA TAŞI",
                 style
             );
         }
@@ -478,4 +488,3 @@ namespace Seaborn.Combat.Loot
         }
     }
 }
-

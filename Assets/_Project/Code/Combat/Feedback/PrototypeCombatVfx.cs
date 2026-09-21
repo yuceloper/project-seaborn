@@ -69,6 +69,10 @@ namespace Seaborn.Combat
                 0.35f
             );
 
+            CreateBurst("Hull Splinters", position, surfaceDirection + Vector3.up * 0.4f,
+                new Color(0.66f, 0.43f, 0.21f),
+                8, 0.25f, 0.6f, 1.2f, 3f, 0.07f, 0.16f, 0.8f);
+
             CreateBurst(
                 "Impact Smoke",
                 position,
@@ -83,6 +87,13 @@ namespace Seaborn.Combat
                 0.32f,
                 -0.12f
             );
+        }
+
+        public static void PlayDamagedHullSmoke(Vector3 position)
+        {
+            CreateBurst("Damaged Hull Smoke", position, Vector3.up,
+                new Color(0.18f, 0.17f, 0.15f, 0.6f),
+                4, 1.0f, 1.7f, 0.3f, 0.6f, 0.2f, 0.45f, -0.04f);
         }
 
         public static void PlayWaterSplash(Vector3 position)

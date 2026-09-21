@@ -40,6 +40,8 @@ namespace Seaborn.Ship
                     transform
                 );
             CurrentHealth = MaximumHealth;
+            if (GetComponent<ShipCombatFeedback>() == null)
+                gameObject.AddComponent<ShipCombatFeedback>();
         }
 
         public void ApplyDamage(DamageInfo damageInfo)

@@ -161,8 +161,8 @@ namespace Seaborn.Progression
                 ShipUpgradeTrack.Hull =>
                     $"+%{level * 12} azami gövde",
                 ShipUpgradeTrack.Cannons =>
-                    $"+%{level * 8} hasar  •  " +
-                    $"-%{level * 5} dolum",
+                    $"+%{(level == 0 ? 0 : 15 + (level - 1) * 8)} hasar  •  " +
+                    $"-%{(level == 0 ? 0 : 10 + (level - 1) * 5)} dolum",
                 ShipUpgradeTrack.HarpoonGear =>
                     $"+%{level * 10} hasar  •  " +
                     $"-%{level * 5} dolum",
@@ -197,6 +197,7 @@ namespace Seaborn.Progression
         public bool CanAffordUpgradeMaterials(
             ShipUpgradeTrack track)
         {
+            if (track == ShipUpgradeTrack.Cannons && CannonLevel == 0) return true;
             if (materials == null)
             {
                 return false;
@@ -234,6 +235,8 @@ namespace Seaborn.Progression
         public string UpgradeRequirementDescription(
             ShipUpgradeTrack track)
         {
+            if (track == ShipUpgradeTrack.Cannons && CannonLevel == 0)
+                return "İlk top geliştirmesi: malzeme gerekmez";
             int level = GetLevel(track);
             if (level >= MaximumLevel)
             {
@@ -265,6 +268,7 @@ namespace Seaborn.Progression
         private void SpendUpgradeMaterials(
             ShipUpgradeTrack track)
         {
+            if (track == ShipUpgradeTrack.Cannons && CannonLevel == 0) return;
             int level = GetLevel(track);
             RegionalMaterialType primary =
                 PrimaryMaterial(track);
@@ -316,8 +320,8 @@ namespace Seaborn.Progression
                 restoreHull
             );
             broadside?.SetEquipmentModifiers(
-                1f + CannonLevel * 0.08f,
-                1f - CannonLevel * 0.05f
+                1f + (CannonLevel == 0 ? 0f : 0.15f + (CannonLevel - 1) * 0.08f),
+                1f - (CannonLevel == 0 ? 0f : 0.10f + (CannonLevel - 1) * 0.05f)
             );
             harpoons?.SetEquipmentModifiers(
                 1f + HarpoonLevel * 0.1f,

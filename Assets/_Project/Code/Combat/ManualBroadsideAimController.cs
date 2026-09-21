@@ -54,10 +54,27 @@ namespace Seaborn.Combat
             IsInsideFiringArc &&
             !IsCoolingDown &&
             broadsideController != null &&
+            !broadsideController.IsBlockedBySafeHarbor &&
             broadsideController.GetBroadsideCannonCount(SelectedBroadside) > 0 &&
             broadsideController.GetAmmunitionStock(
                 broadsideController.SelectedAmmunition
             ) > 0;
+
+        public string AimStatus
+        {
+            get
+            {
+                if (broadsideController == null) return "TOP BULUNAMADI";
+                if (broadsideController.IsBlockedBySafeHarbor) return "GÜVENLİ LİMAN";
+                if (!IsInRange) return "MENZİL DIŞI";
+                if (!IsInsideFiringArc) return "BORDAYI HEDEFE ÇEVİR";
+                if (broadsideController.GetBroadsideCannonCount(SelectedBroadside) == 0) return "BU BORDADA TOP YOK";
+                if (broadsideController.GetAmmunitionStock(broadsideController.SelectedAmmunition) <= 0) return "MÜHİMMAT YOK";
+                if (IsCoolingDown) return $"DOLDURULUYOR {CooldownRemaining:0.0}s";
+                string side = SelectedBroadside == BroadsideSide.Port ? "İSKELE" : "SANCAK";
+                return side + (AimReadiness < 0.9f ? " • NİŞAN TOPARLANIYOR" : " • ATEŞE HAZIR");
+            }
+        }
 
         private float preparation;
         private bool hasCurrentAimPoint;
@@ -227,4 +244,3 @@ namespace Seaborn.Combat
         }
     }
 }
-

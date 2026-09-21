@@ -32,6 +32,20 @@ namespace Seaborn.Combat
         private LineRenderer currentRing;
         private LineRenderer sideIndicator;
 
+        private GUIStyle statusStyle;
+        private void OnGUI()
+        {
+            if (aimController == null || !aimController.IsAiming || UnityEngine.Camera.main == null) return;
+            Vector3 point = UnityEngine.Camera.main.WorldToScreenPoint(aimController.CurrentAimPoint);
+            if (point.z <= 0f) return;
+            if (statusStyle == null) statusStyle = new GUIStyle(GUI.skin.box)
+                { alignment = TextAnchor.MiddleCenter, fontSize = 13, fontStyle = FontStyle.Bold };
+            statusStyle.normal.textColor = aimController.CanFire ? readyColor : Color.white;
+            GUI.Box(new Rect(Mathf.Clamp(point.x - 140f, 0f, Mathf.Max(0f, Screen.width - 280f)),
+                Mathf.Clamp(Screen.height - point.y + 26f, 0f, Mathf.Max(0f, Screen.height - 30f)),
+                280f, 30f), aimController.AimStatus, statusStyle);
+        }
+
         private Material desiredMaterial;
         private Material currentMaterial;
         private Material sideMaterial;

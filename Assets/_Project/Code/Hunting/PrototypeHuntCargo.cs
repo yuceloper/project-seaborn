@@ -16,6 +16,16 @@ namespace Seaborn.Hunting
         public event Action<string, int> CatchAdded;
         public event Action<int> CargoSecured;
         public event Action<int> CargoLost;
+        public event Action<int> PirateCargoSecured;
+        public int PirateWreckCount { get; private set; }
+
+        public bool TryAddWreck(int value, bool pirate)
+        {
+            if (value <= 0 || RemainingCapacity < value) return false;
+            if (pirate) PirateWreckCount++;
+            AddCatch(pirate ? "Korsan enkazı" : "Sivil gemi enkazı", value);
+            return true;
+        }
 
         public int UnsecuredSilverValue =>
             unsecuredSilverValue;
@@ -100,10 +110,14 @@ namespace Seaborn.Hunting
             }
 
             int securedValue = unsecuredSilverValue;
+            int pirateWrecks = PirateWreckCount;
+            PirateWreckCount = 0;
             unsecuredSilverValue = 0;
             catchCount = 0;
             wallet.AddSilver(securedValue);
             CargoChanged?.Invoke();
+            // Quest credit must precede the expedition completion notification.
+            if (pirateWrecks > 0) PirateCargoSecured?.Invoke(pirateWrecks);
             CargoSecured?.Invoke(securedValue);
             return securedValue;
         }
@@ -111,6 +125,7 @@ namespace Seaborn.Hunting
         public int LoseAllCargo()
         {
             int lostValue = unsecuredSilverValue;
+            PirateWreckCount = 0;
             unsecuredSilverValue = 0;
             catchCount = 0;
             CargoChanged?.Invoke();

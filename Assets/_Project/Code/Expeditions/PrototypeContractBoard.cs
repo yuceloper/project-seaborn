@@ -18,7 +18,8 @@ namespace Seaborn.Expeditions
         HuntStormjaw,
         HuntRareCreature,
         SecureSilver,
-        CompleteExpedition
+        CompleteExpedition,
+        DeliverPirateWreck
     }
 
     public sealed class PrototypeContractDefinition
@@ -170,6 +171,7 @@ namespace Seaborn.Expeditions
                 return;
             }
 
+            PrototypeExpeditionDirector.EnsureCreated(playerTransform);
             PrototypeContractBoard board =
                 FindFirstObjectByType<
                     PrototypeContractBoard>();
@@ -184,6 +186,7 @@ namespace Seaborn.Expeditions
                     PrototypeContractBoard>();
             }
 
+            board.transform.SetParent(playerTransform, false);
             board.BindPlayer(playerTransform);
         }
 
@@ -315,6 +318,7 @@ namespace Seaborn.Expeditions
             {
                 cargo.CatchAdded += HandleCatchAdded;
                 cargo.CargoSecured += HandleCargoSecured;
+                cargo.PirateCargoSecured += HandlePirateCargoSecured;
             }
 
             if (director != null)
@@ -355,6 +359,11 @@ namespace Seaborn.Expeditions
                     1
                 );
             }
+        }
+
+        private void HandlePirateCargoSecured(int count)
+        {
+            AddProgress(PrototypeContractObjective.DeliverPirateWreck, count);
         }
 
         private void HandleCargoSecured(int value)
@@ -642,6 +651,12 @@ namespace Seaborn.Expeditions
                 )
             );
 
+            expeditionContracts.Add(Create(
+                "pirate-recovery", "Korsan Avı",
+                "Kuzeyde bir korsan batır, enkazını E ile topla ve limana teslim et.",
+                PrototypeContractCadence.Expedition,
+                PrototypeContractObjective.DeliverPirateWreck, 1, 160));
+
             dailyContracts.Add(
                 Create(
                     "daily-secure-90",
@@ -771,6 +786,7 @@ namespace Seaborn.Expeditions
             {
                 cargo.CatchAdded -= HandleCatchAdded;
                 cargo.CargoSecured -= HandleCargoSecured;
+                cargo.PirateCargoSecured -= HandlePirateCargoSecured;
             }
 
             if (director != null)

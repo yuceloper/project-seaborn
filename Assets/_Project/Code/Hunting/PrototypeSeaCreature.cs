@@ -202,6 +202,9 @@ namespace Seaborn.Hunting
 
             Vector3 position = transform.position;
             position.y = 0.74f;
+            float mapLimit = Seaborn.World.PrototypeExpeditionRegionDirector.MapEdge - 8f;
+            position.x = Mathf.Clamp(position.x, -mapLimit, mapLimit);
+            position.z = Mathf.Clamp(position.z, -mapLimit, mapLimit);
             transform.position = position;
 
             if (visualRoot != null)
@@ -485,19 +488,24 @@ namespace Seaborn.Hunting
                 {
                     int index = row * 5 + column;
                     Vector3 position = new Vector3(
-                        -48f + column * 24f + (row % 2 == 0 ? -3f : 3f),
+                        (row < 2 ? -1f : 1f) * (44f + (row % 2) * 12f),
                         0.74f,
-                        -36f + row * 24f);
+                        -36f + column * 12f);
                     Spawn($"Tideback - {scene} {index + 1}",
                         position, (45f + index * 53f) % 360f);
                 }
             }
-            SpawnLeviathan(new Vector3(25f, 0.74f, 54f));
+            SpawnLeviathan(new Vector3(48f, 0.74f, 56f));
             Debug.Log($"{scene} av nüfusu: 20 Tideback, 1 Stormjaw.");
         }
 
-        private static void SpawnLeviathan(
-            Vector3 position)
+        private static void SpawnLeviathan(Vector3 position)
+        {
+            SpawnLeviathanAt(position, position);
+        }
+
+        private static void SpawnLeviathanAt(
+            Vector3 position, Vector3 home)
         {
             GameObject creature =
                 new GameObject(
@@ -527,14 +535,15 @@ namespace Seaborn.Hunting
             creature.AddComponent<
                 PrototypeLeviathanBehavior>();
             Seaborn.World.PrototypePopulationDirector.EnsureCreated()
-                .RegisterHunt(seaCreature, position, 300f, SpawnLeviathan);
+                .RegisterHunt(seaCreature, home, 300f, next => SpawnLeviathanAt(next, home));
         }
 
         private static void Spawn(
             string creatureName,
             Vector3 position,
-            float heading)
+            float heading, Vector3? originalHome = null)
         {
+            Vector3 home = originalHome ?? position;
             GameObject creature =
                 new GameObject(creatureName);
             creature.transform.position = position;
@@ -542,9 +551,7 @@ namespace Seaborn.Hunting
                 Quaternion.Euler(0f, heading, 0f);
             var target = creature.AddComponent<PrototypeSeaCreature>();
             Seaborn.World.PrototypePopulationDirector.EnsureCreated()
-                .RegisterHunt(target, position, 60f, next => Spawn(creatureName, next, heading));
+                .RegisterHunt(target, home, 60f, next => Spawn(creatureName, next, heading, home));
         }
     }
 }
-
-

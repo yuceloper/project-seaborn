@@ -79,10 +79,7 @@ namespace Seaborn.Expeditions
 
         public bool IsPlayerAtHarbor =>
             player != null &&
-            HorizontalDistance(
-                player.position,
-                harborPosition
-            ) <= harborRadius;
+            Seaborn.World.PrototypeExpeditionRegionDirector.IsHarborScene;
 
         private Transform player;
         private PrototypeHuntCargo cargo;
@@ -117,6 +114,7 @@ namespace Seaborn.Expeditions
                         PrototypeExpeditionDirector>();
             }
 
+            director.transform.SetParent(playerTransform, false);
             director.BindPlayer(playerTransform);
         }
 
@@ -139,6 +137,14 @@ namespace Seaborn.Expeditions
             }
 
             bool isAtHarbor = IsPlayerAtHarbor;
+            if (isAtHarbor &&
+                ((State == PrototypeExpeditionState.Failed && shipHealth != null && !shipHealth.IsSunk) ||
+                 (IsActive && cargo != null && !cargo.HasCargo)))
+            {
+                finalDuration = Mathf.Max(0f, Time.time - startedAt);
+                // An empty return unlocks preparation without granting a successful-voyage reward.
+                SetState(PrototypeExpeditionState.AtHarbor);
+            }
 
             if ((State ==
                     PrototypeExpeditionState.AtHarbor ||
@@ -156,8 +162,10 @@ namespace Seaborn.Expeditions
 
             if (State ==
                     PrototypeExpeditionState.Underway &&
-                CurrentUnsecuredValue >=
-                    recommendedReturnValue)
+                (CurrentUnsecuredValue >= recommendedReturnValue ||
+                 (cargo != null && cargo.PirateWreckCount > 0 &&
+                  PrototypeContractBoard.Instance?.SelectedExpeditionContract?.Definition.Objective ==
+                    PrototypeContractObjective.DeliverPirateWreck)))
             {
                 SetState(
                     PrototypeExpeditionState
