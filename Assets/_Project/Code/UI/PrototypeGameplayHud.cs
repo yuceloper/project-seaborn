@@ -977,11 +977,9 @@ namespace Seaborn.UI
 
             targetNameText.text =
                 RoleLabel(selected.Archetype);
-            targetStateText.text = selected.IsAggressive
-                ? (selected.IsPreparingShot ? "SALVO HAZIRLIĞI" : "ÇATIŞMADA")
-                : "PASİF";
+            targetStateText.text = selected.ActivityLabel;
             targetStateText.color = selected.IsAggressive
-                ? Danger
+                ? (selected.IsCivilian || selected.IsWithdrawing ? Gold : Danger)
                 : Muted;
             targetSailText.text =
                 $"YELKEN  %{sail * 100f:0}";

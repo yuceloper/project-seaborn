@@ -66,6 +66,31 @@ namespace Seaborn.Ship
 
         public bool IsAggressive { get; private set; }
 
+        public bool IsWithdrawing { get; private set; }
+
+        public string ActivityLabel
+        {
+            get
+            {
+                if (!IsAggressive) return "SEYİRDE";
+                if (IsCivilian) return "KAÇIYOR";
+                if (IsWithdrawing) return "CEPHANE YOK";
+                if (targetLostAt >= 0f) return "ARIYOR";
+                if (attackPhase == AttackPhase.Approach || outOfFireRangeAt >= 0f) return "YAKLAŞIYOR";
+                if (attackPhase == AttackPhase.Align || lostFiringArcAt >= 0f) return "HİZALANIYOR";
+                if (IsPreparingShot) return "NİŞAN ALIYOR";
+                if (broadsideController != null && target != null)
+                {
+                    Vector3 offset = target.position - transform.position;
+                    BroadsideSide side = Vector3.Dot(transform.right, offset) >= 0f
+                        ? BroadsideSide.Starboard : BroadsideSide.Port;
+                    float remaining = broadsideController.GetCooldownRemaining(side);
+                    if (remaining > 0f) return $"DOLUM {remaining:0.0}s";
+                }
+                return "HAZIRLANIYOR";
+            }
+        }
+
         public float AimPreparation =>
             Mathf.Clamp01(
                 aimPreparation /
@@ -335,6 +360,20 @@ namespace Seaborn.Ship
             Vector3 targetDirection =
                 toTarget / distance;
 
+            if (!IsCivilian)
+            {
+                bool wasWithdrawing = IsWithdrawing;
+                IsWithdrawing = !EnsureCombatAmmunition();
+                if (IsWithdrawing)
+                {
+                    if (!wasWithdrawing) ResumeApproach();
+                    aimPreparation = 0f;
+                    Flee(targetDirection);
+                    return;
+                }
+                if (wasWithdrawing) ResumeApproach();
+            }
+
             float effectiveRange = Mathf.Min(fireRange, broadsideController.MaximumRange);
             if (attackPhase != AttackPhase.Approach && distance > effectiveRange)
             {
@@ -346,20 +385,7 @@ namespace Seaborn.Ship
             if (IsCivilian)
             {
                 aimPreparation = 0f;
-                // Commit to a course instead of perfectly mirroring every player turn.
-                Vector3 projected = shipRigidbody.position + escapeHeading * 12f;
-                bool headingOutside = (projected - ClampToMap(projected)).sqrMagnitude > 0.01f;
-                if (Time.time >= nextEscapeDecision || escapeHeading.sqrMagnitude < 0.01f || headingOutside)
-                {
-                    Vector3 escape = ClampToMap(shipRigidbody.position - targetDirection * 18f);
-                    Vector3 direction = escape - shipRigidbody.position;
-                    direction.y = 0f;
-                    if (direction.sqrMagnitude < 16f || headingOutside)
-                        direction = Vector3.ProjectOnPlane(-shipRigidbody.position, Vector3.up);
-                    escapeHeading = direction.normalized;
-                    nextEscapeDecision = Time.time + 3f;
-                }
-                SteerAndMove(escapeHeading, forwardSpeed);
+                Flee(targetDirection);
                 return;
             }
 
@@ -372,6 +398,42 @@ namespace Seaborn.Ship
                 distance
             );
         }
+
+        private void Flee(Vector3 targetDirection)
+        {
+            // Commit to a course instead of perfectly mirroring every player turn.
+            Vector3 projected = shipRigidbody.position + escapeHeading * 12f;
+            bool headingOutside = (projected - ClampToMap(projected)).sqrMagnitude > 0.01f;
+            if (Time.time >= nextEscapeDecision || escapeHeading.sqrMagnitude < 0.01f || headingOutside)
+            {
+                Vector3 escape = ClampToMap(shipRigidbody.position - targetDirection * 18f);
+                Vector3 direction = escape - shipRigidbody.position;
+                direction.y = 0f;
+                if (direction.sqrMagnitude < 16f || headingOutside)
+                    direction = Vector3.ProjectOnPlane(-shipRigidbody.position, Vector3.up);
+                escapeHeading = direction.normalized;
+                nextEscapeDecision = Time.time + 3f;
+            }
+            SteerAndMove(escapeHeading, forwardSpeed);
+        }
+
+        private bool EnsureCombatAmmunition()
+        {
+            if (broadsideController.GetAmmunitionStock(broadsideController.SelectedAmmunition) > 0)
+                return true;
+            // Spend existing stock only. Changing rounds must not refill or reset reload timers.
+            foreach (AmmunitionType type in FallbackAmmunition)
+            {
+                if (broadsideController.GetAmmunitionStock(type) <= 0) continue;
+                broadsideController.TrySelectAmmunition(type);
+                aimPreparation = 0f;
+                return broadsideController.GetAmmunitionStock(broadsideController.SelectedAmmunition) > 0;
+            }
+            return false;
+        }
+
+        private static readonly AmmunitionType[] FallbackAmmunition =
+            { AmmunitionType.Standard, AmmunitionType.Chain, AmmunitionType.Grapeshot };
 
         private void Navigate(Vector3 targetDirection, float distance)
         {
@@ -441,7 +503,7 @@ namespace Seaborn.Ship
                 ResumeApproach();
             }
             aimPreparation = 0f;
-            if (IsCivilian)
+            if (IsCivilian || IsWithdrawing)
             {
                 SetPassive();
                 Patrol();
@@ -573,6 +635,7 @@ namespace Seaborn.Ship
         public void SetPassive()
         {
             IsAggressive = false;
+            IsWithdrawing = false;
             escapeHeading = Vector3.zero;
             nextEscapeDecision = 0f;
             lostFiringArcAt = -1f;
