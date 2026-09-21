@@ -98,7 +98,7 @@ namespace Seaborn.Persistence
             persistence.Bind(player);
         }
 
-        private string SavePath =>
+        public static string SavePath =>
             Path.Combine(Application.persistentDataPath, SaveFileName);
 
         private void Bind(Transform player)
@@ -219,19 +219,11 @@ namespace Seaborn.Persistence
 
         private void Load()
         {
-            if (!File.Exists(SavePath))
-            {
-                Debug.Log(
-                    "İlk kaptan kaydı hazırlanacak.",
-                    this
-                );
-                return;
-            }
-
             try
             {
-                string json = File.ReadAllText(SavePath);
-                SaveData data = JsonUtility.FromJson<SaveData>(json);
+                SaveData data = File.Exists(SavePath)
+                    ? JsonUtility.FromJson<SaveData>(File.ReadAllText(SavePath))
+                    : CreateNewCaptain();
                 if (data == null || data.version != CurrentVersion)
                 {
                     Debug.LogWarning(
@@ -626,27 +618,77 @@ namespace Seaborn.Persistence
             SaveNow();
         }
 
-        [ContextMenu("Delete Prototype Progress")]
-        private void DeletePrototypeProgress()
+        // One authoritative first-session profile: never inherit serialized cheat stocks.
+        private static SaveData CreateNewCaptain()
         {
+            return new SaveData
+            {
+                silver = 0,
+                gold = 0,
+                ownsStarterSloop = true,
+                activeShipId = "starter_sloop",
+                cannonId = "iron_6lb",
+                installedCannons = 6,
+                iron6LbCannons = 6,
+                sailId = "patched_canvas",
+                patchedCanvasSails = 1,
+                selectedHarpoonId = "light_2kg",
+                selectedAmmunition = (int)AmmunitionType.Standard,
+                standardStock = 120,
+                chainStock = 12,
+                grapeshotStock = 16,
+                lightHarpoonStock = 10,
+                heavyHarpoonStock = 0,
+                tortugaTonics = 1,
+                lightsOfTortuga = 0,
+                corsairRum = 0,
+                galeElixirs = 0,
+                ironbarkBrews = 0,
+                availableDeckExtensions = 0
+            };
+        }
+
+        // Reset on disk only when no live captain can autosave stale state over it.
+        // Returns the backup path, or null when there was no previous save.
+        public static string ResetSavedProgressForNewCaptain()
+        {
+            if (Application.isPlaying)
+                throw new InvalidOperationException("Önce Play Mode'u durdur; sonra ilerlemeyi sıfırla.");
+
+            Directory.CreateDirectory(Application.persistentDataPath);
+            string temporaryPath = SavePath + ".reset.tmp";
+            File.WriteAllText(temporaryPath, JsonUtility.ToJson(CreateNewCaptain(), true));
+            string backup = null;
             try
             {
                 if (File.Exists(SavePath))
                 {
-                    File.Delete(SavePath);
+                    backup = SavePath + ".before-reset-" +
+                        DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff") + "-" +
+                        Guid.NewGuid().ToString("N") + ".bak";
+                    File.Replace(temporaryPath, SavePath, backup);
                 }
+                else File.Move(temporaryPath, SavePath);
+            }
+            finally
+            {
+                if (File.Exists(temporaryPath)) File.Delete(temporaryPath);
+            }
+            return backup;
+        }
 
-                Debug.Log(
-                    "Prototip kaptan kaydı silindi.",
-                    this
-                );
+        [ContextMenu("Reset Prototype Progress (Stop Play Mode First)")]
+        private void DeletePrototypeProgress()
+        {
+            try
+            {
+                string backup = ResetSavedProgressForNewCaptain();
+                Debug.Log("Yeni kaptan kaydı hazır. Liman sahnesinden Play başlat. Yedek: " +
+                    (backup ?? "Önceki kayıt yok"), this);
             }
             catch (Exception exception)
             {
-                Debug.LogWarning(
-                    $"Kaptan kaydı silinemedi: {exception.Message}",
-                    this
-                );
+                Debug.LogWarning($"İlerleme sıfırlanamadı: {exception.Message}", this);
             }
         }
     }
