@@ -90,6 +90,10 @@ namespace Seaborn.Ship
         private enum AttackPhase { Approach, Align, Hold }
         private AttackPhase attackPhase;
         private Vector3 runHeading;
+        private float lostFiringArcAt = -1f;
+        private Vector3 escapeHeading;
+        private float nextEscapeDecision;
+        private const float RealignDelay = 0.9f;
         private float targetLostAt = -1f;
         private RigidbodyConstraints navigationConstraints;
         private const float CombatExitDelay = 5f;
@@ -152,6 +156,7 @@ namespace Seaborn.Ship
             attackPhase = AttackPhase.Approach;
             aimPreparation = 0f;
             outOfFireRangeAt = -1f;
+            lostFiringArcAt = -1f;
         }
 
         private void Awake()
@@ -185,8 +190,8 @@ namespace Seaborn.Ship
                 case EnemyShipArchetype.Merchant:
                     bool fishing = archetype == EnemyShipArchetype.FishingBoat;
                     name = fishing ? "Kıyı Balıkçısı" : "Yük Tüccarı";
-                    forwardSpeed = fishing ? 3.8f : 2.8f;
-                    turnSpeed = fishing ? 55f : 35f;
+                    forwardSpeed = fishing ? 2.5f : 1.8f;
+                    turnSpeed = fishing ? 24f : 18f;
                     detectionRange = 25f;
                     shipHealth.SetRuntimeMaximumHealthMultiplier(fishing ? 0.48f : 0.88f, true);
                     break;
@@ -331,7 +336,7 @@ namespace Seaborn.Ship
                 toTarget / distance;
 
             float effectiveRange = Mathf.Min(fireRange, broadsideController.MaximumRange);
-            if (attackPhase != AttackPhase.Approach && distance > effectiveRange + 1f)
+            if (attackPhase != AttackPhase.Approach && distance > effectiveRange)
             {
                 if (outOfFireRangeAt < 0f) outOfFireRangeAt = Time.time;
                 if (Time.time - outOfFireRangeAt >= 1.5f) ResumeApproach();
@@ -341,13 +346,20 @@ namespace Seaborn.Ship
             if (IsCivilian)
             {
                 aimPreparation = 0f;
-                Vector3 escape = ClampToMap(shipRigidbody.position - targetDirection * 18f);
-                Vector3 direction = escape - shipRigidbody.position;
-                direction.y = 0f;
-                // Turn along the edge instead of pushing against a clamped boundary.
-                if (direction.sqrMagnitude < 16f)
-                    direction = Vector3.ProjectOnPlane(-shipRigidbody.position, Vector3.up);
-                SteerAndMove(direction.normalized, forwardSpeed);
+                // Commit to a course instead of perfectly mirroring every player turn.
+                Vector3 projected = shipRigidbody.position + escapeHeading * 12f;
+                bool headingOutside = (projected - ClampToMap(projected)).sqrMagnitude > 0.01f;
+                if (Time.time >= nextEscapeDecision || escapeHeading.sqrMagnitude < 0.01f || headingOutside)
+                {
+                    Vector3 escape = ClampToMap(shipRigidbody.position - targetDirection * 18f);
+                    Vector3 direction = escape - shipRigidbody.position;
+                    direction.y = 0f;
+                    if (direction.sqrMagnitude < 16f || headingOutside)
+                        direction = Vector3.ProjectOnPlane(-shipRigidbody.position, Vector3.up);
+                    escapeHeading = direction.normalized;
+                    nextEscapeDecision = Time.time + 3f;
+                }
+                SteerAndMove(escapeHeading, forwardSpeed);
                 return;
             }
 
@@ -366,7 +378,20 @@ namespace Seaborn.Ship
             if (attackPhase == AttackPhase.Hold)
             {
                 StopMoving();
-                return;
+                float alignment = Mathf.Abs(Vector3.Dot(transform.right, targetDirection));
+                if (alignment >= fireAlignment)
+                {
+                    lostFiringArcAt = -1f;
+                    return;
+                }
+                if (lostFiringArcAt < 0f) lostFiringArcAt = Time.time;
+                if (Time.time - lostFiringArcAt < RealignDelay) return;
+                // Keep the position fixed, but unlock yaw when the player leaves the broadside.
+                attackPhase = AttackPhase.Align;
+                shipRigidbody.constraints = navigationConstraints |
+                    RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionZ;
+                aimPreparation = 0f;
+                lostFiringArcAt = -1f;
             }
 
             if (attackPhase == AttackPhase.Approach)
@@ -383,18 +408,22 @@ namespace Seaborn.Ship
                     SteerAndMove(-targetDirection, forwardSpeed);
                     return;
                 }
-                runHeading = Vector3.Cross(Vector3.up, targetDirection);
-                if (Vector3.Dot(runHeading, transform.forward) < 0f) runHeading = -runHeading;
                 attackPhase = AttackPhase.Align;
+                shipRigidbody.constraints = navigationConstraints |
+                    RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionZ;
             }
 
-            // Rotate once at the chosen location, then hold both position and yaw.
+            // Refresh the heading while aligning: a moving target invalidates a cached heading.
+            // Re-enter Hold as soon as a usable broadside has a small angular safety margin.
+            runHeading = Vector3.Cross(Vector3.up, targetDirection);
+            if (Vector3.Dot(runHeading, transform.forward) < 0f) runHeading = -runHeading;
             StopMoving();
             Quaternion desired = Quaternion.LookRotation(runHeading, Vector3.up);
             Quaternion next = Quaternion.RotateTowards(shipRigidbody.rotation, desired,
                 turnSpeed * (subsystems != null ? subsystems.TurnMultiplier : 1f) * Time.fixedDeltaTime);
             shipRigidbody.MoveRotation(next);
-            if (Quaternion.Angle(shipRigidbody.rotation, desired) <= 3f)
+            if (Mathf.Abs(Vector3.Dot(transform.right, targetDirection)) >=
+                Mathf.Min(0.98f, fireAlignment + 0.06f))
             {
                 attackPhase = AttackPhase.Hold;
                 shipRigidbody.constraints = navigationConstraints |
@@ -479,14 +508,9 @@ namespace Seaborn.Ship
             aimPreparation += Time.fixedDeltaTime;
             if (aimPreparation < aimPreparationTime) return;
 
-            if (broadsideController.TryFireAt(
-                    side,
-                    PredictedAimPoint,
-                    0.82f))
-            {
-                aimPreparation = 0f;
-
-            }
+            broadsideController.TryFireAt(side, PredictedAimPoint, 0.82f);
+            // A rejected locked prediction must not stall every following attempt.
+            aimPreparation = 0f;
         }
 
         private void SteerAndMove(
@@ -505,11 +529,19 @@ namespace Seaborn.Ship
                     Vector3.up
                 );
 
+            float turnAuthority = 1f;
+            if (IsCivilian)
+            {
+                float planarSpeed = Vector3.ProjectOnPlane(shipRigidbody.linearVelocity, Vector3.up).magnitude;
+                // Civilian rudders need water flow; no full-speed pivot at rest.
+                turnAuthority = Mathf.Lerp(0.12f, 0.65f,
+                    Mathf.Clamp01(planarSpeed / Mathf.Max(0.1f, forwardSpeed)));
+            }
             Quaternion nextRotation =
                 Quaternion.RotateTowards(
                     shipRigidbody.rotation,
                     desiredRotation,
-                    turnSpeed *
+                    turnSpeed * turnAuthority *
                     (subsystems != null
                         ? subsystems.TurnMultiplier
                         : 1f) *
@@ -541,6 +573,9 @@ namespace Seaborn.Ship
         public void SetPassive()
         {
             IsAggressive = false;
+            escapeHeading = Vector3.zero;
+            nextEscapeDecision = 0f;
+            lostFiringArcAt = -1f;
             hasPatrolDestination = false;
             outOfFireRangeAt = -1f;
             attackPhase = AttackPhase.Approach;
@@ -583,6 +618,8 @@ namespace Seaborn.Ship
             }
 
             IsAggressive = true;
+            nextEscapeDecision = 0f;
+            ResumeApproach();
             engagementStartTime = Time.time;
             Debug.Log(
                 $"{name} saldırıya karşılık veriyor.",
