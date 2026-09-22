@@ -49,6 +49,8 @@ namespace Seaborn.Harbor
         private Text harpoonText;
         private Text recurringText;
         private Text readinessText;
+        private Button prepareButton;
+        private HarborPreparationQuote preparationQuote;
         private Button repairButton;
         private Button standardButton;
         private Button chainButton;
@@ -301,20 +303,25 @@ namespace Seaborn.Harbor
                 panel.transform,
                 "Readiness",
                 "",
-                15,
+                13,
                 Cream,
                 new Vector2(24f, -718f),
-                new Vector2(404f, 145f)
+                new Vector2(404f, 190f)
             );
+
+            prepareButton = CreateActionButton(panel.transform, "HAZIRLA",
+                new Vector2(24f, -922f), () => RunService(services != null
+                    ? services.TryPrepare(preparationQuote) : PrototypeHarborServiceResult.Unavailable));
+            prepareButton.GetComponent<RectTransform>().sizeDelta = new Vector2(404f, 40f);
 
             Text hint = CreateText(
                 panel.transform,
                 "Departure Hint",
-                "Liman halkasından ayrıldığında sefer başlar",
+                "Hazırlık sonrası limandan ayrılarak sefere çıkabilirsin.",
                 13,
                 Gold,
-                new Vector2(24f, -885f),
-                new Vector2(404f, 44f),
+                new Vector2(24f, -976f),
+                new Vector2(404f, 28f),
                 FontStyle.Bold,
                 TextAnchor.MiddleCenter
             );
@@ -449,8 +456,8 @@ namespace Seaborn.Harbor
         {
             if (services == null && player != null)
             {
-                Bind(player);
-                return;
+                PrototypeHarborServices.EnsureAttached(player);
+                services = player.GetComponent<PrototypeHarborServices>();
             }
 
             silverText.text =
@@ -520,29 +527,30 @@ namespace Seaborn.Harbor
             int silver = services != null
                 ? services.Silver
                 : 0;
-            bool selectedContract =
-                contracts?.SelectedExpeditionContract != null;
-            bool repaired =
-                health != null &&
-                health.CurrentHealth >=
-                    health.MaximumHealth - 0.01f &&
-                (subsystems == null ||
-                    subsystems.MissingIntegrity <= 0.01f);
-            bool supplied =
-                broadside != null &&
-                broadside.GetAmmunitionStock(
-                    AmmunitionType.Standard) >= 12 &&
-                harpoons != null &&
-                harpoons.HarpoonStock >= 3;
-
-            readinessText.text =
-                Check(selectedContract) +
-                " Sefer kontratı seçildi\n" +
-                Check(repaired) +
-                " Gemi sefere dayanıklı\n" +
-                Check(supplied) +
-                " Temel mühimmat hazır\n\n" +
-                $"Kasa: {silver} silver";
+            preparationQuote = services?.GetPreparationQuote();
+            if (preparationQuote == null)
+            {
+                readinessText.text = "Hazırlık bilgisi bekleniyor...";
+                prepareButton.interactable = false;
+            }
+            else
+            {
+                var q = preparationQuote;
+                int missing = Mathf.Max(0, q.TotalCost - silver);
+                readinessText.text =
+                    $"Hedef: {HarborPreparationQuote.StandardTarget} gülle / {HarborPreparationQuote.ChainTarget} zincir / " +
+                    $"{HarborPreparationQuote.GrapeshotTarget} saçma / {HarborPreparationQuote.HarpoonTarget} seçili zıpkın\n" +
+                    $"Tam onarım: {q.RepairCost} Silver\n" +
+                    $"Standart +{q.Standard.AddedStock}: {q.Standard.Cost} Silver\n" +
+                    $"Zincir +{q.Chain.AddedStock}: {q.Chain.Cost} Silver • Saçma +{q.Grapeshot.AddedStock}: {q.Grapeshot.Cost} Silver\n" +
+                    $"{q.HarpoonName} +{q.Harpoon.AddedStock}: {q.Harpoon.Cost} Silver\n" +
+                    "İkmal tam paketlerle yapılır.\n" +
+                    $"TOPLAM: {q.TotalCost} Silver\n" +
+                    (missing > 0 ? $"Eksik: {missing} Silver" : $"İşlem sonrası: {silver - q.TotalCost} Silver");
+                prepareButton.GetComponentInChildren<Text>().text = q.HasWork
+                    ? $"ONAR VE İKMAL ET • {q.TotalCost} SILVER" : "SEFERE HAZIR";
+                prepareButton.interactable = services.CanPrepare && q.HasWork && missing == 0;
+            }
 
             bool usable =
                 services != null &&
@@ -638,6 +646,9 @@ namespace Seaborn.Harbor
                         "Yeterli silver yok.",
                         new Color(0.9f, 0.43f, 0.34f)
                     );
+                    break;
+                case PrototypeHarborServiceResult.QuoteChanged:
+                    ShowStatus("Stok veya fiyat değişti; toplam güncellendi.", Muted);
                     break;
                 case PrototypeHarborServiceResult.NothingToDo:
                     ShowStatus(
