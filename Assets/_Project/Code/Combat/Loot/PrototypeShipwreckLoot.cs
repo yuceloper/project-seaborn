@@ -402,7 +402,7 @@ namespace Seaborn.Combat.Loot
 
             GUI.Label(
                 prompt,
-                cargo != null && cargo.RemainingCapacity < silverReward
+                cargo != null && cargo.RemainingCapacity < silverReward + ironReward + chartReward
                     ? "AMBARDA YER YOK — LİMANA TESLİM ET"
                     : "E — ENKAZI TOPLA • LİMANA TAŞI" +
                       $"\n{silverReward} Silver" +

@@ -13,7 +13,8 @@ namespace Seaborn.Harbor.UI
         TradePreparation,
         Consumables,
         Contracts,
-        CaptainSkills
+        CaptainSkills,
+        Inventory
     }
 
     [DisallowMultipleComponent]
@@ -75,6 +76,7 @@ namespace Seaborn.Harbor.UI
 
             Instance = this;
             BuildInterface();
+            new GameObject("Harbor Inventory").AddComponent<PrototypeHarborInventoryPanel>();
             shell.SetActive(false);
         }
 
@@ -136,6 +138,7 @@ namespace Seaborn.Harbor.UI
                 AddTab("DONANIM", PrototypeHarborTab.Loadout);
                 AddTab("GELİŞTİR", PrototypeHarborTab.Upgrades);
                 AddTab("GÜVERTE", PrototypeHarborTab.ExtendedDeck);
+                AddTab("AMBAR / DEPO", PrototypeHarborTab.Inventory);
             }
             else if (activeStation ==
                      PrototypeHarborStation.Trade)
@@ -144,6 +147,7 @@ namespace Seaborn.Harbor.UI
                     PrototypeHarborTab.TradePreparation);
                 AddTab("TEDARİKÇİ",
                     PrototypeHarborTab.Consumables);
+                AddTab("AMBAR / DEPO", PrototypeHarborTab.Inventory);
             }
             else if (activeStation ==
                      PrototypeHarborStation.HarborOffice)
@@ -168,7 +172,7 @@ namespace Seaborn.Harbor.UI
             item.transform.SetParent(tabRoot, false);
             RectTransform rect =
                 item.GetComponent<RectTransform>();
-            rect.sizeDelta = new Vector2(170f, 44f);
+            rect.sizeDelta = new Vector2(156f, 44f);
 
             Button button = item.GetComponent<Button>();
             button.onClick.AddListener(() => Select(tab));

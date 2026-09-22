@@ -58,6 +58,7 @@ namespace Seaborn.Hunting
 
         private void Update()
         {
+            if (!Seaborn.World.PrototypeExpeditionRegionDirector.IsHarborScene) return;
             if (deliveryRing != null) deliveryRing.enabled = false;
             if (deliveryBeacon != null) deliveryBeacon.SetActive(false);
             if (player == null)

@@ -19,17 +19,69 @@ namespace Seaborn.Hunting
         public event Action<int> CargoLost;
         public event Action<int> PirateCargoSecured;
         public int PirateWreckCount { get; private set; }
-        public int UnsecuredCorsairIron { get; private set; }
-        public int UnsecuredChartFragments { get; private set; }
+        private readonly int[] carriedMaterials = new int[4];
+        public int UnsecuredCorsairIron => GetMaterial(RegionalMaterialType.CorsairIron);
+        public int UnsecuredChartFragments => GetMaterial(RegionalMaterialType.LostChartFragment);
+        public int MaterialCount => carriedMaterials[0] + carriedMaterials[1] +
+            carriedMaterials[2] + carriedMaterials[3];
+        public int UsedCapacity => unsecuredSilverValue + MaterialCount;
+
+        public int GetMaterial(RegionalMaterialType type)
+        {
+            int index = (int)type;
+            return index >= 0 && index < carriedMaterials.Length ? carriedMaterials[index] : 0;
+        }
+
+        public bool TryAddMaterial(RegionalMaterialType type, int amount)
+        {
+            int index = (int)type;
+            if (index < 0 || index >= carriedMaterials.Length || amount <= 0 ||
+                RemainingCapacity < amount) return false;
+            carriedMaterials[index] += amount;
+            CargoChanged?.Invoke();
+            return true;
+        }
+
+        // Manual transfers are available only at a docked harbor station.
+        public bool CanTransferToDepot =>
+            Seaborn.World.PrototypeExpeditionRegionDirector.IsHarborScene &&
+            Seaborn.Harbor.PrototypeHarborDockingDirector.Instance != null &&
+            Seaborn.Harbor.PrototypeHarborDockingDirector.Instance.DockedStation !=
+                Seaborn.Harbor.PrototypeHarborStation.None;
+
+        public bool TryDepositMaterial(RegionalMaterialType type, int amount)
+        {
+            if (!CanTransferToDepot || amount <= 0 || GetMaterial(type) < amount) return false;
+            var depot = ResolveDepot();
+            carriedMaterials[(int)type] -= amount;
+            depot.Add(type, amount, "Depoya aktarıldı");
+            CargoChanged?.Invoke();
+            return true;
+        }
+
+        public bool TryDepositAll(PrototypeSilverWallet wallet)
+        {
+            if (!CanTransferToDepot || !HasCargo || wallet == null) return false;
+            SecureAtPort(wallet);
+            return true;
+        }
+
+        private PrototypeRegionalLootInventory ResolveDepot()
+        {
+            return GetComponentInParent<PrototypeRegionalLootInventory>() ??
+                PrototypeRegionalLootInventory.EnsureAttached(transform.root);
+        }
 
         public bool TryAddWreck(int value, bool pirate, int iron = 0, int charts = 0)
         {
-            if (value <= 0 || RemainingCapacity < value) return false;
+            iron = pirate ? Mathf.Max(0, iron) : 0;
+            charts = pirate ? Mathf.Max(0, charts) : 0;
+            if (value <= 0 || (long)value + iron + charts > RemainingCapacity) return false;
             if (pirate) PirateWreckCount++;
             if (pirate)
             {
-                UnsecuredCorsairIron += Mathf.Max(0, iron);
-                UnsecuredChartFragments += Mathf.Max(0, charts);
+                carriedMaterials[(int)RegionalMaterialType.CorsairIron] += iron;
+                carriedMaterials[(int)RegionalMaterialType.LostChartFragment] += charts;
             }
             AddCatch(pirate ? "Korsan enkazı" : "Sivil gemi enkazı", value);
             return true;
@@ -39,7 +91,7 @@ namespace Seaborn.Hunting
             unsecuredSilverValue;
         public int CatchCount => catchCount;
         public bool HasCargo =>
-            unsecuredSilverValue > 0;
+            unsecuredSilverValue > 0 || MaterialCount > 0;
         public int MaximumSilverValue =>
             runtimeCapacity;
         public int RemainingCapacity =>
@@ -48,7 +100,7 @@ namespace Seaborn.Hunting
                 : Mathf.Max(
                     0,
                     runtimeCapacity -
-                    unsecuredSilverValue
+                    UsedCapacity
                 );
         public bool IsFull => RemainingCapacity == 0;
 
@@ -121,29 +173,22 @@ namespace Seaborn.Hunting
             PrototypeSilverWallet wallet)
         {
             if (wallet == null ||
-                unsecuredSilverValue <= 0)
+                !HasCargo)
             {
                 return 0;
             }
 
             int securedValue = unsecuredSilverValue;
             int pirateWrecks = PirateWreckCount;
-            int iron = UnsecuredCorsairIron;
-            int charts = UnsecuredChartFragments;
-            UnsecuredCorsairIron = 0;
-            UnsecuredChartFragments = 0;
+            int[] delivered = (int[])carriedMaterials.Clone();
+            Array.Clear(carriedMaterials, 0, carriedMaterials.Length);
             PirateWreckCount = 0;
             unsecuredSilverValue = 0;
             catchCount = 0;
-            // Grant materials before wallet/quest/report notifications and autosaves.
-            if (iron > 0 || charts > 0)
-            {
-                var inventory = GetComponentInParent<PrototypeRegionalLootInventory>();
-                if (inventory == null)
-                    inventory = PrototypeRegionalLootInventory.EnsureAttached(transform.root);
-                inventory.Add(RegionalMaterialType.CorsairIron, iron, "Korsan yükü teslimi");
-                inventory.Add(RegionalMaterialType.LostChartFragment, charts, "Korsan yükü teslimi");
-            }
+            // Empty the hold before callbacks so repeated delivery cannot duplicate loot.
+            var depot = ResolveDepot();
+            for (int i = 0; i < delivered.Length; i++)
+                depot.Add((RegionalMaterialType)i, delivered[i], "Liman deposuna teslim");
             wallet.AddSilver(securedValue);
             CargoChanged?.Invoke();
             // Quest credit must precede the expedition completion notification.
@@ -155,8 +200,7 @@ namespace Seaborn.Hunting
         public int LoseAllCargo()
         {
             int lostValue = unsecuredSilverValue;
-            UnsecuredCorsairIron = 0;
-            UnsecuredChartFragments = 0;
+            Array.Clear(carriedMaterials, 0, carriedMaterials.Length);
             PirateWreckCount = 0;
             unsecuredSilverValue = 0;
             catchCount = 0;

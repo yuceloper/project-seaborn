@@ -3,7 +3,7 @@
 Pirate wrecks now carry guaranteed upgrade materials. Collect with E, then return
 to port to bank them. The HUD marks carried materials as unsecured. Sinking loses
 them with the silver cargo; only delivered materials enter the saved inventory.
-Ordinary hunting material rewards keep their existing behavior.
+Hunting materials now also travel in cargo; see INVENTORY_AND_DEPOT.md.
 
 | Wreck | Corsair iron | Chart fragments |
 | --- | ---: | --- |
@@ -15,7 +15,7 @@ Ordinary hunting material rewards keep their existing behavior.
 Western Reach adds one iron to pirate wrecks. Charts roll once when a wreck is
 created, never again when the player retries collection. Silver/ammunition
 rewards are unchanged. A full hold rejects the entire wreck, including materials
-and ammunition. Materials travel with the wreck's existing silver capacity cost.
+and ammunition. Capacity counts the wreck's silver value plus one unit per material.
 
 ## Progression
 

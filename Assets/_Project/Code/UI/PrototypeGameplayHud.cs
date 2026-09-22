@@ -495,7 +495,6 @@ namespace Seaborn.UI
         {
             silverText.text = $"SILVER  {wallet?.Silver ?? 0}";
             goldText.text = $"GOLD  {goldWallet?.Gold ?? 0}";
-            int value = cargo != null ? cargo.UnsecuredSilverValue : 0;
             string capacity = cargo == null || cargo.MaximumSilverValue == int.MaxValue ? "" : $" / {cargo.MaximumSilverValue}";
             string active = "";
             if (consumables != null)
@@ -513,15 +512,16 @@ namespace Seaborn.UI
                     active +=
                         $"IRON {consumables.IronbarkBrewRemaining:0}s";
             }
-            cargoText.text = value > 0
-                ? $"YÜK {value}{capacity}"
+            cargoText.text = cargo != null && cargo.HasCargo
+                ? $"AMBAR {cargo.UsedCapacity}{capacity}"
                 : "AMBAR BOŞ";
-            cargoText.color = value > 0 ? Gold : Muted;
+            cargoText.color = cargo != null && cargo.HasCargo ? Gold : Muted;
             activeBuffText.text = active.Trim();
             bool hasMaterials = cargo != null &&
-                (cargo.UnsecuredCorsairIron > 0 || cargo.UnsecuredChartFragments > 0);
+                cargo.MaterialCount > 0;
             unsecuredMaterialsText.text = hasMaterials
-                ? $"GÜVENCESİZ • Demir {cargo.UnsecuredCorsairIron} • Harita {cargo.UnsecuredChartFragments}\nLİMANA TAŞI"
+                ? $"Yağ {cargo.GetMaterial(RegionalMaterialType.TideOil)} • Pul {cargo.GetMaterial(RegionalMaterialType.StormjawScale)} • " +
+                  $"Demir {cargo.UnsecuredCorsairIron} • Harita {cargo.UnsecuredChartFragments}\nGÜVENCESİZ • LİMANA TAŞI"
                 : string.Empty;
             resourceCard.sizeDelta = new Vector2(388f, hasMaterials ? 182f : 150f);
 
@@ -707,7 +707,8 @@ namespace Seaborn.UI
 
         private void HandleCargoSecured(int value)
         {
-            ShowNotification($"{value} SILVER GÜVENCEDE", "Liman teslimi tamamlandı", Success);
+            ShowNotification(value > 0 ? $"{value} SILVER GÜVENCEDE" : "MALZEMELER DEPODA",
+                "Liman teslimi tamamlandı", Success);
         }
 
         private void HandleCargoLost(int value)

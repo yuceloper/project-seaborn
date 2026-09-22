@@ -30,6 +30,23 @@ namespace Seaborn.Progression
         public int PatchedCanvasSails => patchedCanvasSails;
         public int RatSails => ratSails;
 
+        // Ownership already includes fitted items. The depot shows only the spare count.
+        public int GetStoredCannons(string id)
+        {
+            if (loadout == null) loadout = GetComponentInChildren<ShipLoadout>();
+            int fitted = loadout != null && string.Equals(loadout.CannonId, id,
+                StringComparison.OrdinalIgnoreCase) ? loadout.InstalledCannons : 0;
+            return Mathf.Max(0, GetOwnedCannons(id) - fitted);
+        }
+
+        public int GetStoredSails(string id)
+        {
+            if (loadout == null) loadout = GetComponentInChildren<ShipLoadout>();
+            int fitted = loadout != null && string.Equals(loadout.SailId, id,
+                StringComparison.OrdinalIgnoreCase) ? 1 : 0;
+            return Mathf.Max(0, GetOwnedSails(id) - fitted);
+        }
+
         public static PrototypeEquipmentInventory EnsureAttached(
             Transform player)
         {

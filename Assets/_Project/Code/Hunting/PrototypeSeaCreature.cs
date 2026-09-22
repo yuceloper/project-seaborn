@@ -283,6 +283,12 @@ namespace Seaborn.Hunting
                     hunter.GetComponentInChildren<
                         PrototypeHuntCargo>();
 
+                Seaborn.Progression
+                    .PrototypeRegionalLootInventory inventory =
+                    Seaborn.Progression
+                        .PrototypeRegionalLootInventory
+                        .EnsureAttached(hunter.transform);
+                inventory?.AwardHunt(name);
                 if (cargo != null)
                 {
                     cargo.AddCatch(
@@ -291,12 +297,7 @@ namespace Seaborn.Hunting
                     );
                 }
 
-                Seaborn.Progression
-                    .PrototypeRegionalLootInventory inventory =
-                    Seaborn.Progression
-                        .PrototypeRegionalLootInventory
-                        .EnsureAttached(hunter.transform);
-                inventory?.AwardHunt(name);
+
                 Seaborn.Progression
                     .PrototypeDeckExtensionInventory
                     .EnsureAttached(hunter.transform)

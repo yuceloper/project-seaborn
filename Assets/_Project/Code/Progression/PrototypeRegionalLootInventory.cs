@@ -106,12 +106,12 @@ namespace Seaborn.Progression
 
             if (stormjaw)
             {
-                Add(
+                AddHuntCargo(
                     RegionalMaterialType.StormjawScale,
                     2,
                     "Nadir av ganimeti"
                 );
-                Add(
+                AddHuntCargo(
                     RegionalMaterialType
                         .LostChartFragment,
                     1,
@@ -128,7 +128,7 @@ namespace Seaborn.Progression
                         : 0.2f;
             if (UnityEngine.Random.value <= oilChance)
             {
-                Add(
+                AddHuntCargo(
                     RegionalMaterialType.TideOil,
                     1,
                     "Av ganimeti"
@@ -138,7 +138,7 @@ namespace Seaborn.Progression
             if (scene == "PrototypeEasternReach" &&
                 UnityEngine.Random.value <= 0.14f)
             {
-                Add(
+                AddHuntCargo(
                     RegionalMaterialType
                         .LostChartFragment,
                     1,
@@ -147,38 +147,14 @@ namespace Seaborn.Progression
             }
         }
 
-        public void AwardShipwreck(
-            string sceneName)
+        private void AddHuntCargo(RegionalMaterialType type, int amount, string source)
         {
-            if (sceneName ==
-                "PrototypeWesternReach")
-            {
-                Add(
-                    RegionalMaterialType.CorsairIron,
-                    1,
-                    "Batı Sınırı enkazı"
-                );
-                if (UnityEngine.Random.value <= 0.2f)
-                {
-                    Add(
-                        RegionalMaterialType
-                            .LostChartFragment,
-                        1,
-                        "Nadir korsan ganimeti"
-                    );
-                }
-                return;
-            }
-
-            if (sceneName == "PrototypeOcean" &&
-                UnityEngine.Random.value <= 0.3f)
-            {
-                Add(
-                    RegionalMaterialType.CorsairIron,
-                    1,
-                    "Merkez Sular enkazı"
-                );
-            }
+            var cargo = GetComponentInChildren<Seaborn.Hunting.PrototypeHuntCargo>();
+            if (cargo == null || !cargo.TryAddMaterial(type, amount))
+                lastDropMessage = "Ambar dolu — av malzemesi alınamadı.";
+            else
+                lastDropMessage = $"{source}: +{amount} {DisplayName(type)} • Limana taşı";
+            lastDropExpiresAt = Time.unscaledTime + 3.5f;
         }
 
         public bool CanAfford(
