@@ -108,6 +108,11 @@ namespace Seaborn.Combat
 
         private void Update()
         {
+            if (Seaborn.Harbor.UI.PrototypeHarborInventoryPanel.BlocksGameplayInput)
+            {
+                SetAiming(false);
+                return;
+            }
             UpdatePrototypeAmmunitionSelection();
 
             bool wantsToAim = aimAction != null && aimAction.action.IsPressed();

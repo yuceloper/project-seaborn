@@ -606,7 +606,7 @@ namespace Seaborn.UI
                       $"DÜMEN {RudderLabel(motor.RudderAngleDegrees)}"
                     : "SEYİR DUR";
                 harborLockText.text =
-                    $"{helm}  •  R SAHA TAMİRİ";
+                    $"{helm}  •  R SAHA TAMİRİ  •  I ENVANTER";
                 harborLockText.color = Muted;
             }
         }

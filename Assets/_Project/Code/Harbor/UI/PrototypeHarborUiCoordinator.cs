@@ -76,7 +76,7 @@ namespace Seaborn.Harbor.UI
 
             Instance = this;
             BuildInterface();
-            new GameObject("Harbor Inventory").AddComponent<PrototypeHarborInventoryPanel>();
+            PrototypeHarborInventoryPanel.EnsureCreated();
             shell.SetActive(false);
         }
 
@@ -111,6 +111,14 @@ namespace Seaborn.Harbor.UI
         {
             selectedTab = tab;
             RefreshButtons();
+        }
+
+        public void OpenInventory() => Select(PrototypeHarborTab.Inventory);
+
+        public void CloseInventory()
+        {
+            if (selectedTab == PrototypeHarborTab.Inventory)
+                Select(DefaultTab(activeStation));
         }
 
         private void RebuildTabs()

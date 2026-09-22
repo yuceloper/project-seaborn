@@ -1,7 +1,12 @@
 # Inventory and harbor depot, first version
 
 Open **AMBAR / DEPO** at the shipyard or trade station. The panel has three
-scrollable views, with item icons, amounts and descriptions:
+scrollable views, with item icons, amounts and descriptions. At sea or while
+undocked, press **I** to inspect the hold and fitted equipment. The depot tab is
+locked until docked. **I**, **Esc**, or **KAPAT** closes the window. At a dock,
+I opens the station's inventory tab; closing returns to the station's default tab.
+
+The three views are:
 
 - **Gemi ambarı:** unsecured sale cargo and all four material types, then the
   existing ship ammunition and consumable stocks. Material rows can deposit one
@@ -16,7 +21,7 @@ Returning to the harbor delivery zone still deposits automatically. Silver sale
 cargo goes to the wallet; material stacks go to the depot. The shipyard reads
 and spends those same depot balances. This version supports hold-to-depot
 deposits; materials do not need to be withdrawn for crafting. Sea HUD continues
-to show capacity and unsecured materials; the full panel is at harbor stations.
+to show capacity and unsecured materials, plus the I shortcut.
 
 ## Ownership and loss
 
@@ -65,3 +70,30 @@ the editor validation command and rendered layout still require a Unity run.
 
 Next: playtest storage clarity and capacity pressure before adding warehouse
 expansion, item-specific artwork, withdrawals or ammunition loss rebalance.
+
+## Sea inventory interaction checks
+
+- Opening the window does not pause time, enemy AI, ship movement, reload timers
+  or active consumable expiry. The footer explains that the sea stays live.
+- Cannon/harpoon aim is cancelled while open; ammo selection and consumable
+  hotkeys are ignored. Scrolling the list does not zoom the camera, whose normal
+  follow motion continues. Close-frame input stays blocked and held mouse buttons
+  must be released before weapon input resumes.
+- The persistent singleton is reused by harbor UI and closes on scene changes or
+  sinking. If a sea scene lacks a UI event system, a scene-owned one is created
+  when the panel opens. Harbor loadout/cargo bindings refresh after transitions.
+
+Manual Unity checks (not run in the tool environment):
+
+1. Start directly in the ocean, press I, scroll all the way to supplies and switch
+   to fitted equipment. Depot is disabled; neither transfer path is usable.
+2. Press I together with fire/Shift-fire: no projectile or ammunition use. While
+   open try both mouse buttons, Shift+1/2 and 1–8: no weapon/consumable action.
+3. Keep right/left mouse held while closing with I/Esc; release, then press again
+   to re-aim/fire normally. Click KAPAT while aiming: the close click cannot fire.
+4. Scroll over the list: camera distance stays fixed; moving ship remains followed.
+5. Dock at trade/shipyard: open the same inventory via tab or I, browse the depot,
+   then close. Confirm the normal station tab returns without duplicate panels.
+6. Travel harbor → ocean → harbor repeatedly, including with the window open;
+   it closes on each scene transition and can be reopened for the current ship.
+7. Sink with the window open: it closes and does not remain over the recovery UI.

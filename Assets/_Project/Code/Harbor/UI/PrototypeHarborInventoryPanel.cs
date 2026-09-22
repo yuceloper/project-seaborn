@@ -7,13 +7,33 @@ using Seaborn.Ship;
 using Seaborn.UI;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 namespace Seaborn.Harbor.UI
 {
     // Views reference the authoritative cargo, ownership and loadout stores.
     // No copied item balances: existing saves remain the depot's source of truth.
+    [DefaultExecutionOrder(-200)]
     public sealed class PrototypeHarborInventoryPanel : MonoBehaviour
     {
+        public static PrototypeHarborInventoryPanel Instance { get; private set; }
+        public static bool BlocksGameplayInput => Instance != null && Instance.isActiveAndEnabled &&
+            (Instance.IsVisible || Instance.waitForMouseRelease ||
+             Instance.lastBlockedFrame == Time.frameCount);
+        private bool IsVisible => panel != null && panel.activeSelf;
+        private bool portableOpen;
+        private bool waitForMouseRelease;
+        private int lastBlockedFrame = -1;
+        private ShipHealth health;
+        private Text footer;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        public static void EnsureCreated()
+        {
+            if (Instance != null) return;
+            new GameObject("Ship Inventory").AddComponent<PrototypeHarborInventoryPanel>();
+        }
         private static readonly Color Navy = new(0.025f, 0.075f, 0.105f, 0.98f);
         private static readonly Color Gold = new(0.86f, 0.68f, 0.3f, 1f);
         private static readonly Color Cream = new(0.91f, 0.88f, 0.76f, 1f);
@@ -40,6 +60,10 @@ namespace Seaborn.Harbor.UI
 
         private void Awake()
         {
+            if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+            SceneManager.sceneLoaded += OnSceneLoaded;
             font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             var canvas = gameObject.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
@@ -54,7 +78,8 @@ namespace Seaborn.Harbor.UI
             root.anchoredPosition = new Vector2(0, -40);
             root.gameObject.AddComponent<Image>().color = Navy;
             panel = root.gameObject;
-            Label(root, "GEMİ ENVANTERİ VE LİMAN DEPOSU", 22, 20, 16, 890, 32);
+            Label(root, "GEMİ ENVANTERİ VE LİMAN DEPOSU", 22, 20, 16, 770, 32);
+            Button(root, "KAPAT", 812, 14, 108, 36, Close);
             string[] titles = { "GEMİ AMBARI", "LİMAN DEPOSU", "TAKILI DONANIM" };
             for (int i = 0; i < titles.Length; i++)
             {
@@ -75,7 +100,7 @@ namespace Seaborn.Harbor.UI
             scroll.movementType = ScrollRect.MovementType.Clamped;
             depositAll = Button(root, "TÜM GANİMETİ TESLİM ET", 610, 624, 310, 38,
                 () => { if (cargo != null) cargo.TryDepositAll(wallet); Refresh(); });
-            Label(root, "Limana dönüşte ganimet otomatik depoya aktarılır.", 12,
+            footer = Label(root, "Limana dönüşte ganimet otomatik depoya aktarılır.", 12,
                 20, 632, 580, 26);
             Select(0);
             panel.SetActive(false);
@@ -83,21 +108,88 @@ namespace Seaborn.Harbor.UI
 
         private void Update()
         {
-            if (Time.unscaledTime < nextRefresh) return;
-            nextRefresh = Time.unscaledTime + 0.2f;
-            bool visible = Seaborn.World.PrototypeExpeditionRegionDirector.IsHarborScene &&
-                PrototypeHarborUiCoordinator.IsOpen &&
-                PrototypeHarborUiCoordinator.IsSelected(PrototypeHarborTab.Inventory);
+            // Run before weapon input; only component discovery is throttled.
+            if (!IsVisible && (Mouse.current == null ||
+                (!Mouse.current.leftButton.isPressed && !Mouse.current.rightButton.isPressed)))
+                waitForMouseRelease = false;
+
+            if (Time.unscaledTime >= nextRefresh)
+            {
+                nextRefresh = Time.unscaledTime + 0.2f;
+                Resolve();
+            }
+            if (health == null || health.IsSunk)
+            {
+                if (IsVisible || portableOpen) Close();
+                return;
+            }
+            bool docked = Seaborn.World.PrototypeExpeditionRegionDirector.IsHarborScene &&
+                PrototypeHarborUiCoordinator.IsOpen;
+            if (docked) portableOpen = false;
+            if (Keyboard.current != null)
+            {
+                if (Keyboard.current.iKey.wasPressedThisFrame)
+                {
+                    if (IsVisible) Close();
+                    else if (docked) PrototypeHarborUiCoordinator.Instance.OpenInventory();
+                    else { portableOpen = true; Select(0); }
+                }
+                else if (Keyboard.current.escapeKey.wasPressedThisFrame && IsVisible) Close();
+            }
+            bool visible = portableOpen || (docked &&
+                PrototypeHarborUiCoordinator.IsSelected(PrototypeHarborTab.Inventory));
+            if (IsVisible && !visible) GuardClosingInput();
             panel.SetActive(visible);
             if (!visible) return;
-            Resolve();
+            // Sea scenes may not have a station UI/event system yet.
+            if (UnityEngine.EventSystems.EventSystem.current == null)
+            {
+                var events = new GameObject("Inventory Event System",
+                    typeof(UnityEngine.EventSystems.EventSystem));
+                events.AddComponent<UnityEngine.InputSystem.UI.InputSystemUIInputModule>()
+                    .AssignDefaultActions();
+            }
+            waitForMouseRelease = true;
+            tabs[1].interactable = docked;
+            if (!docked && view == 1) Select(0);
             Refresh();
+        }
+
+        private void GuardClosingInput()
+        {
+            lastBlockedFrame = Time.frameCount;
+            waitForMouseRelease = true;
+        }
+
+        private void Close()
+        {
+            portableOpen = false;
+            if (PrototypeHarborUiCoordinator.IsOpen)
+                PrototypeHarborUiCoordinator.Instance.CloseInventory();
+            panel.SetActive(false);
+            GuardClosingInput();
+        }
+
+        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            portableOpen = false;
+            panel.SetActive(false);
+            GuardClosingInput();
+            health = null;
+            nextRefresh = 0;
+        }
+
+        private void OnDestroy()
+        {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+            if (Instance == this) Instance = null;
         }
 
         private void Resolve()
         {
             var player = FindFirstObjectByType<ManualBroadsideAimController>();
-            if (player == null) return;
+            if (player == null) { health = null; return; }
+            health = player.GetComponentInChildren<ShipHealth>();
             cargo = player.GetComponentInChildren<PrototypeHuntCargo>();
             wallet = player.GetComponentInChildren<PrototypeSilverWallet>();
             depot = player.GetComponentInChildren<PrototypeRegionalLootInventory>();
@@ -119,7 +211,10 @@ namespace Seaborn.Harbor.UI
                 ? "Ganimet batınca kaybolur. Her malzeme 1, ticari yük Silver değeri kadar yer kaplar.\nMühimmat ve sarflar ayrı gemi stoklarıdır; bu kapasiteyi kullanmaz."
                 : view == 1 ? "Depodaki eşyalar batınca kaybolmaz. Tersane malzemeyi buradan kullanır.\nYedek top ve yelkenleri tersanenin DONANIM sekmesinden takabilirsin."
                 : "Donanım değiştirmek için tersanenin DONANIM sekmesini kullan.\nTakılı ekipman depo adedine dahil edilmez.";
-            depositAll.gameObject.SetActive(view == 0);
+            depositAll.gameObject.SetActive(view == 0 && cargo != null && cargo.CanTransferToDepot);
+            footer.text = portableOpen
+                ? "I / Esc: Kapat • Deniz ve çatışma devam eder. Depo limanda açılır."
+                : "Limana dönüşte ganimet otomatik depoya aktarılır. I / Esc: Kapat";
             depositAll.interactable = cargo != null && cargo.CanTransferToDepot &&
                 cargo.HasCargo && wallet != null;
             foreach (var refresh in refreshRows) refresh();

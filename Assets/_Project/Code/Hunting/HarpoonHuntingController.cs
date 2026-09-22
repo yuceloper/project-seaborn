@@ -100,6 +100,15 @@ namespace Seaborn.Hunting
 
         private void Update()
         {
+            if (Seaborn.Harbor.UI.PrototypeHarborInventoryPanel.BlocksGameplayInput)
+            {
+                bool changed = IsAiming;
+                IsAiming = false;
+                hasAimPoint = false;
+                if (aimLine != null) aimLine.enabled = false;
+                if (changed) HuntingStateChanged?.Invoke();
+                return;
+            }
             if (aimCamera == null)
             {
                 aimCamera = UnityEngine.Camera.main;

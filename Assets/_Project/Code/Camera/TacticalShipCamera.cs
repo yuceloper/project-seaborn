@@ -96,6 +96,7 @@ namespace Seaborn.Camera
 
         private void UpdateZoom()
         {
+            if (Seaborn.Harbor.UI.PrototypeHarborInventoryPanel.BlocksGameplayInput) return;
             float zoomInput = zoomAction.action.ReadValue<float>();
 
             if (Mathf.Abs(zoomInput) < 0.01f)
