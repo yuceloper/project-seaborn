@@ -71,6 +71,14 @@ namespace Seaborn.World
         private CanvasGroup transitionGroup;
         private Text transitionText;
         private bool transitioning;
+        private MapGatewayApproachView approachView;
+        private string approachedScene;
+        private EntrySide approachedSide;
+        private float approachElapsed;
+        private string cancelledGate;
+        private const float FogDistance = 24f;
+        private const float CountdownDistance = 6f;
+        private const float CountdownSeconds = 10f;
         private float nextBlockedNoticeTime;
 
         public static void EnsureCreated(Transform player)
@@ -106,6 +114,8 @@ namespace Seaborn.World
             Instance = this;
             DontDestroyOnLoad(gameObject);
             BuildTransitionOverlay();
+            approachView = gameObject.AddComponent<MapGatewayApproachView>();
+            approachView.Configure(ConfirmApproach, CancelApproach);
             SceneManager.sceneLoaded += HandleSceneLoaded;
             ConfigureActiveMap();
         }
@@ -131,69 +141,126 @@ namespace Seaborn.World
 
         private void Update()
         {
-            if (transitioning || player == null)
+            var health = player != null ? player.GetComponent<Seaborn.Ship.ShipHealth>() : null;
+            if (transitioning || player == null || health == null || health.IsSunk)
             {
+                ResetApproach();
                 return;
             }
 
-            Vector3 position = player.position;
-            string scene = SceneManager
-                .GetActiveScene().name;
+            string scene = SceneManager.GetActiveScene().name;
+            FindApproach(scene, player.position, out string destination, out EntrySide side, out float distance);
+            if (destination == null || distance > FogDistance)
+            {
+                ResetApproach();
+                return;
+            }
+            if (approachedScene != destination)
+            {
+                approachElapsed = 0f;
+                cancelledGate = null;
+            }
+            approachedScene = destination;
+            approachedSide = side;
+            bool inside = distance <= CountdownDistance;
+            if (!inside) approachElapsed = 0f;
+            int requiredTier = RequiredTier(destination);
+            var progression = player.GetComponent<PrototypeCaptainProgression>();
+            bool unlocked = (progression != null ? progression.HighestUnlockedMapTier : 1) >= requiredTier;
+            if (inside && unlocked && cancelledGate == null)
+                approachElapsed = Mathf.Min(CountdownSeconds, approachElapsed + Time.deltaTime);
+            else if (!unlocked) approachElapsed = 0f;
 
+            float fog = 1f - Mathf.Clamp01(distance / FogDistance);
+            string status = !unlocked ? $"KAPTAN SV. {RequiredLevelForTier(requiredTier)} GEREKİR"
+                : !inside ? "GEÇİŞ ALANINA YAKLAŞ"
+                : approachElapsed < CountdownSeconds ? $"GEÇİŞE HAZIRLANIYOR • {Mathf.CeilToInt(CountdownSeconds - approachElapsed)} sn"
+                : "GEÇİŞ HAZIR • ONAYINI BEKLİYOR";
+            approachView.Show(GetMapDisplayName(destination), status, fog,
+                inside && unlocked && approachElapsed >= CountdownSeconds,
+                cancelledGate == null);
+        }
+
+        private static void FindApproach(string scene, Vector3 position,
+            out string destination, out EntrySide side, out float distance)
+        {
+            destination = null; side = EntrySide.None; distance = float.PositiveInfinity;
             if (scene == HarborScene)
             {
-                if (position.z >= Edge)
-                {
-                    TravelTo(
-                        CentralScene,
-                        EntrySide.Harbor
-                    );
-                }
+                destination = CentralScene; side = EntrySide.Harbor; distance = Edge - position.z;
                 return;
             }
-
-            if (position.z <= -Edge)
+            if (scene != CentralScene && scene != WestScene && scene != EastScene) return;
+            destination = HarborScene; side = EntrySide.Harbor; distance = Edge + position.z;
+            if ((scene == CentralScene || scene == EastScene) && Edge + position.x < distance)
             {
-                TravelTo(
-                    HarborScene,
-                    EntrySide.Harbor
-                );
+                destination = scene == CentralScene ? WestScene : CentralScene;
+                side = scene == CentralScene ? EntrySide.West : EntrySide.East;
+                distance = Edge + position.x;
+            }
+            if ((scene == CentralScene || scene == WestScene) && Edge - position.x < distance)
+            {
+                destination = scene == CentralScene ? EastScene : CentralScene;
+                side = scene == CentralScene ? EntrySide.East : EntrySide.West;
+                distance = Edge - position.x;
+            }
+        }
+
+        private void LateUpdate()
+        {
+            if (transitioning || player == null) return;
+            // Leave controls live; constrain position and only outward drift at map bounds.
+            Vector3 position = player.position;
+            Vector3 bounded = position;
+            bounded.x = Mathf.Clamp(position.x, -Edge, Edge);
+            bounded.z = Mathf.Clamp(position.z, -Edge, Edge);
+            if (bounded == position) return;
+            var body = player.GetComponent<Rigidbody>();
+            if (body != null)
+            {
+                body.position = bounded;
+                if (body.isKinematic) return;
+                Vector3 velocity = body.linearVelocity;
+                if (position.x != bounded.x && Mathf.Sign(velocity.x) == Mathf.Sign(position.x)) velocity.x = 0f;
+                if (position.z != bounded.z && Mathf.Sign(velocity.z) == Mathf.Sign(position.z)) velocity.z = 0f;
+                body.linearVelocity = velocity;
+            }
+            else player.position = bounded;
+        }
+
+        private void ConfirmApproach()
+        {
+            if (transitioning || player == null || approachElapsed < CountdownSeconds || cancelledGate != null) return;
+            var health = player.GetComponent<Seaborn.Ship.ShipHealth>();
+            if (health == null || health.IsSunk) return;
+            FindApproach(SceneManager.GetActiveScene().name, player.position,
+                out string destination, out EntrySide side, out float distance);
+            if (destination != approachedScene || side != approachedSide || distance > CountdownDistance) return;
+            if (!Application.CanStreamedLevelBeLoaded(destination))
+            {
+                approachView.Show(GetMapDisplayName(destination), "HARİTA YÜKLENEMİYOR", 1f, false, true);
+                Debug.LogWarning($"Build listesinde harita bulunamadı: {destination}", this);
+                CancelApproach();
                 return;
             }
+            TravelTo(destination, side);
+            ResetApproach();
+        }
 
-            if (scene == CentralScene)
-            {
-                if (position.x <= -Edge)
-                {
-                    TravelTo(
-                        WestScene,
-                        EntrySide.West
-                    );
-                }
-                else if (position.x >= Edge)
-                {
-                    TravelTo(
-                        EastScene,
-                        EntrySide.East
-                    );
-                }
-            }
-            else if (scene == WestScene &&
-                     position.x >= Edge)
-            {
-                TravelTo(
-                    CentralScene,
-                    EntrySide.West
-                );
-            }
-            else if (scene == EastScene &&
-                     position.x <= -Edge)
-            {
-                TravelTo(
-                    CentralScene,
-                    EntrySide.East
-                );
-            }
+        private void CancelApproach()
+        {
+            cancelledGate = approachedScene;
+            approachElapsed = 0f;
+            approachView.HideCard();
+        }
+
+        private void ResetApproach()
+        {
+            approachedScene = null;
+            approachedSide = EntrySide.None;
+            approachElapsed = 0f;
+            cancelledGate = null;
+            if (approachView != null) approachView.Hide();
         }
 
         private void TravelTo(
@@ -314,6 +381,7 @@ namespace Seaborn.World
             Scene scene,
             LoadSceneMode mode)
         {
+            ResetApproach();
             RemoveDuplicatePlayer();
             RemoveDuplicateCamera();
             ConfigureActiveMap();

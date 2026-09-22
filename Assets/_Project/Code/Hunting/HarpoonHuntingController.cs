@@ -100,7 +100,8 @@ namespace Seaborn.Hunting
 
         private void Update()
         {
-            if (Seaborn.Harbor.UI.PrototypeHarborInventoryPanel.BlocksGameplayInput)
+            if (Seaborn.Harbor.UI.PrototypeHarborInventoryPanel.BlocksGameplayInput ||
+                Seaborn.World.MapGatewayApproachView.BlocksPointerInput)
             {
                 bool changed = IsAiming;
                 IsAiming = false;
