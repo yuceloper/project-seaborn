@@ -43,6 +43,7 @@ namespace Seaborn.Ship
         [SerializeField, Min(0f)] private float contactSeparationSpeed = 0.8f;
 
         private Rigidbody shipRigidbody;
+        private ShipHealth shipHealth;
         private Vector2 moveInput;
         private float previousThrottleAxis;
         private float rudder;
@@ -52,6 +53,7 @@ namespace Seaborn.Ship
         private float turnMultiplier = 1f;
         private float damageSpeedMultiplier = 1f;
         private float damageTurnMultiplier = 1f;
+        private float damageAccelerationMultiplier = 1f;
         private float skillSpeedMultiplier = 1f;
         private float skillTurnMultiplier = 1f;
         private float consumableSpeedMultiplier = 1f;
@@ -64,6 +66,20 @@ namespace Seaborn.Ship
         private Vector3 collisionNormal;
 
         public int SailingOrder => sailingOrder;
+        public int MaximumSailingOrder
+        {
+            get
+            {
+                // Also support health attached by runtime setup after Awake.
+                if (shipHealth == null)
+                    shipHealth = GetComponentInParent<ShipHealth>();
+                if (shipHealth == null || shipHealth.MaximumHealth <= 0f)
+                    return 3;
+
+                float hull = shipHealth.CurrentHealth / shipHealth.MaximumHealth;
+                return hull < 0.2f ? 1 : hull < 0.5f ? 2 : 3;
+            }
+        }
         public float RudderNormalized => rudder;
         public float RudderAngleDegrees =>
             rudder * maximumRudderAngle;
@@ -161,12 +177,15 @@ namespace Seaborn.Ship
 
         public void SetDamagePerformance(
             float speed,
-            float turning)
+            float turning,
+            float accelerationRate = 1f)
         {
             damageSpeedMultiplier =
                 Mathf.Clamp(speed, 0.25f, 1f);
             damageTurnMultiplier =
                 Mathf.Clamp(turning, 0.4f, 1f);
+            damageAccelerationMultiplier =
+                Mathf.Clamp(accelerationRate, 0.1f, 1f);
         }
 
         public void ResetRuntimePerformance()
@@ -205,6 +224,7 @@ namespace Seaborn.Ship
 
         private void Update()
         {
+            sailingOrder = Mathf.Min(sailingOrder, MaximumSailingOrder);
             if (moveAction == null ||
                 moveAction.action == null)
             {
@@ -226,7 +246,7 @@ namespace Seaborn.Ship
                 previousThrottleAxis < threshold)
             {
                 sailingOrder = Mathf.Min(
-                    3,
+                    MaximumSailingOrder,
                     sailingOrder + 1
                 );
             }
@@ -244,6 +264,8 @@ namespace Seaborn.Ship
 
         private void FixedUpdate()
         {
+            // Change the order, not velocity: normal deceleration handles damage.
+            sailingOrder = Mathf.Min(sailingOrder, MaximumSailingOrder);
             ApplyCollisionStability();
             ApplyForwardMovement();
             ApplySteering();
@@ -268,6 +290,8 @@ namespace Seaborn.Ship
                 ? deceleration
                 : acceleration;
             response *= accelerationMultiplier;
+            if (!slowing)
+                response *= damageAccelerationMultiplier;
 
             float nextForwardSpeed = Mathf.MoveTowards(
                 currentForwardSpeed,

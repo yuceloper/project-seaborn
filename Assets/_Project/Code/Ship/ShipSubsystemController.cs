@@ -24,8 +24,10 @@ namespace Seaborn.Ship
             CrewReadiness / MaximumIntegrity;
         public float MovementSpeedMultiplier =>
             Mathf.Lerp(0.55f, 1f, SailNormalized);
+        public float AccelerationMultiplier =>
+            Mathf.Lerp(0.8f, 1f, SailNormalized);
         public float TurnMultiplier =>
-            Mathf.Lerp(0.7f, 1f, SailNormalized);
+            Mathf.Lerp(0.85f, 1f, SailNormalized);
         public float MissingIntegrity =>
             MaximumIntegrity - SailIntegrity +
             MaximumIntegrity - CrewReadiness;
@@ -69,7 +71,7 @@ namespace Seaborn.Ship
                     // Integrity uses a 100-point scale independently of hull HP.
                     // Limit a single chain impact while retaining salvo pressure.
                     sailDamage =
-                        Mathf.Min(8f, damageInfo.Amount * 0.20f);
+                        Mathf.Min(4f, damageInfo.Amount * 0.10f);
                     break;
                 case AmmunitionType.Grapeshot:
                     // Each cannon fires three pellets. Count their combined pressure:
@@ -123,10 +125,12 @@ namespace Seaborn.Ship
 
         private void ApplyPenalties()
         {
-            float sail = SailNormalized;
+            // Player top speed is limited by hull/order; sails affect handling.
+            // NPCs still use MovementSpeedMultiplier for chain-shot pursuit tactics.
             motor?.SetDamagePerformance(
-                MovementSpeedMultiplier,
-                TurnMultiplier
+                1f,
+                TurnMultiplier,
+                AccelerationMultiplier
             );
 
             float crew = CrewNormalized;

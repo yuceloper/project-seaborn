@@ -65,6 +65,7 @@ namespace Seaborn.UI
         private Text harpoonText;
         private RectTransform harpoonFill;
         private Text harborLockText;
+        private Text hullSpeedLimitText;
         private GameObject targetPanel;
         private Text targetNameText;
         private Text targetStateText;
@@ -320,6 +321,7 @@ namespace Seaborn.UI
             for (int i=0;i<hotbar.Length;i++) hotbar[i]=CreateHotbarSlot(combat,i,keys[i],names[i]);
             RectTransform helm = CreateCard("Helm",new(0.5f,0),new(0.5f,0),new(0,192),new(760,28));
             harborLockText = CreateText(helm,font,"",12,Cream,FontStyle.Normal,new(0,0),new(760,26),TextAnchor.UpperCenter);
+            hullSpeedLimitText = CreateText(helm,font,"",12,Gold,FontStyle.Bold,new(0,22),new(760,22),TextAnchor.UpperCenter);
 
             GameObject notifications = new GameObject("Notifications",typeof(RectTransform));
             notifications.transform.SetParent(transform,false);
@@ -520,6 +522,10 @@ namespace Seaborn.UI
 
         private void RefreshCombat()
         {
+            int maximumOrder = motor != null ? motor.MaximumSailingOrder : 3;
+            hullSpeedLimitText.text = maximumOrder < 3
+                ? $"GÖVDE HASARI • EN FAZLA {maximumOrder}. KADEME"
+                : string.Empty;
             if (harpoons == null && boundPlayer != null)
             {
                 harpoons = boundPlayer.GetComponentInChildren<
