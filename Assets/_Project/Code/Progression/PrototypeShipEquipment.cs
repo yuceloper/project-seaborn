@@ -156,7 +156,16 @@ namespace Seaborn.Progression
         public string EffectDescription(
             ShipUpgradeTrack track)
         {
-            int level = GetLevel(track);
+            return EffectAtLevel(track, GetLevel(track));
+        }
+
+        public string NextEffectDescription(ShipUpgradeTrack track)
+        {
+            return EffectAtLevel(track, Mathf.Min(MaximumLevel, GetLevel(track) + 1));
+        }
+
+        private static string EffectAtLevel(ShipUpgradeTrack track, int level)
+        {
             return track switch
             {
                 ShipUpgradeTrack.Hull =>
@@ -198,6 +207,7 @@ namespace Seaborn.Progression
         public bool CanAffordUpgradeMaterials(
             ShipUpgradeTrack track)
         {
+            ResolveMaterials();
             if (track == ShipUpgradeTrack.Cannons && CannonLevel == 0) return true;
             if (materials == null)
             {
@@ -264,6 +274,55 @@ namespace Seaborn.Progression
             }
 
             return result;
+        }
+
+        public string UpgradeProgressDescription(ShipUpgradeTrack track)
+        {
+            ResolveMaterials();
+            int level = GetLevel(track);
+            if (level >= MaximumLevel) return "Azami seviye";
+            int silver = wallet != null ? wallet.Silver : 0;
+            int cost = GetUpgradeCost(track);
+            string result = $"Silver {silver}/{cost}";
+            if (track == ShipUpgradeTrack.Cannons && level == 0)
+                return result + " • Malzeme gerekmez";
+            var primary = PrimaryMaterial(track);
+            result += $" • {PrototypeRegionalLootInventory.DisplayName(primary)} " +
+                $"{(materials != null ? materials.Get(primary) : 0)}/{level + 1}";
+            if (level >= 2)
+            {
+                var rare = track == ShipUpgradeTrack.HarpoonGear
+                    ? RegionalMaterialType.StormjawScale : RegionalMaterialType.LostChartFragment;
+                result += $"\n{PrototypeRegionalLootInventory.DisplayName(rare)} " +
+                    $"{(materials != null ? materials.Get(rare) : 0)}/1";
+            }
+            return result;
+        }
+
+        public string CannonGoalDescription()
+        {
+            ResolveMaterials();
+            if (CannonLevel >= MaximumLevel) return "Top takımı tamamlandı. Daha zorlu bölgelere hazırsın.";
+            int missingSilver = Mathf.Max(0, GetUpgradeCost(ShipUpgradeTrack.Cannons) -
+                (wallet != null ? wallet.Silver : 0));
+            int missingIron = CannonLevel == 0 ? 0 : Mathf.Max(0, CannonLevel + 1 -
+                (materials != null ? materials.CorsairIron : 0));
+            int missingChart = CannonLevel < 2 ? 0 : Mathf.Max(0, 1 -
+                (materials != null ? materials.LostChartFragments : 0));
+            string goal = $"SIRADAKİ HEDEF • TOP TAKIMI {CannonLevel + 1}\n";
+            if (missingSilver == 0 && missingIron == 0 && missingChart == 0)
+                return goal + "Kaynaklar hazır — top takımını geliştirebilirsin.";
+            goal += $"Eksik: {missingSilver} Silver • {missingIron} Demir";
+            if (missingChart > 0) goal += $" • {missingChart} Harita";
+            return goal + (missingIron > 0 || missingChart > 0
+                ? "\nKorsan enkazlarını limana getir; ağır korsanda harita garantili."
+                : "\nYük teslim ederek Silver biriktir.");
+        }
+
+        private void ResolveMaterials()
+        {
+            if (materials == null && boundPlayer != null)
+                materials = boundPlayer.GetComponentInChildren<PrototypeRegionalLootInventory>();
         }
 
         private void SpendUpgradeMaterials(

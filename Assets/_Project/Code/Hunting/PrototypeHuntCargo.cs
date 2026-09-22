@@ -1,4 +1,5 @@
 using System;
+using Seaborn.Progression;
 using UnityEngine;
 
 namespace Seaborn.Hunting
@@ -18,11 +19,18 @@ namespace Seaborn.Hunting
         public event Action<int> CargoLost;
         public event Action<int> PirateCargoSecured;
         public int PirateWreckCount { get; private set; }
+        public int UnsecuredCorsairIron { get; private set; }
+        public int UnsecuredChartFragments { get; private set; }
 
-        public bool TryAddWreck(int value, bool pirate)
+        public bool TryAddWreck(int value, bool pirate, int iron = 0, int charts = 0)
         {
             if (value <= 0 || RemainingCapacity < value) return false;
             if (pirate) PirateWreckCount++;
+            if (pirate)
+            {
+                UnsecuredCorsairIron += Mathf.Max(0, iron);
+                UnsecuredChartFragments += Mathf.Max(0, charts);
+            }
             AddCatch(pirate ? "Korsan enkazı" : "Sivil gemi enkazı", value);
             return true;
         }
@@ -120,9 +128,22 @@ namespace Seaborn.Hunting
 
             int securedValue = unsecuredSilverValue;
             int pirateWrecks = PirateWreckCount;
+            int iron = UnsecuredCorsairIron;
+            int charts = UnsecuredChartFragments;
+            UnsecuredCorsairIron = 0;
+            UnsecuredChartFragments = 0;
             PirateWreckCount = 0;
             unsecuredSilverValue = 0;
             catchCount = 0;
+            // Grant materials before wallet/quest/report notifications and autosaves.
+            if (iron > 0 || charts > 0)
+            {
+                var inventory = GetComponentInParent<PrototypeRegionalLootInventory>();
+                if (inventory == null)
+                    inventory = PrototypeRegionalLootInventory.EnsureAttached(transform.root);
+                inventory.Add(RegionalMaterialType.CorsairIron, iron, "Korsan yükü teslimi");
+                inventory.Add(RegionalMaterialType.LostChartFragment, charts, "Korsan yükü teslimi");
+            }
             wallet.AddSilver(securedValue);
             CargoChanged?.Invoke();
             // Quest credit must precede the expedition completion notification.
@@ -134,6 +155,8 @@ namespace Seaborn.Hunting
         public int LoseAllCargo()
         {
             int lostValue = unsecuredSilverValue;
+            UnsecuredCorsairIron = 0;
+            UnsecuredChartFragments = 0;
             PirateWreckCount = 0;
             unsecuredSilverValue = 0;
             catchCount = 0;

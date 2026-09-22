@@ -1,7 +1,6 @@
 using Seaborn.Combat;
 using Seaborn.Hunting;
 using Seaborn.Ship;
-using Seaborn.Progression;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -75,7 +74,6 @@ namespace Seaborn.Combat.Loot
         private const float InteractionRadius = 2.8f;
         private const float Lifetime = 120f;
         private Transform player;
-        private string sourceScene;
         private int silverReward;
         private int ammunitionReward;
         private PrototypeHuntCargo cargo;
@@ -85,6 +83,8 @@ namespace Seaborn.Combat.Loot
         private float baseHeight;
         private bool collected;
         private bool pirateWreck;
+        private int ironReward;
+        private int chartReward;
 
         public static void Create(
             Vector3 position,
@@ -116,7 +116,6 @@ namespace Seaborn.Combat.Loot
             EnemyShipArchetype archetype)
         {
             player = playerTransform;
-            sourceScene = sceneName;
             pirateWreck = archetype != EnemyShipArchetype.FishingBoat &&
                 archetype != EnemyShipArchetype.Merchant;
             ConfigureRewards(sceneName, archetype);
@@ -186,17 +185,12 @@ namespace Seaborn.Combat.Loot
                 return;
             }
 
-            if (!cargo.TryAddWreck(silverReward, pirateWreck)) return;
+            if (!cargo.TryAddWreck(silverReward, pirateWreck, ironReward, chartReward)) return;
             collected = true;
             broadside.AddAmmunition(
                 AmmunitionType.Standard,
                 ammunitionReward
             );
-
-            PrototypeRegionalLootInventory inventory =
-                PrototypeRegionalLootInventory
-                    .EnsureAttached(player);
-            inventory?.AwardShipwreck(sourceScene);
 
             PrototypeCombatVfx.PlayWaterSplash(
                 transform.position
@@ -213,6 +207,14 @@ namespace Seaborn.Combat.Loot
 
         private void ConfigureRewards(string sceneName, EnemyShipArchetype archetype)
         {
+            // Roll once per wreck; failed/full-hold pickups never reroll rewards.
+            ironReward = !pirateWreck ? 0
+                : archetype == EnemyShipArchetype.Gunship ? 3
+                : archetype == EnemyShipArchetype.Skirmisher ? 1 : 2;
+            if (pirateWreck && sceneName == "PrototypeWesternReach") ironReward++;
+            chartReward = pirateWreck &&
+                (archetype == EnemyShipArchetype.Gunship ||
+                 UnityEngine.Random.value < 0.2f) ? 1 : 0;
             int baseSilver = archetype switch
             {
                 EnemyShipArchetype.FishingBoat => 20,
@@ -376,12 +378,12 @@ namespace Seaborn.Combat.Loot
                 return;
             }
 
-            const float width = 330f;
+            const float width = 460f;
             Rect prompt = new Rect(
                 (Screen.width - width) * 0.5f,
                 Screen.height - 128f,
                 width,
-                42f
+                64f
             );
 
             Color previous = GUI.color;
@@ -402,7 +404,10 @@ namespace Seaborn.Combat.Loot
                 prompt,
                 cargo != null && cargo.RemainingCapacity < silverReward
                     ? "AMBARDA YER YOK — LİMANA TESLİM ET"
-                    : "E — ENKAZI TOPLA • LİMANA TAŞI",
+                    : "E — ENKAZI TOPLA • LİMANA TAŞI" +
+                      $"\n{silverReward} Silver" +
+                      (ironReward > 0 ? $" • {ironReward} Korsan Demiri" : "") +
+                      (chartReward > 0 ? $" • {chartReward} Harita Parçası" : ""),
                 style
             );
         }

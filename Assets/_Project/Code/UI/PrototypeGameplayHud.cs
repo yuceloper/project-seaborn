@@ -65,6 +65,7 @@ namespace Seaborn.UI
         private Text harpoonText;
         private RectTransform harpoonFill;
         private Text harborLockText;
+        private Text unsecuredMaterialsText;
         private Text hullSpeedLimitText;
         private GameObject targetPanel;
         private Text targetNameText;
@@ -279,6 +280,7 @@ namespace Seaborn.UI
             goldText = CreateText(resources,font,"",16,Cream,FontStyle.Normal,new(263,-25),new(113,22));
             cargoText = CreateText(resources,font,"",12,Cream,FontStyle.Normal,new(220,-72),new(151,27),TextAnchor.UpperRight);
             activeBuffText = CreateText(resources,font,"",11,Cream,FontStyle.Normal,new(0,-114),new(380,28),TextAnchor.UpperRight);
+            unsecuredMaterialsText = CreateText(resources,font,"",11,Gold,FontStyle.Normal,new(0,-144),new(380,32),TextAnchor.UpperRight);
 
             RectTransform minimap = CreateCard("Navigation",new(0,0),new(0,0),new(20,28),new(335,360));
             minimap.localScale = Vector3.one * 0.84f;
@@ -516,7 +518,12 @@ namespace Seaborn.UI
                 : "AMBAR BOŞ";
             cargoText.color = value > 0 ? Gold : Muted;
             activeBuffText.text = active.Trim();
-            resourceCard.sizeDelta = new Vector2(388f, 150f);
+            bool hasMaterials = cargo != null &&
+                (cargo.UnsecuredCorsairIron > 0 || cargo.UnsecuredChartFragments > 0);
+            unsecuredMaterialsText.text = hasMaterials
+                ? $"GÜVENCESİZ • Demir {cargo.UnsecuredCorsairIron} • Harita {cargo.UnsecuredChartFragments}\nLİMANA TAŞI"
+                : string.Empty;
+            resourceCard.sizeDelta = new Vector2(388f, hasMaterials ? 182f : 150f);
 
         }
 
