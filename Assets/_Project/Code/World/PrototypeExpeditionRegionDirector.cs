@@ -167,11 +167,19 @@ namespace Seaborn.World
             float fog = 1f - Mathf.Clamp01(distance / FogDistance);
             string status = !unlocked ? $"KAPTAN SV. {RequiredLevelForTier(requiredTier)} GEREKİR"
                 : !inside ? "GEÇİŞ ALANINA YAKLAŞ"
-                : "GEÇİŞ HAZIR • ONAYINI BEKLİYOR";
+                : $"{DestinationDanger(destination)} • GEÇİŞ HAZIR";
             approachView.Show(GetMapDisplayName(destination), status, fog,
                 inside && unlocked,
                 cancelledGate == null);
         }
+
+        private static string DestinationDanger(string scene) => scene switch
+        {
+            HarborScene => "GÜVENLİ LİMAN",
+            WestScene => "YÜKSEK TEHLİKE",
+            EastScene => "ORTA TEHLİKE",
+            _ => "ORTA TEHLİKE"
+        };
 
         private static void FindApproach(string scene, Vector3 position,
             out string destination, out EntrySide side, out float distance)

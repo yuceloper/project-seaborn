@@ -133,6 +133,8 @@ namespace Seaborn.Atmosphere
             SetFloat("_WaveSpeedA", profile.WaveSpeedA);
             SetFloat("_WaveSpeedB", profile.WaveSpeedB);
 
+            OceanHorizonExtension.Ensure(oceanRenderer, activeCamera);
+
             // Calm harbor -> open sea -> rough western waters.
             float roughness = Mathf.InverseLerp(0.12f, 0.22f, profile.LargeWave);
             SetFloat("_RippleStrength", Mathf.Lerp(0.12f, 0.22f, roughness));

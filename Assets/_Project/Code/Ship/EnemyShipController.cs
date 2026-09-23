@@ -188,6 +188,7 @@ namespace Seaborn.Ship
         {
             patrolHome = transform.position;
             shipRigidbody = GetComponent<Rigidbody>();
+            ShipContactResponse.Ensure(gameObject);
             shipRigidbody.constraints |= RigidbodyConstraints.FreezeRotationX |
                 RigidbodyConstraints.FreezeRotationZ;
             navigationConstraints = shipRigidbody.constraints;
@@ -448,10 +449,9 @@ namespace Seaborn.Ship
                 }
                 if (lostFiringArcAt < 0f) lostFiringArcAt = Time.time;
                 if (Time.time - lostFiringArcAt < RealignDelay) return;
-                // Keep the position fixed, but unlock yaw when the player leaves the broadside.
+                // Hold navigation still, but allow physical separation; unlock yaw to realign.
                 attackPhase = AttackPhase.Align;
-                shipRigidbody.constraints = navigationConstraints |
-                    RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionZ;
+                shipRigidbody.constraints = navigationConstraints;
                 aimPreparation = 0f;
                 lostFiringArcAt = -1f;
             }
@@ -471,8 +471,7 @@ namespace Seaborn.Ship
                     return;
                 }
                 attackPhase = AttackPhase.Align;
-                shipRigidbody.constraints = navigationConstraints |
-                    RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionZ;
+                shipRigidbody.constraints = navigationConstraints;
             }
 
             // Refresh the heading while aligning: a moving target invalidates a cached heading.
@@ -488,9 +487,7 @@ namespace Seaborn.Ship
                 Mathf.Min(0.98f, fireAlignment + 0.06f))
             {
                 attackPhase = AttackPhase.Hold;
-                shipRigidbody.constraints = navigationConstraints |
-                    RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionZ |
-                    RigidbodyConstraints.FreezeRotationY;
+                shipRigidbody.constraints = navigationConstraints | RigidbodyConstraints.FreezeRotationY;
                 aimPreparation = 0f;
             }
         }

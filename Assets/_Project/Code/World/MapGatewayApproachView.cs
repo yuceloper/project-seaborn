@@ -14,6 +14,9 @@ namespace Seaborn.World
              Mouse.current != null && RectTransformUtility.RectangleContainsScreenPoint(
                  instance.card, Mouse.current.position.ReadValue()));
 
+        public static bool IsCardVisible => instance != null && instance.card != null &&
+            instance.card.gameObject.activeInHierarchy;
+
         private RectTransform card;
         private Text mapName;
         private Text status;
@@ -38,7 +41,7 @@ namespace Seaborn.World
                     float cloud = Mathf.PerlinNoise(u * 7f, v * 5f) * 0.65f +
                         Mathf.PerlinNoise(u * 19f + 12f, v * 13f) * 0.35f;
                     pixels[y * 256 + x] = new Color(0.73f, 0.82f, 0.84f,
-                        (0.06f + edge * 0.62f) * cloud);
+                        Mathf.SmoothStep(0f, 0.32f, edge) * cloud);
                 }
             mistTexture.SetPixels(pixels);
             mistTexture.Apply(false, true);
@@ -52,18 +55,18 @@ namespace Seaborn.World
 
             var ui = Canvas("Gateway Approach", 120);
             ui.gameObject.AddComponent<GraphicRaycaster>();
-            card = Rect(ui.transform, "Destination", new Vector2(0, -22), new Vector2(600, 154));
+            card = Rect(ui.transform, "Destination", new Vector2(0, -22), new Vector2(460, 140));
             card.anchorMin = card.anchorMax = new Vector2(0.5f, 1);
             card.pivot = new Vector2(0.5f, 1);
             card.gameObject.AddComponent<Image>().color = new Color(0.025f, 0.075f, 0.105f, 0.97f);
-            mapName = Label(card, "", new Vector2(15, -12), new Vector2(570, 32), 23);
-            status = Label(card, "", new Vector2(15, -48), new Vector2(570, 30), 16);
-            confirm = MakeButton(card, "HARİTAYA GEÇ", new Vector2(52, -94), () =>
+            mapName = Label(card, "", new Vector2(15, -12), new Vector2(430, 32), 21);
+            status = Label(card, "", new Vector2(15, -48), new Vector2(430, 30), 14);
+            confirm = MakeButton(card, "HARİTAYA GEÇ", new Vector2(20, -90), () =>
             {
                 closedFrame = Time.frameCount;
                 onConfirm();
             });
-            MakeButton(card, "VAZGEÇ", new Vector2(322, -94), () =>
+            MakeButton(card, "VAZGEÇ", new Vector2(245, -90), () =>
             {
                 closedFrame = Time.frameCount;
                 onCancel();
@@ -117,7 +120,7 @@ namespace Seaborn.World
             var scaler = root.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1920, 1080);
-            scaler.matchWidthOrHeight = 0.5f;
+            scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.Expand;
             return canvas;
         }
 
@@ -145,12 +148,12 @@ namespace Seaborn.World
 
         private static Button MakeButton(Transform parent, string title, Vector2 position, Action action)
         {
-            var rect = Rect(parent, title, position, new Vector2(226, 42));
+            var rect = Rect(parent, title, position, new Vector2(195, 36));
             rect.gameObject.AddComponent<Image>().color = new Color(0.15f, 0.3f, 0.32f);
             var button = rect.gameObject.AddComponent<Button>();
             button.targetGraphic = rect.GetComponent<Image>();
             button.onClick.AddListener(() => action());
-            Label(rect, title, Vector2.zero, new Vector2(226, 42), 15);
+            Label(rect, title, Vector2.zero, new Vector2(195, 36), 15);
             return button;
         }
 

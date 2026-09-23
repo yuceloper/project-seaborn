@@ -109,6 +109,9 @@ namespace Seaborn.Hunting
         private Vector3 homePosition;
         private Transform visualRoot;
         private Material material;
+        private float diveUntil;
+        private float diveDepth;
+        private float nextContactEvasion;
 
         private void Awake()
         {
@@ -142,6 +145,20 @@ namespace Seaborn.Hunting
                 Destroy(collider);
             }
             // Keep the existing root target collider, movement, bobbing and sink flow.
+        }
+
+        private void OnTriggerStay(Collider other)
+        {
+            if (IsHarvested || IsMovementExternallyControlled || Time.time < nextContactEvasion)
+                return;
+            var ship = other.GetComponentInParent<Seaborn.Ship.ShipHealth>();
+            if (ship == null || ship.IsSunk) return;
+            nextContactEvasion = Time.time + 1.5f;
+            diveUntil = Time.time + 1.2f;
+            fleeUntil = Mathf.Max(fleeUntil, Time.time + 2f);
+            Vector3 away = Vector3.ProjectOnPlane(transform.position - ship.transform.position, Vector3.up);
+            if (away.sqrMagnitude < 0.01f) away = ship.transform.right;
+            transform.rotation = Quaternion.LookRotation(away.normalized, Vector3.up);
         }
 
         private void Update()
@@ -207,6 +224,8 @@ namespace Seaborn.Hunting
             position.z = Mathf.Clamp(position.z, -mapLimit, mapLimit);
             transform.position = position;
 
+            diveDepth = Mathf.MoveTowards(diveDepth, Time.time < diveUntil ? 0.85f : 0f,
+                Time.deltaTime * 1.2f);
             if (visualRoot != null)
             {
                 visualRoot.localPosition =
@@ -215,7 +234,7 @@ namespace Seaborn.Hunting
                         Time.time * 1.25f +
                         movementPhase
                     ) *
-                    0.08f;
+                    0.08f - Vector3.up * diveDepth;
                 visualRoot.localRotation =
                     Quaternion.Euler(
                         Mathf.Sin(
@@ -416,6 +435,8 @@ namespace Seaborn.Hunting
             CapsuleCollider targetCollider =
                 gameObject.AddComponent<
                     CapsuleCollider>();
+            // Harpoon sweeps explicitly include triggers; wildlife is not a solid wall.
+            targetCollider.isTrigger = true;
             targetCollider.direction = 2;
             targetCollider.radius = 0.9f;
             targetCollider.height = 4.2f;
