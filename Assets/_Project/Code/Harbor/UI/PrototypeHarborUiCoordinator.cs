@@ -13,7 +13,8 @@ namespace Seaborn.Harbor.UI
         TradePreparation,
         Consumables,
         Contracts,
-        CaptainSkills
+        CaptainSkills,
+        Inventory
     }
 
     [DisallowMultipleComponent]
@@ -49,6 +50,7 @@ namespace Seaborn.Harbor.UI
         private readonly List<PrototypeHarborTab>
             buttonTabs = new();
         private GameObject shell;
+        private Image veilImage;
         private RectTransform tabRoot;
         private Text stationTitle;
         private PrototypeHarborStation activeStation;
@@ -75,6 +77,7 @@ namespace Seaborn.Harbor.UI
 
             Instance = this;
             BuildInterface();
+            PrototypeHarborInventoryPanel.EnsureCreated();
             shell.SetActive(false);
         }
 
@@ -102,6 +105,9 @@ namespace Seaborn.Harbor.UI
                 RebuildTabs();
             }
 
+            bool inspection = activeStation == PrototypeHarborStation.Shipyard && selectedTab == PrototypeHarborTab.Loadout;
+            veilImage.color = new Color(0.005f, 0.02f, 0.028f, inspection ? 0f : 0.58f);
+            veilImage.raycastTarget = !inspection;
             RefreshButtons();
         }
 
@@ -109,6 +115,14 @@ namespace Seaborn.Harbor.UI
         {
             selectedTab = tab;
             RefreshButtons();
+        }
+
+        public void OpenInventory() => Select(PrototypeHarborTab.Inventory);
+
+        public void CloseInventory()
+        {
+            if (selectedTab == PrototypeHarborTab.Inventory)
+                Select(DefaultTab(activeStation));
         }
 
         private void RebuildTabs()
@@ -136,6 +150,7 @@ namespace Seaborn.Harbor.UI
                 AddTab("DONANIM", PrototypeHarborTab.Loadout);
                 AddTab("GELİŞTİR", PrototypeHarborTab.Upgrades);
                 AddTab("GÜVERTE", PrototypeHarborTab.ExtendedDeck);
+                AddTab("AMBAR / DEPO", PrototypeHarborTab.Inventory);
             }
             else if (activeStation ==
                      PrototypeHarborStation.Trade)
@@ -144,6 +159,7 @@ namespace Seaborn.Harbor.UI
                     PrototypeHarborTab.TradePreparation);
                 AddTab("TEDARİKÇİ",
                     PrototypeHarborTab.Consumables);
+                AddTab("AMBAR / DEPO", PrototypeHarborTab.Inventory);
             }
             else if (activeStation ==
                      PrototypeHarborStation.HarborOffice)
@@ -168,7 +184,7 @@ namespace Seaborn.Harbor.UI
             item.transform.SetParent(tabRoot, false);
             RectTransform rect =
                 item.GetComponent<RectTransform>();
-            rect.sizeDelta = new Vector2(170f, 44f);
+            rect.sizeDelta = new Vector2(156f, 44f);
 
             Button button = item.GetComponent<Button>();
             button.onClick.AddListener(() => Select(tab));
@@ -238,7 +254,8 @@ namespace Seaborn.Harbor.UI
             veilRect.anchorMax = Vector2.one;
             veilRect.offsetMin = Vector2.zero;
             veilRect.offsetMax = Vector2.zero;
-            veil.GetComponent<Image>().color =
+            veilImage = veil.GetComponent<Image>();
+            veilImage.color =
                 new Color(0.005f, 0.02f, 0.028f, 0.58f);
 
             GameObject header = new(
@@ -301,7 +318,7 @@ namespace Seaborn.Harbor.UI
             return station switch
             {
                 PrototypeHarborStation.Shipyard =>
-                    PrototypeHarborTab.ShipMarket,
+                    PrototypeHarborTab.Loadout,
                 PrototypeHarborStation.Trade =>
                     PrototypeHarborTab.TradePreparation,
                 PrototypeHarborStation.HarborOffice =>

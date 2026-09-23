@@ -39,6 +39,13 @@ namespace Seaborn.Persistence
             public int heavyHarpoonStock;
             public string selectedHarpoonId;
             public string cannonId;
+            public string[] cannonSlots;
+            public string[] cannonItemIds;
+            public CannonItem[] cannonItems;
+            public ShipModuleItem[] moduleItems;
+            public bool hasModuleLayout;
+            public string sailItemId;
+            public string hullItemId;
             public int installedCannons;
             public string sailId;
             public int iron6LbCannons;
@@ -98,7 +105,7 @@ namespace Seaborn.Persistence
             persistence.Bind(player);
         }
 
-        private string SavePath =>
+        public static string SavePath =>
             Path.Combine(Application.persistentDataPath, SaveFileName);
 
         private void Bind(Transform player)
@@ -219,19 +226,11 @@ namespace Seaborn.Persistence
 
         private void Load()
         {
-            if (!File.Exists(SavePath))
-            {
-                Debug.Log(
-                    "İlk kaptan kaydı hazırlanacak.",
-                    this
-                );
-                return;
-            }
-
             try
             {
-                string json = File.ReadAllText(SavePath);
-                SaveData data = JsonUtility.FromJson<SaveData>(json);
+                SaveData data = File.Exists(SavePath)
+                    ? JsonUtility.FromJson<SaveData>(File.ReadAllText(SavePath))
+                    : CreateNewCaptain();
                 if (data == null || data.version != CurrentVersion)
                 {
                     Debug.LogWarning(
@@ -311,12 +310,16 @@ namespace Seaborn.Persistence
                     data.patchedCanvasSails,
                     data.ratSails
                 );
+                inventory.RestoreCannonItems(data.cannonItems);
+                inventory.RestoreModules(data.moduleItems);
                 loadout.Restore(
                     data.cannonId,
                     data.installedCannons,
                     data.sailId,
                     data.selectedHarpoonId
                 );
+                loadout.RestoreCannonSlots(data.cannonSlots, data.cannonItemIds);
+                loadout.RestoreModuleLayout(data.hasModuleLayout, data.sailItemId, data.hullItemId);
                 equipment.RestoreLevels(
                     data.hullLevel,
                     data.cannonLevel,
@@ -385,6 +388,13 @@ namespace Seaborn.Persistence
                 selectedHarpoonId = harpoons != null
                     ? harpoons.SelectedHarpoonId
                     : "light_2kg",
+                moduleItems = inventory != null ? inventory.CaptureModules() : null,
+                hasModuleLayout = loadout != null,
+                sailItemId = loadout != null ? loadout.GetModuleId(ShipModuleSlot.Sail) : null,
+                hullItemId = loadout != null ? loadout.GetModuleId(ShipModuleSlot.Hull) : null,
+                cannonItems = inventory != null ? inventory.CaptureCannonItems() : null,
+                cannonItemIds = loadout != null ? loadout.CaptureCannonItemIds() : null,
+                cannonSlots = loadout != null ? loadout.CaptureCannonSlots() : null,
                 cannonId = loadout != null
                     ? loadout.CannonId
                     : "iron_6lb",
@@ -552,6 +562,12 @@ namespace Seaborn.Persistence
                     first.cannonId,
                     second.cannonId,
                     StringComparison.Ordinal) &&
+                SameSlots(first.cannonSlots, second.cannonSlots) &&
+                SameSlots(first.cannonItemIds, second.cannonItemIds) &&
+                SameCannonItems(first.cannonItems, second.cannonItems) &&
+                SameModuleItems(first.moduleItems, second.moduleItems) &&
+                first.hasModuleLayout == second.hasModuleLayout &&
+                first.sailItemId == second.sailItemId && first.hullItemId == second.hullItemId &&
                 first.installedCannons ==
                     second.installedCannons &&
                 string.Equals(
@@ -608,6 +624,35 @@ namespace Seaborn.Persistence
                     second.lostChartFragments;
         }
 
+        private static bool SameModuleItems(ShipModuleItem[] first, ShipModuleItem[] second)
+        {
+            if (ReferenceEquals(first, second)) return true;
+            if (first == null || second == null || first.Length != second.Length) return false;
+            for (int i = 0; i < first.Length; i++)
+                if (first[i] == null || second[i] == null || first[i].InstanceId != second[i].InstanceId ||
+                    first[i].DefinitionId != second[i].DefinitionId || first[i].Enhancement != second[i].Enhancement) return false;
+            return true;
+        }
+
+        private static bool SameCannonItems(CannonItem[] first, CannonItem[] second)
+        {
+            if (ReferenceEquals(first, second)) return true;
+            if (first == null || second == null || first.Length != second.Length) return false;
+            for (int i = 0; i < first.Length; i++)
+                if (first[i] == null || second[i] == null || first[i].InstanceId != second[i].InstanceId ||
+                    first[i].DefinitionId != second[i].DefinitionId || first[i].Enhancement != second[i].Enhancement) return false;
+            return true;
+        }
+
+        private static bool SameSlots(string[] first, string[] second)
+        {
+            if (ReferenceEquals(first, second)) return true;
+            if (first == null || second == null || first.Length != second.Length) return false;
+            for (int i = 0; i < first.Length; i++)
+                if (!string.Equals(first[i], second[i], StringComparison.Ordinal)) return false;
+            return true;
+        }
+
         private void SaveNow()
         {
             if (!loaded) return;
@@ -626,27 +671,77 @@ namespace Seaborn.Persistence
             SaveNow();
         }
 
-        [ContextMenu("Delete Prototype Progress")]
-        private void DeletePrototypeProgress()
+        // One authoritative first-session profile: never inherit serialized cheat stocks.
+        private static SaveData CreateNewCaptain()
         {
+            return new SaveData
+            {
+                silver = 0,
+                gold = 0,
+                ownsStarterSloop = true,
+                activeShipId = "starter_sloop",
+                cannonId = "iron_6lb",
+                installedCannons = 6,
+                iron6LbCannons = 6,
+                sailId = "patched_canvas",
+                patchedCanvasSails = 1,
+                selectedHarpoonId = "light_2kg",
+                selectedAmmunition = (int)AmmunitionType.Standard,
+                standardStock = 120,
+                chainStock = 12,
+                grapeshotStock = 16,
+                lightHarpoonStock = 10,
+                heavyHarpoonStock = 0,
+                tortugaTonics = 1,
+                lightsOfTortuga = 0,
+                corsairRum = 0,
+                galeElixirs = 0,
+                ironbarkBrews = 0,
+                availableDeckExtensions = 0
+            };
+        }
+
+        // Reset on disk only when no live captain can autosave stale state over it.
+        // Returns the backup path, or null when there was no previous save.
+        public static string ResetSavedProgressForNewCaptain()
+        {
+            if (Application.isPlaying)
+                throw new InvalidOperationException("Önce Play Mode'u durdur; sonra ilerlemeyi sıfırla.");
+
+            Directory.CreateDirectory(Application.persistentDataPath);
+            string temporaryPath = SavePath + ".reset.tmp";
+            File.WriteAllText(temporaryPath, JsonUtility.ToJson(CreateNewCaptain(), true));
+            string backup = null;
             try
             {
                 if (File.Exists(SavePath))
                 {
-                    File.Delete(SavePath);
+                    backup = SavePath + ".before-reset-" +
+                        DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff") + "-" +
+                        Guid.NewGuid().ToString("N") + ".bak";
+                    File.Replace(temporaryPath, SavePath, backup);
                 }
+                else File.Move(temporaryPath, SavePath);
+            }
+            finally
+            {
+                if (File.Exists(temporaryPath)) File.Delete(temporaryPath);
+            }
+            return backup;
+        }
 
-                Debug.Log(
-                    "Prototip kaptan kaydı silindi.",
-                    this
-                );
+        [ContextMenu("Reset Prototype Progress (Stop Play Mode First)")]
+        private void DeletePrototypeProgress()
+        {
+            try
+            {
+                string backup = ResetSavedProgressForNewCaptain();
+                Debug.Log("Yeni kaptan kaydı hazır. Liman sahnesinden Play başlat. Yedek: " +
+                    (backup ?? "Önceki kayıt yok"), this);
             }
             catch (Exception exception)
             {
-                Debug.LogWarning(
-                    $"Kaptan kaydı silinemedi: {exception.Message}",
-                    this
-                );
+                Debug.LogWarning($"İlerleme sıfırlanamadı: {exception.Message}", this);
             }
         }
     }

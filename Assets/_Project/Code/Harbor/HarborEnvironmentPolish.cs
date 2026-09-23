@@ -40,7 +40,29 @@ namespace Seaborn.Harbor
             BuildTradeWarehouseDetail();
             BuildShipyardDetail();
             BuildQuayClutter();
+            BuildAnnexRoofs();
             TuneWorldLabels();
+        }
+
+        private void BuildAnnexRoofs()
+        {
+            foreach (string partName in new[] { "Office West Wing Roof", "Office East Wing Roof",
+                "Trade East Annex Roof", "Shipyard West Shed Roof" })
+            {
+                Transform flat = transform.Find(partName);
+                if (flat == null) continue;
+                Vector3 center = flat.localPosition;
+                Vector3 size = flat.localScale;
+                flat.gameObject.SetActive(false);
+                for (int side = -1; side <= 1; side += 2)
+                    CreatePart(partName + " Slope " + side, PrimitiveType.Cube,
+                        center + new Vector3(side * size.x * 0.25f, size.x * 0.08f, 0f),
+                        new Vector3(size.x * 0.55f, 0.16f, size.z + 0.15f), Roof,
+                        Quaternion.Euler(0f, 0f, -side * 18f));
+                CreatePart(partName + " Ridge", PrimitiveType.Cube,
+                    center + Vector3.up * size.x * 0.16f,
+                    new Vector3(0.18f, 0.16f, size.z + 0.2f), TimberLight);
+            }
         }
 
         private void BuildHarborOfficeSilhouette()

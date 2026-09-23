@@ -1,4 +1,6 @@
 using Seaborn.Combat;
+using Seaborn.Harbor;
+using Seaborn.Harbor.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -40,6 +42,18 @@ namespace Seaborn.Camera
         [SerializeField] private float lookAheadTime = 0.45f;
         [SerializeField] private float maximumLookAhead = 4f;
 
+        private float shipyardBlend;
+        private float inspectionDistance = 10f;
+        private float nextInspectionMeasure;
+        private UnityEngine.Camera viewCamera;
+        public bool IsInspectingShip => shipyardBlend > 0.01f;
+
+        private bool WantsShipyardView => target != null &&
+            Seaborn.World.PrototypeExpeditionRegionDirector.IsHarborScene &&
+            PrototypeHarborDockingDirector.Instance != null &&
+            PrototypeHarborDockingDirector.Instance.IsDockedAt(PrototypeHarborStation.Shipyard) &&
+            PrototypeHarborUiCoordinator.IsSelected(PrototypeHarborTab.Loadout);
+
         private Vector3 smoothedFocusPoint;
         private Vector3 focusVelocity;
 
@@ -49,18 +63,19 @@ namespace Seaborn.Camera
 
         private void Awake()
         {
+            viewCamera = GetComponent<UnityEngine.Camera>();
             targetDistance = defaultDistance;
             currentDistance = defaultDistance;
         }
 
         private void OnEnable()
         {
-            zoomAction.action.Enable();
+            zoomAction?.action.Enable();
         }
 
         private void OnDisable()
         {
-            zoomAction.action.Disable();
+            zoomAction?.action.Disable();
         }
 
         private void Start()
@@ -82,21 +97,65 @@ namespace Seaborn.Camera
 
         private void LateUpdate()
         {
+            if (target == null) return;
             UpdateZoom();
             UpdateFocusPoint();
             UpdateDistance();
+            Vector3 sailingPosition = CalculateCameraPosition(smoothedFocusPoint, currentDistance);
+            Quaternion sailingRotation = Quaternion.LookRotation(smoothedFocusPoint - sailingPosition, Vector3.up);
+            bool inspecting = WantsShipyardView;
+            shipyardBlend = Mathf.MoveTowards(shipyardBlend, inspecting ? 1f : 0f, Time.unscaledDeltaTime / 0.85f);
+            if (shipyardBlend <= 0f)
+            {
+                transform.SetPositionAndRotation(sailingPosition, sailingRotation);
+                return;
+            }
+            Quaternion inspectionRotation = Quaternion.Euler(72f, target.eulerAngles.y, 0f);
+            if (inspecting && Time.unscaledTime >= nextInspectionMeasure)
+            {
+                nextInspectionMeasure = Time.unscaledTime + 0.5f;
+                inspectionDistance = MeasureInspectionDistance(inspectionRotation);
+            }
+            float tangent = Mathf.Tan((viewCamera != null ? viewCamera.fieldOfView : 60f) * 0.5f * Mathf.Deg2Rad);
+            float aspect = viewCamera != null ? viewCamera.aspect : (float)Screen.width / Mathf.Max(1, Screen.height);
+            // Place the ship in the open left portion; the inventory occupies the right.
+            float horizontalSpan = viewCamera != null && viewCamera.orthographic
+                ? viewCamera.orthographicSize * aspect : inspectionDistance * tangent * aspect;
+            Vector3 focus = target.position + Vector3.up * targetHeight +
+                inspectionRotation * Vector3.right * horizontalSpan * 0.38f;
+            Vector3 inspectionPosition = focus + inspectionRotation * Vector3.back * inspectionDistance;
+            float blend = Mathf.SmoothStep(0f, 1f, shipyardBlend);
+            transform.SetPositionAndRotation(Vector3.Lerp(sailingPosition, inspectionPosition, blend),
+                Quaternion.Slerp(sailingRotation, inspectionRotation, blend));
+        }
 
-            transform.position = CalculateCameraPosition(
-                smoothedFocusPoint,
-                currentDistance
-            );
-
-            LookAtFocusPoint();
+        private float MeasureInspectionDistance(Quaternion rotation)
+        {
+            Bounds bounds = new Bounds(target.position + Vector3.up, new Vector3(3f, 3f, 6f));
+            foreach (var renderer in target.GetComponentsInChildren<Renderer>())
+                if (renderer.enabled && (renderer is MeshRenderer || renderer is SkinnedMeshRenderer))
+                    bounds.Encapsulate(renderer.bounds);
+            Vector3 ext = bounds.extents;
+            Quaternion inverse = Quaternion.Inverse(rotation);
+            Vector3 projected = Vector3.zero;
+            for (int x = -1; x <= 1; x += 2)
+                for (int y = -1; y <= 1; y += 2)
+                    for (int z = -1; z <= 1; z += 2)
+                    {
+                        Vector3 corner = inverse * new Vector3(ext.x * x, ext.y * y, ext.z * z);
+                        projected = Vector3.Max(projected, new Vector3(Mathf.Abs(corner.x), Mathf.Abs(corner.y), Mathf.Abs(corner.z)));
+                    }
+            float tangent = Mathf.Tan((viewCamera != null ? viewCamera.fieldOfView : 60f) * 0.5f * Mathf.Deg2Rad);
+            float aspect = viewCamera != null ? viewCamera.aspect : 1.777f;
+            return Mathf.Max(8f, Mathf.Max(projected.y / (tangent * 0.64f),
+                projected.x / (tangent * aspect * 0.55f)) + projected.z);
         }
 
         private void UpdateZoom()
         {
-            float zoomInput = zoomAction.action.ReadValue<float>();
+            if (WantsShipyardView || shipyardBlend > 0f ||
+                PrototypeHarborInventoryPanel.BlocksGameplayInput) return;
+            float zoomInput = zoomAction != null ? zoomAction.action.ReadValue<float>() : 0f;
 
             if (Mathf.Abs(zoomInput) < 0.01f)
             {
@@ -174,7 +233,7 @@ namespace Seaborn.Camera
                 focusPoint += lookAhead;
             }
 
-            if (aimController == null ||
+            if (WantsShipyardView || aimController == null ||
                 !aimController.IsAiming)
             {
                 return focusPoint;

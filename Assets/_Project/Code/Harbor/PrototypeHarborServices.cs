@@ -1,5 +1,6 @@
 using System;
 using Seaborn.Combat;
+using Seaborn.Equipment;
 using Seaborn.Expeditions;
 using Seaborn.Hunting;
 using Seaborn.Ship;
@@ -13,7 +14,8 @@ namespace Seaborn.Harbor
         StandardAmmunition,
         ChainAmmunition,
         GrapeshotAmmunition,
-        Harpoons
+        Harpoons,
+        Preparation
     }
 
     public enum PrototypeHarborServiceResult
@@ -22,7 +24,8 @@ namespace Seaborn.Harbor
         NotAtHarbor,
         Unavailable,
         NothingToDo,
-        InsufficientSilver
+        InsufficientSilver,
+        QuoteChanged
     }
 
     [DisallowMultipleComponent]
@@ -30,8 +33,11 @@ namespace Seaborn.Harbor
         MonoBehaviour
     {
         [Header("Repair")]
-        [SerializeField, Min(1)]
-        private int silverPerHealthPoint = 1;
+        // New field names intentionally replace the serialized prototype 1 Silver/HP tariff.
+        [SerializeField, Min(0.001f)]
+        private float hullRepairSilverPerPoint = 0.025f;
+        [SerializeField, Min(0.001f)]
+        private float subsystemRepairSilverPerPoint = 0.1f;
 
         [Header("Supply bundles")]
         [SerializeField, Min(1)]
@@ -76,10 +82,10 @@ namespace Seaborn.Harbor
                 );
                 float subsystemDamage =
                     subsystems != null
-                        ? subsystems.MissingIntegrity * 0.5f
+                        ? subsystems.MissingIntegrity * Mathf.Max(0.001f, subsystemRepairSilverPerPoint)
                         : 0f;
                 return Mathf.CeilToInt(
-                    missingHealth * silverPerHealthPoint +
+                    missingHealth * Mathf.Max(0.001f, hullRepairSilverPerPoint) +
                     subsystemDamage
                 );
             }
@@ -94,6 +100,70 @@ namespace Seaborn.Harbor
         private ShipSubsystemController subsystems;
         private BroadsideController broadside;
         private HarpoonHuntingController harpoons;
+        private bool preparing;
+
+        public bool CanPrepare => CanUseServices &&
+            Seaborn.World.PrototypeExpeditionRegionDirector.IsHarborScene &&
+            PrototypeHarborDockingDirector.Instance != null &&
+            PrototypeHarborDockingDirector.Instance.IsDockedAt(PrototypeHarborStation.Trade);
+
+        public HarborPreparationQuote GetPreparationQuote()
+        {
+            // Components may be attached by later runtime bootstraps.
+            if (wallet == null) wallet = GetComponent<PrototypeSilverWallet>();
+            if (shipHealth == null) shipHealth = GetComponentInChildren<ShipHealth>();
+            if (subsystems == null && shipHealth != null)
+                subsystems = shipHealth.GetComponent<ShipSubsystemController>();
+            if (broadside == null) broadside = GetComponentInChildren<BroadsideController>();
+            if (harpoons == null) harpoons = GetComponent<HarpoonHuntingController>();
+            if (wallet == null || shipHealth == null || shipHealth.IsSunk || broadside == null ||
+                harpoons == null || harpoons.SelectedHarpoon == null) return null;
+            return new HarborPreparationQuote(RepairCost,
+                QuoteSupply(PrototypeHarborServiceType.StandardAmmunition,
+                    broadside.GetAmmunitionStock(AmmunitionType.Standard), HarborPreparationQuote.StandardTarget),
+                QuoteSupply(PrototypeHarborServiceType.ChainAmmunition,
+                    broadside.GetAmmunitionStock(AmmunitionType.Chain), HarborPreparationQuote.ChainTarget),
+                QuoteSupply(PrototypeHarborServiceType.GrapeshotAmmunition,
+                    broadside.GetAmmunitionStock(AmmunitionType.Grapeshot), HarborPreparationQuote.GrapeshotTarget),
+                QuoteSupply(PrototypeHarborServiceType.Harpoons,
+                    harpoons.HarpoonStock, HarborPreparationQuote.HarpoonTarget),
+                harpoons.SelectedHarpoonId, harpoons.SelectedHarpoon.displayName);
+        }
+
+        private PreparationSupply QuoteSupply(PrototypeHarborServiceType type, int stock, int target)
+        {
+            return new PreparationSupply(Mathf.Max(0, stock), target,
+                Mathf.Max(1, GetBundleSize(type)), Mathf.Max(0, GetServiceCost(type)));
+        }
+
+        public PrototypeHarborServiceResult TryPrepare(HarborPreparationQuote displayedQuote)
+        {
+            if (preparing) return PrototypeHarborServiceResult.Unavailable;
+            if (!CanPrepare) return PrototypeHarborServiceResult.NotAtHarbor;
+            var quote = GetPreparationQuote();
+            if (quote == null) return PrototypeHarborServiceResult.Unavailable;
+            if (!quote.Matches(displayedQuote)) return PrototypeHarborServiceResult.QuoteChanged;
+            if (!quote.HasWork) return PrototypeHarborServiceResult.NothingToDo;
+            preparing = true;
+            try
+            {
+                // One debit after all validation; never buy just the affordable subset.
+                if (!TryPay(quote.TotalCost, "Sefer hazırlığı"))
+                    return PrototypeHarborServiceResult.InsufficientSilver;
+                if (quote.RepairCost > 0)
+                {
+                    shipHealth.RestoreToFullHealth();
+                    subsystems?.RestoreAll();
+                }
+                broadside.AddAmmunition(AmmunitionType.Standard, quote.Standard.AddedStock);
+                broadside.AddAmmunition(AmmunitionType.Chain, quote.Chain.AddedStock);
+                broadside.AddAmmunition(AmmunitionType.Grapeshot, quote.Grapeshot.AddedStock);
+                harpoons.AddHarpoons(quote.Harpoon.AddedStock);
+                Complete(PrototypeHarborServiceType.Preparation, quote.TotalCost);
+                return PrototypeHarborServiceResult.Completed;
+            }
+            finally { preparing = false; }
+        }
 
         public static void EnsureAttached(Transform player)
         {
@@ -118,6 +188,9 @@ namespace Seaborn.Harbor
         public int GetBundleSize(
             PrototypeHarborServiceType serviceType)
         {
+            if (TryGetAmmunitionDefinition(serviceType, out AmmunitionDefinition definition))
+                return definition.bundleSize;
+
             switch (serviceType)
             {
                 case PrototypeHarborServiceType
@@ -141,6 +214,9 @@ namespace Seaborn.Harbor
         public int GetServiceCost(
             PrototypeHarborServiceType serviceType)
         {
+            if (TryGetAmmunitionDefinition(serviceType, out AmmunitionDefinition definition))
+                return definition.silverPricePerBundle;
+
             switch (serviceType)
             {
                 case PrototypeHarborServiceType.Repair:
@@ -162,6 +238,20 @@ namespace Seaborn.Harbor
                 default:
                     return 0;
             }
+        }
+
+        private static bool TryGetAmmunitionDefinition(
+            PrototypeHarborServiceType serviceType, out AmmunitionDefinition definition)
+        {
+            string id = serviceType switch
+            {
+                PrototypeHarborServiceType.StandardAmmunition => "standard",
+                PrototypeHarborServiceType.ChainAmmunition => "chain",
+                PrototypeHarborServiceType.GrapeshotAmmunition => "grapeshot",
+                _ => null
+            };
+            definition = null;
+            return id != null && EquipmentCatalog.TryGetAmmunition(id, out definition);
         }
 
         public PrototypeHarborServiceResult TryRepair()
@@ -313,6 +403,7 @@ namespace Seaborn.Harbor
         private PrototypeHarborServiceResult ValidateService(
             bool dependencyAvailable)
         {
+            if (preparing) return PrototypeHarborServiceResult.Unavailable;
             if (!CanUseServices)
             {
                 return PrototypeHarborServiceResult
@@ -347,7 +438,8 @@ namespace Seaborn.Harbor
         private void Bind(Transform player)
         {
             if (protection != null &&
-                protection.transform == player)
+                protection.transform == player && wallet != null && shipHealth != null &&
+                subsystems != null && broadside != null && harpoons != null)
             {
                 return;
             }

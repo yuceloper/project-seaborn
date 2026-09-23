@@ -54,6 +54,7 @@ namespace Seaborn.Ship
         private bool startsRun = true;
         private Vector3 previousPosition;
         private Scene ownerScene;
+        private Scene surfaceScene;
 
         private void Awake()
         {
@@ -86,9 +87,12 @@ namespace Seaborn.Ship
 
         private void ResolveSurface()
         {
-            if (waterSurface != null && waterSurface.gameObject.scene == ownerScene) return;
+            // The persistent player's owner scene contains no ocean.
+            surfaceScene = SceneManager.GetActiveScene();
+            if (waterSurface != null && waterSurface.gameObject.scene == surfaceScene) return;
             waterSurface = null;
-            foreach (GameObject root in ownerScene.GetRootGameObjects())
+            if (!surfaceScene.IsValid() || !surfaceScene.isLoaded) return;
+            foreach (GameObject root in surfaceScene.GetRootGameObjects())
             {
                 foreach (Transform candidate in root.GetComponentsInChildren<Transform>(true))
                 {
@@ -110,6 +114,14 @@ namespace Seaborn.Ship
                 SceneManager.MoveGameObjectToScene(ribbon, ownerScene);
                 samples.Clear();
                 startsRun = true;
+            }
+
+            if (surfaceScene != SceneManager.GetActiveScene())
+            {
+                samples.Clear();
+                startsRun = true;
+                bowStrength = 0f;
+                travelled = 0f;
                 ResolveSurface();
             }
 

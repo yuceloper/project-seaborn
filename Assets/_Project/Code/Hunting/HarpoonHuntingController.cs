@@ -100,6 +100,17 @@ namespace Seaborn.Hunting
 
         private void Update()
         {
+            if ((Seaborn.Harbor.UI.PrototypeHarborInventoryPanel.BlocksGameplayInput ||
+                Seaborn.Harbor.UI.PrototypeHarborUiCoordinator.IsOpen) ||
+                Seaborn.World.MapGatewayApproachView.BlocksPointerInput)
+            {
+                bool changed = IsAiming;
+                IsAiming = false;
+                hasAimPoint = false;
+                if (aimLine != null) aimLine.enabled = false;
+                if (changed) HuntingStateChanged?.Invoke();
+                return;
+            }
             if (aimCamera == null)
             {
                 aimCamera = UnityEngine.Camera.main;
@@ -556,6 +567,8 @@ namespace Seaborn.Hunting
                 player.transform
             );
             Seaborn.Persistence.PrototypeProgressPersistence
+                .EnsureAttached(player.transform);
+            Seaborn.Expeditions.PrototypeExpeditionReportTracker
                 .EnsureAttached(player.transform);
             Seaborn.UI.PrototypeGameplayHud.EnsureCreated(
                 player.transform

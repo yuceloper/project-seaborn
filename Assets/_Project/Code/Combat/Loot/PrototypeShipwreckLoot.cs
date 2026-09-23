@@ -1,7 +1,6 @@
 using Seaborn.Combat;
 using Seaborn.Hunting;
 using Seaborn.Ship;
-using Seaborn.Progression;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -47,6 +46,11 @@ namespace Seaborn.Combat.Loot
             }
         }
 
+        public void ResetForRespawn()
+        {
+            dropped = false;
+        }
+
         private void HandleSunk()
         {
             if (dropped ||
@@ -58,7 +62,8 @@ namespace Seaborn.Combat.Loot
             dropped = true;
             PrototypeShipwreckLootPickup.Create(
                 transform.position,
-                player
+                player,
+                GetComponent<EnemyShipController>()?.Archetype ?? EnemyShipArchetype.Marauder
             );
         }
     }
@@ -69,7 +74,6 @@ namespace Seaborn.Combat.Loot
         private const float InteractionRadius = 2.8f;
         private const float Lifetime = 120f;
         private Transform player;
-        private string sourceScene;
         private int silverReward;
         private int ammunitionReward;
         private PrototypeHuntCargo cargo;
@@ -78,10 +82,14 @@ namespace Seaborn.Combat.Loot
         private float expiresAt;
         private float baseHeight;
         private bool collected;
+        private bool pirateWreck;
+        private int ironReward;
+        private int chartReward;
 
         public static void Create(
             Vector3 position,
-            Transform playerTransform)
+            Transform playerTransform,
+            EnemyShipArchetype archetype = EnemyShipArchetype.Marauder)
         {
             GameObject pickup =
                 new GameObject("Shipwreck Loot");
@@ -97,17 +105,20 @@ namespace Seaborn.Combat.Loot
                     PrototypeShipwreckLootPickup>();
             component.Initialize(
                 playerTransform,
-                SceneManager.GetActiveScene().name
+                SceneManager.GetActiveScene().name,
+                archetype
             );
         }
 
         private void Initialize(
             Transform playerTransform,
-            string sceneName)
+            string sceneName,
+            EnemyShipArchetype archetype)
         {
             player = playerTransform;
-            sourceScene = sceneName;
-            ConfigureRewards(sceneName);
+            pirateWreck = archetype != EnemyShipArchetype.FishingBoat &&
+                archetype != EnemyShipArchetype.Merchant;
+            ConfigureRewards(sceneName, archetype);
             expiresAt = Time.time + Lifetime;
             baseHeight = transform.position.y;
             ResolvePlayerComponents();
@@ -174,20 +185,12 @@ namespace Seaborn.Combat.Loot
                 return;
             }
 
+            if (!cargo.TryAddWreck(silverReward, pirateWreck, ironReward, chartReward)) return;
             collected = true;
-            cargo.AddCatch(
-                "Düşman gemisi enkazı",
-                silverReward
-            );
             broadside.AddAmmunition(
                 AmmunitionType.Standard,
                 ammunitionReward
             );
-
-            PrototypeRegionalLootInventory inventory =
-                PrototypeRegionalLootInventory
-                    .EnsureAttached(player);
-            inventory?.AwardShipwreck(sourceScene);
 
             PrototypeCombatVfx.PlayWaterSplash(
                 transform.position
@@ -202,24 +205,30 @@ namespace Seaborn.Combat.Loot
             Destroy(gameObject);
         }
 
-        private void ConfigureRewards(string sceneName)
+        private void ConfigureRewards(string sceneName, EnemyShipArchetype archetype)
         {
-            if (sceneName == "PrototypeWesternReach")
+            // Roll once per wreck; failed/full-hold pickups never reroll rewards.
+            ironReward = !pirateWreck ? 0
+                : archetype == EnemyShipArchetype.Gunship ? 3
+                : archetype == EnemyShipArchetype.Skirmisher ? 1 : 2;
+            if (pirateWreck && sceneName == "PrototypeWesternReach") ironReward++;
+            chartReward = pirateWreck &&
+                (archetype == EnemyShipArchetype.Gunship ||
+                 UnityEngine.Random.value < 0.2f) ? 1 : 0;
+            int baseSilver = archetype switch
             {
-                silverReward = 55;
-                ammunitionReward = 8;
-                return;
-            }
-
-            if (sceneName == "PrototypeEasternReach")
-            {
-                silverReward = 30;
-                ammunitionReward = 4;
-                return;
-            }
-
-            silverReward = 35;
-            ammunitionReward = 6;
+                EnemyShipArchetype.FishingBoat => 20,
+                EnemyShipArchetype.Merchant => 65,
+                EnemyShipArchetype.Skirmisher => 110,
+                EnemyShipArchetype.Gunship => 210,
+                _ => 145
+            };
+            float regionMultiplier = sceneName == "PrototypeWesternReach" ? 1.5f
+                : sceneName == "PrototypeEasternReach" ? 0.9f : 1f;
+            silverReward = Mathf.RoundToInt(baseSilver * regionMultiplier);
+            ammunitionReward = archetype == EnemyShipArchetype.FishingBoat ||
+                archetype == EnemyShipArchetype.Merchant ? 0 : sceneName == "PrototypeWesternReach" ? 8
+                : sceneName == "PrototypeEasternReach" ? 4 : 6;
         }
 
         private void ResolvePlayer()
@@ -352,6 +361,14 @@ namespace Seaborn.Combat.Loot
 
         private void OnGUI()
         {
+            if (player != null && UnityEngine.Camera.main != null)
+            {
+                float distance = HorizontalDistance(transform.position, player.position);
+                Vector3 screen = UnityEngine.Camera.main.WorldToScreenPoint(transform.position + Vector3.up);
+                if (distance > InteractionRadius && distance <= 24f && screen.z > 0f)
+                    GUI.Box(new Rect(screen.x - 85f, Screen.height - screen.y - 25f, 170f, 25f),
+                        $"ENKAZ • {distance:0} m");
+            }
             if (player == null ||
                 HorizontalDistance(
                     transform.position,
@@ -361,12 +378,12 @@ namespace Seaborn.Combat.Loot
                 return;
             }
 
-            const float width = 330f;
+            const float width = 460f;
             Rect prompt = new Rect(
                 (Screen.width - width) * 0.5f,
                 Screen.height - 128f,
                 width,
-                42f
+                64f
             );
 
             Color previous = GUI.color;
@@ -385,7 +402,12 @@ namespace Seaborn.Combat.Loot
 
             GUI.Label(
                 prompt,
-                "E — ENKAZ GANİMETİNİ TOPLA",
+                cargo != null && cargo.RemainingCapacity < silverReward + ironReward + chartReward
+                    ? "AMBARDA YER YOK — LİMANA TESLİM ET"
+                    : "E — ENKAZI TOPLA • LİMANA TAŞI" +
+                      $"\n{silverReward} Silver" +
+                      (ironReward > 0 ? $" • {ironReward} Korsan Demiri" : "") +
+                      (chartReward > 0 ? $" • {chartReward} Harita Parçası" : ""),
                 style
             );
         }
