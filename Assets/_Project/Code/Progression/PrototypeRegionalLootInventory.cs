@@ -197,6 +197,18 @@ namespace Seaborn.Progression
             return true;
         }
 
+        // Validate the whole recipe before debiting; publish only the completed material balance.
+        public bool TrySpendCannonUpgrade(CannonUpgradeCost cost)
+        {
+            if (cost.Iron < 0 || cost.Charts < 0 || cost.Scales < 0 ||
+                CorsairIron < cost.Iron || LostChartFragments < cost.Charts || StormjawScales < cost.Scales) return false;
+            CorsairIron -= cost.Iron;
+            LostChartFragments -= cost.Charts;
+            StormjawScales -= cost.Scales;
+            MaterialsChanged?.Invoke();
+            return true;
+        }
+
         public void Restore(
             int tideOil,
             int stormjawScales,

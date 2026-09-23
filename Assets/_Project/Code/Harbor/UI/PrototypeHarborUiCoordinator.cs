@@ -50,6 +50,7 @@ namespace Seaborn.Harbor.UI
         private readonly List<PrototypeHarborTab>
             buttonTabs = new();
         private GameObject shell;
+        private Image veilImage;
         private RectTransform tabRoot;
         private Text stationTitle;
         private PrototypeHarborStation activeStation;
@@ -104,6 +105,9 @@ namespace Seaborn.Harbor.UI
                 RebuildTabs();
             }
 
+            bool inspection = activeStation == PrototypeHarborStation.Shipyard && selectedTab == PrototypeHarborTab.Loadout;
+            veilImage.color = new Color(0.005f, 0.02f, 0.028f, inspection ? 0f : 0.58f);
+            veilImage.raycastTarget = !inspection;
             RefreshButtons();
         }
 
@@ -250,7 +254,8 @@ namespace Seaborn.Harbor.UI
             veilRect.anchorMax = Vector2.one;
             veilRect.offsetMin = Vector2.zero;
             veilRect.offsetMax = Vector2.zero;
-            veil.GetComponent<Image>().color =
+            veilImage = veil.GetComponent<Image>();
+            veilImage.color =
                 new Color(0.005f, 0.02f, 0.028f, 0.58f);
 
             GameObject header = new(
@@ -313,7 +318,7 @@ namespace Seaborn.Harbor.UI
             return station switch
             {
                 PrototypeHarborStation.Shipyard =>
-                    PrototypeHarborTab.ShipMarket,
+                    PrototypeHarborTab.Loadout,
                 PrototypeHarborStation.Trade =>
                     PrototypeHarborTab.TradePreparation,
                 PrototypeHarborStation.HarborOffice =>

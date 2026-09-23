@@ -100,7 +100,8 @@ namespace Seaborn.Ship
         private void Update()
         {
             if (Keyboard.current != null &&
-                !Seaborn.Harbor.UI.PrototypeHarborInventoryPanel.BlocksGameplayInput)
+                !(Seaborn.Harbor.UI.PrototypeHarborInventoryPanel.BlocksGameplayInput ||
+                Seaborn.Harbor.UI.PrototypeHarborUiCoordinator.IsOpen))
             {
                 if (Keyboard.current.digit4Key
                     .wasPressedThisFrame)

@@ -5,8 +5,8 @@ with secured materials and persistent equipment ownership. Story quests remain s
 
 ## Implemented: individual cannon hardpoints
 
-- Shipyard DONANIM displays numbered port/starboard slots. Select a slot, inspect the
-  fitted gun and the 6 lb / 12 lb comparison, then mount a spare gun or remove the current gun.
+- Shipyard DONANIM now opens a close-up with selectable port/starboard mounts. Select a mount,
+  inspect individual owned guns and their + levels, then fit, remove or enhance one item.
 - Ownership includes mounted guns. Removal releases that gun to the depot, with no sale,
   destruction or duplicate grant. Buying/forging adds one spare; mounting is a separate action.
 - Mixed batteries are real combat loadouts. Every occupied slot fires from its own muzzle
@@ -17,8 +17,8 @@ with secured materials and persistent equipment ownership. Story quests remain s
 - 6 lb: 85 base damage / 4.8 s. 12 lb: 125 / 6.2 s. These are different firing profiles,
   not an unconditional DPS upgrade: a mixed battery can gain burst damage but lose sustained
   damage because of shared reload. The shipyard explicitly displays that tradeoff.
-- Save data stores a cloned, ordered slot array. Legacy saves migrate their uniform battery;
-  invalid/unowned excess entries are rejected. Empty batteries survive save/reload.
+- Save data stores cloned item records and an ordered item-ID layout. Legacy count/type saves
+  migrate to unique +0 items; invalid/unowned excess entries are rejected. Empty batteries survive save/reload.
 - Current equipment follows the active ship. Moving to a smaller hull releases excess guns
   to the depot. Larger hulls/extensions add empty slots, never free cannons. This is NOT yet
   a separate saved build for every owned ship.
@@ -38,10 +38,11 @@ Insufficient resources produce no item and charge nothing. Crafting is guarantee
 there is no failure roll or destruction. Existing bought equipment and legacy upgrades remain.
 These initial recipe numbers are tuning values, not validated pacing measurements.
 
-## Next stages of the agreed ship design (not implemented here)
+## Subsequent ship design stages
 
-1. Physical shipyard selection: camera close-up, highlight actual gun mount, ghost preview,
-   compatible inventory and before/after comparison. Current UI is a numbered slot schematic.
+1. Camera close-up, world-anchored mount selection, individual inventory, comparison and
+   +0–+10 item enhancement are now implemented; see SHIPYARD_INSPECTION_AND_ENHANCEMENT.md.
+   Replacing the physical cannon mesh with a ghost/item preview is still a later art step.
 2. Fore/mid/aft sections with repeatable midship modules: gun deck, cargo hold, reinforced
    keel and hunting/crew deck. Fit benefits against mass, acceleration, turning and target size.
    Existing production models are monolithic: sectional assets/connectors are needed for

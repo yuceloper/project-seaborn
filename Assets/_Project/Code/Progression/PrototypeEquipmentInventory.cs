@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Seaborn.Equipment;
 using Seaborn.Harbor;
 using Seaborn.Hunting;
@@ -13,7 +14,9 @@ namespace Seaborn.Progression
         NotAtShipyard,
         UnknownItem,
         InsufficientSilver,
-        InsufficientMaterials
+        InsufficientMaterials,
+        MaximumEnhancement,
+        StaleSelection
     }
 
     [DisallowMultipleComponent]
@@ -23,6 +26,101 @@ namespace Seaborn.Progression
         [SerializeField, Min(0)] private int iron12LbCannons;
         [SerializeField, Min(0)] private int patchedCanvasSails = 1;
         [SerializeField, Min(0)] private int ratSails;
+
+        [SerializeField] private List<CannonItem> cannonItems = new();
+        [SerializeField] private bool itemsInitialized;
+        private bool upgrading;
+        public IReadOnlyList<CannonItem> Cannons { get { EnsureItems(); return cannonItems; } }
+
+        private void EnsureItems()
+        {
+            if (itemsInitialized) return;
+            itemsInitialized = true;
+            cannonItems = new List<CannonItem>();
+            for (int i = 0; i < iron6LbCannons; i++) cannonItems.Add(CannonItem.Create("iron_6lb"));
+            for (int i = 0; i < iron12LbCannons; i++) cannonItems.Add(CannonItem.Create("iron_12lb"));
+        }
+
+        public CannonItem FindCannon(string instanceId)
+        {
+            EnsureItems();
+            if (string.IsNullOrEmpty(instanceId)) return null;
+            return cannonItems.Find(item => item.InstanceId == instanceId);
+        }
+
+        public CannonItem FindSpareCannon(string definitionId)
+        {
+            EnsureItems();
+            if (loadout == null) loadout = GetComponent<ShipLoadout>();
+            return cannonItems.Find(item => string.Equals(item.DefinitionId, definitionId,
+                StringComparison.OrdinalIgnoreCase) && (loadout == null || !loadout.IsCannonInstalled(item.InstanceId)));
+        }
+
+        private void AddCannon(string id)
+        {
+            EnsureItems();
+            cannonItems.Add(CannonItem.Create(id));
+            SyncLegacyCounts();
+        }
+
+        private void SyncLegacyCounts()
+        {
+            iron6LbCannons = cannonItems.FindAll(x => x.DefinitionId == "iron_6lb").Count;
+            iron12LbCannons = cannonItems.FindAll(x => x.DefinitionId == "iron_12lb").Count;
+        }
+
+        public CannonItem[] CaptureCannonItems()
+        {
+            EnsureItems();
+            return cannonItems.ConvertAll(item => item.Copy()).ToArray();
+        }
+
+        public void RestoreCannonItems(CannonItem[] saved)
+        {
+            EnsureItems();
+            if (saved == null) return; // Counts-only save: keep the +0 migration.
+            cannonItems.Clear();
+            var ids = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var item in saved)
+            {
+                if (item == null || string.IsNullOrWhiteSpace(item.InstanceId) ||
+                    !ids.Add(item.InstanceId) || !EquipmentCatalog.TryGetCannon(item.DefinitionId, out _)) continue;
+                cannonItems.Add(item.Copy());
+            }
+            SyncLegacyCounts();
+            InventoryChanged?.Invoke();
+        }
+
+        public EquipmentPurchaseResult TryUpgradeCannon(string instanceId, int expectedLevel)
+        {
+            if (!CanUseShipyard || upgrading) return EquipmentPurchaseResult.NotAtShipyard;
+            var item = FindCannon(instanceId);
+            if (item == null) return EquipmentPurchaseResult.UnknownItem;
+            if (item.Enhancement != expectedLevel) return EquipmentPurchaseResult.StaleSelection;
+            if (item.Enhancement >= CannonItem.MaximumEnhancement) return EquipmentPurchaseResult.MaximumEnhancement;
+            var cost = CannonUpgradeCost.Next(item);
+            var depot = GetComponent<PrototypeRegionalLootInventory>();
+            if (depot == null || !depot.CanAfford(RegionalMaterialType.CorsairIron, cost.Iron) ||
+                !depot.CanAfford(RegionalMaterialType.LostChartFragment, cost.Charts) ||
+                !depot.CanAfford(RegionalMaterialType.StormjawScale, cost.Scales))
+                return EquipmentPurchaseResult.InsufficientMaterials;
+            if (wallet == null || wallet.Silver < cost.Silver) return EquipmentPurchaseResult.InsufficientSilver;
+            upgrading = true;
+            try
+            {
+                if (!wallet.TrySpendSilver(cost.Silver, "Top geliştirme")) return EquipmentPurchaseResult.InsufficientSilver;
+                if (!depot.TrySpendCannonUpgrade(cost))
+                {
+                    wallet.RestoreSilver(wallet.Silver + cost.Silver);
+                    return EquipmentPurchaseResult.InsufficientMaterials;
+                }
+                item.Improve();
+                loadout?.Apply();
+                InventoryChanged?.Invoke();
+                return EquipmentPurchaseResult.Completed;
+            }
+            finally { upgrading = false; }
+        }
 
         public event Action InventoryChanged;
 
@@ -61,6 +159,7 @@ namespace Seaborn.Progression
             }
 
             inventory.Bind(player);
+            inventory.loadout?.Apply();
             return inventory;
         }
 
@@ -137,17 +236,7 @@ namespace Seaborn.Progression
                     .InsufficientSilver;
             }
 
-            if (string.Equals(
-                    cannonId,
-                    "iron_12lb",
-                    StringComparison.OrdinalIgnoreCase))
-            {
-                iron12LbCannons++;
-            }
-            else
-            {
-                iron6LbCannons++;
-            }
+            AddCannon(definition.id);
 
             InventoryChanged?.Invoke();
             return EquipmentPurchaseResult.Completed;
@@ -176,7 +265,7 @@ namespace Seaborn.Progression
                     wallet.RestoreSilver(wallet.Silver + HeavyForgeSilver);
                     return EquipmentPurchaseResult.InsufficientMaterials;
                 }
-                iron12LbCannons++;
+                AddCannon("iron_12lb");
                 InventoryChanged?.Invoke();
                 return EquipmentPurchaseResult.Completed;
             }
@@ -271,6 +360,8 @@ namespace Seaborn.Progression
                 patchedCanvasSails = 1;
             }
 
+            itemsInitialized = false;
+            EnsureItems();
             InventoryChanged?.Invoke();
         }
 

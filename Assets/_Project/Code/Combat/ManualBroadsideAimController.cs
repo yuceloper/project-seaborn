@@ -108,7 +108,8 @@ namespace Seaborn.Combat
 
         private void Update()
         {
-            if (Seaborn.Harbor.UI.PrototypeHarborInventoryPanel.BlocksGameplayInput ||
+            if ((Seaborn.Harbor.UI.PrototypeHarborInventoryPanel.BlocksGameplayInput ||
+                Seaborn.Harbor.UI.PrototypeHarborUiCoordinator.IsOpen) ||
                 Seaborn.World.MapGatewayApproachView.BlocksPointerInput)
             {
                 SetAiming(false);

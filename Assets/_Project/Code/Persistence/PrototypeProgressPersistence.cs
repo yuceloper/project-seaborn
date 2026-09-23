@@ -40,6 +40,8 @@ namespace Seaborn.Persistence
             public string selectedHarpoonId;
             public string cannonId;
             public string[] cannonSlots;
+            public string[] cannonItemIds;
+            public CannonItem[] cannonItems;
             public int installedCannons;
             public string sailId;
             public int iron6LbCannons;
@@ -304,13 +306,14 @@ namespace Seaborn.Persistence
                     data.patchedCanvasSails,
                     data.ratSails
                 );
+                inventory.RestoreCannonItems(data.cannonItems);
                 loadout.Restore(
                     data.cannonId,
                     data.installedCannons,
                     data.sailId,
                     data.selectedHarpoonId
                 );
-                loadout.RestoreCannonSlots(data.cannonSlots);
+                loadout.RestoreCannonSlots(data.cannonSlots, data.cannonItemIds);
                 equipment.RestoreLevels(
                     data.hullLevel,
                     data.cannonLevel,
@@ -379,6 +382,8 @@ namespace Seaborn.Persistence
                 selectedHarpoonId = harpoons != null
                     ? harpoons.SelectedHarpoonId
                     : "light_2kg",
+                cannonItems = inventory != null ? inventory.CaptureCannonItems() : null,
+                cannonItemIds = loadout != null ? loadout.CaptureCannonItemIds() : null,
                 cannonSlots = loadout != null ? loadout.CaptureCannonSlots() : null,
                 cannonId = loadout != null
                     ? loadout.CannonId
@@ -548,6 +553,8 @@ namespace Seaborn.Persistence
                     second.cannonId,
                     StringComparison.Ordinal) &&
                 SameSlots(first.cannonSlots, second.cannonSlots) &&
+                SameSlots(first.cannonItemIds, second.cannonItemIds) &&
+                SameCannonItems(first.cannonItems, second.cannonItems) &&
                 first.installedCannons ==
                     second.installedCannons &&
                 string.Equals(
@@ -602,6 +609,16 @@ namespace Seaborn.Persistence
                 first.corsairIron == second.corsairIron &&
                 first.lostChartFragments ==
                     second.lostChartFragments;
+        }
+
+        private static bool SameCannonItems(CannonItem[] first, CannonItem[] second)
+        {
+            if (ReferenceEquals(first, second)) return true;
+            if (first == null || second == null || first.Length != second.Length) return false;
+            for (int i = 0; i < first.Length; i++)
+                if (first[i] == null || second[i] == null || first[i].InstanceId != second[i].InstanceId ||
+                    first[i].DefinitionId != second[i].DefinitionId || first[i].Enhancement != second[i].Enhancement) return false;
+            return true;
         }
 
         private static bool SameSlots(string[] first, string[] second)

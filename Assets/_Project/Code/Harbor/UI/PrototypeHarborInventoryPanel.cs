@@ -276,18 +276,31 @@ namespace Seaborn.Harbor.UI
                 Row(PrototypeRegionalLootInventory.DisplayName(type), MaterialUse(type),
                     () => $"×{depot?.Get(type) ?? 0}", MaterialIcon(type));
             }
-            Row("6 lb demir top", "Depodaki yedek toplar", () => $"×{equipment?.GetStoredCannons("iron_6lb") ?? 0}", SeabornHudArt.Icon(0));
-            Row("12 lb demir top", "Depodaki yedek toplar", () => $"×{equipment?.GetStoredCannons("iron_12lb") ?? 0}", SeabornHudArt.Icon(0));
+            if (equipment != null)
+                foreach (var cannon in equipment.Cannons)
+                {
+                    string id = cannon.InstanceId;
+                    if (loadout != null && loadout.IsCannonInstalled(id)) continue;
+                    Row(cannon.DefinitionId == "iron_12lb" ? "12 lb demir top" : "6 lb demir top",
+                        "Depodaki tekil top • Seviyesi korunur",
+                        () => $"+{equipment?.FindCannon(id)?.Enhancement ?? 0}", SeabornHudArt.Icon(0));
+                }
             Row("Yamalı yelken", "Depodaki yedek yelkenler", () => $"×{equipment?.GetStoredSails("patched_canvas") ?? 0}", SeabornHudArt.Glyph(3));
             Row("Rat yelkeni", "Depodaki yedek yelkenler", () => $"×{equipment?.GetStoredSails("rat_sails") ?? 0}", SeabornHudArt.Glyph(3));
         }
 
         private void BuildLoadout()
         {
-            Row("6 lb demir top", "Takılı hafif toplar", () =>
-                $"×{loadout?.CountCannons("iron_6lb") ?? 0}", SeabornHudArt.Icon(0));
-            Row("12 lb demir top", "Takılı ağır toplar", () =>
-                $"×{loadout?.CountCannons("iron_12lb") ?? 0}", SeabornHudArt.Icon(0));
+            if (loadout != null)
+                for (int i = 0; i < loadout.CannonSlotCount; i++)
+                {
+                    int slot = i;
+                    Row($"{(i % 2 == 0 ? "İskele" : "Sancak")} {i / 2 + 1}", "Takılı top ve geliştirme seviyesi", () =>
+                    {
+                        var item = loadout.GetCannonItemAt(slot);
+                        return item == null ? "BOŞ" : $"{(item.DefinitionId == "iron_12lb" ? "12 lb" : "6 lb")} +{item.Enhancement}";
+                    }, SeabornHudArt.Icon(0));
+                }
             Row("Yelken", "Takılı yelken", () => loadout?.Sail?.displayName ?? "—", SeabornHudArt.Glyph(3));
             Row("Zıpkın", "Seçili av mühimmatı", () => harpoons?.SelectedHarpoon?.displayName ?? "—", SeabornHudArt.Icon(3));
         }
