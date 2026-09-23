@@ -1,7 +1,8 @@
-using Seaborn.Equipment;
+using System.Collections.Generic;
 using Seaborn.Combat;
-using Seaborn.Hunting;
+using Seaborn.Equipment;
 using Seaborn.Progression;
+using Seaborn.Hunting;
 using Seaborn.Ship;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,561 +12,201 @@ namespace Seaborn.Harbor.UI
     [DisallowMultipleComponent]
     public sealed class PrototypeShipyardLoadoutPanel : MonoBehaviour
     {
-        private static readonly Color Navy =
-            new Color(0.025f, 0.075f, 0.105f, 0.97f);
-        private static readonly Color NavyLight =
-            new Color(0.06f, 0.15f, 0.18f, 0.96f);
-        private static readonly Color Gold =
-            new Color(0.86f, 0.68f, 0.3f, 1f);
-        private static readonly Color Cream =
-            new Color(0.91f, 0.88f, 0.76f, 1f);
-        private static readonly Color Muted =
-            new Color(0.57f, 0.68f, 0.68f, 1f);
-        private static readonly Color Success =
-            new Color(0.3f, 0.76f, 0.57f, 1f);
-        private static readonly Color Danger =
-            new Color(0.9f, 0.43f, 0.34f, 1f);
-
-        private sealed class MarketRow
-        {
-            public Text Detail;
-            public Button Buy;
-            public Text BuyLabel;
-            public Button Equip;
-            public Text EquipLabel;
-        }
-
+        private static readonly Color Navy = new(0.025f, 0.075f, 0.105f, 0.98f);
+        private static readonly Color Gold = new(0.86f, 0.68f, 0.3f, 1f);
+        private static readonly Color Cream = new(0.91f, 0.88f, 0.76f, 1f);
+        private static readonly Color Muted = new(0.3f, 0.45f, 0.46f, 1f);
         private Transform player;
         private PrototypeEquipmentInventory inventory;
         private PrototypeSilverWallet wallet;
+        private PrototypeRegionalLootInventory materials;
         private ShipLoadout loadout;
         private GameObject panel;
-        private Text silverText;
-        private Text currentText;
-        private Text statusText;
-        private MarketRow sixLb;
-        private MarketRow twelveLb;
-        private MarketRow patchedSail;
-        private MarketRow ratSail;
-        private float nextRefreshTime;
-        private float statusExpiresAt;
+        private RectTransform slotContent;
+        private readonly List<Button> slots = new();
+        private Text summary, selected, comparison, status, sixDetail, heavyDetail, craftLabel;
+        private Button sixBuy, heavyBuy, sixFit, heavyFit, remove, craft, ratBuy, ratFit, patchedFit;
+        private Text ratLabel;
+        private Font font;
+        private int selectedSlot;
+        private float nextRefresh, statusUntil;
 
         public static void EnsureCreated(Transform player)
         {
             if (player == null) return;
-
-            PrototypeShipyardLoadoutPanel view =
-                FindFirstObjectByType<
-                    PrototypeShipyardLoadoutPanel>();
+            var view = FindFirstObjectByType<PrototypeShipyardLoadoutPanel>();
             if (view == null)
-            {
-                GameObject root =
-                    new GameObject("Prototype Shipyard Loadout Panel");
-                view = root.AddComponent<
-                    PrototypeShipyardLoadoutPanel>();
-            }
-
-            view.Bind(player);
+                view = new GameObject("Prototype Shipyard Loadout Panel").AddComponent<PrototypeShipyardLoadoutPanel>();
+            view.player = player;
+            view.Refresh();
         }
 
         private void Awake()
         {
-            BuildInterface();
-        }
+            font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            var canvas = gameObject.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 81;
+            var scaler = gameObject.AddComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920, 1080);
+            scaler.matchWidthOrHeight = 0.5f;
+            gameObject.AddComponent<GraphicRaycaster>();
+            var root = Rect(transform, "Modular Loadout", 0, 0, 1000, 650);
+            root.anchorMin = root.anchorMax = root.pivot = new Vector2(0.5f, 0.5f);
+            root.anchoredPosition = new Vector2(0, -48);
+            root.gameObject.AddComponent<Image>().color = Navy;
+            panel = root.gameObject;
+            Label(root, "TERSANE • TOP YUVALARI", 22, 24, 18, 600, 34);
+            summary = Label(root, "", 14, 24, 60, 950, 46);
+            Label(root, "İSKELE                 KIÇ → PRUVA                 SANCAK", 12, 24, 118, 420, 28);
+            var viewport = Rect(root, "Hardpoint Scroll", 24, 150, 420, 374);
+            viewport.gameObject.AddComponent<Image>().color = Navy;
+            viewport.gameObject.AddComponent<RectMask2D>();
+            var scroll = viewport.gameObject.AddComponent<ScrollRect>();
+            slotContent = Rect(viewport, "Hardpoints", 0, 0, 420, 374);
+            scroll.viewport = viewport;
+            scroll.content = slotContent;
+            scroll.horizontal = false;
+            scroll.movementType = ScrollRect.MovementType.Clamped;
+            Label(root, "Bir yuva seç → depodaki topu tak.\nSökülen top depoya döner; kaybolmaz.\nDonanım aktif gemiyle taşınır; sığmayanlar depoya döner.", 12, 24, 540, 420, 76);
 
-        private void Bind(Transform target)
-        {
-            player = target;
-            ResolveBindings();
-            Refresh();
-        }
-
-        private void ResolveBindings()
-        {
-            if (player == null) return;
-
-            inventory = player.GetComponentInChildren<
-                PrototypeEquipmentInventory>();
-            wallet = player.GetComponentInChildren<
-                PrototypeSilverWallet>();
-            loadout = player.GetComponentInChildren<
-                ShipLoadout>();
+            selected = Label(root, "", 18, 470, 118, 506, 32);
+            comparison = Label(root, "", 13, 470, 156, 506, 86);
+            remove = Button(root, "SEÇİLİ TOPU SÖK", 470, 244, 506, 32, () => Fit(null));
+            sixDetail = Label(root, "", 13, 470, 292, 290, 46);
+            sixBuy = Button(root, "", 768, 292, 102, 42, () => Purchase("iron_6lb"));
+            sixFit = Button(root, "TAK", 878, 292, 98, 42, () => Fit("iron_6lb"));
+            heavyDetail = Label(root, "", 13, 470, 346, 290, 46);
+            heavyBuy = Button(root, "", 768, 346, 102, 42, () => Purchase("iron_12lb"));
+            heavyFit = Button(root, "TAK", 878, 346, 98, 42, () => Fit("iron_12lb"));
+            craft = Button(root, "", 470, 402, 506, 44, Forge);
+            craftLabel = craft.GetComponentInChildren<Text>();
+            Label(root, "Korsan Demiri: korsan enkazından al, limana taşı.", 12, 470, 452, 506, 24);
+            patchedFit = Button(root, "YAMALI YELKEN TAK", 470, 490, 245, 36, () => EquipSail("patched_canvas"));
+            ratFit = Button(root, "RAT YELKENİ TAK", 727, 490, 249, 36, () => EquipSail("rat_sails"));
+            ratBuy = Button(root, "", 470, 536, 506, 36, () => ShowPurchase(inventory.TryPurchaseSail("rat_sails")));
+            ratLabel = ratBuy.GetComponentInChildren<Text>();
+            status = Label(root, "", 13, 470, 588, 506, 46);
+            panel.SetActive(false);
         }
 
         private void Update()
         {
-            if (Time.unscaledTime < nextRefreshTime) return;
-            nextRefreshTime = Time.unscaledTime + 0.15f;
+            if (Time.unscaledTime < nextRefresh) return;
+            nextRefresh = Time.unscaledTime + 0.15f;
             Refresh();
-        }
-
-        private void BuildInterface()
-        {
-            Canvas canvas = gameObject.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = 81;
-
-            CanvasScaler scaler =
-                gameObject.AddComponent<CanvasScaler>();
-            scaler.uiScaleMode =
-                CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution =
-                new Vector2(1920f, 1080f);
-            scaler.matchWidthOrHeight = 0.5f;
-            gameObject.AddComponent<GraphicRaycaster>();
-
-            panel = new GameObject(
-                "Loadout Panel",
-                typeof(RectTransform),
-                typeof(Image)
-            );
-            panel.transform.SetParent(transform, false);
-            RectTransform rect =
-                panel.GetComponent<RectTransform>();
-            rect.anchorMin = new Vector2(0.5f, 0.5f);
-            rect.anchorMax = new Vector2(0.5f, 0.5f);
-            rect.pivot = new Vector2(0.5f, 0.5f);
-            rect.anchoredPosition =
-                new Vector2(0f, -48f);
-            rect.sizeDelta = new Vector2(450f, 462f);
-            panel.GetComponent<Image>().color = Navy;
-
-            Font font = Resources.GetBuiltinResource<Font>(
-                "LegacyRuntime.ttf"
-            );
-            CreateAccent(rect);
-
-            CreateText(
-                rect, font, "DONANIM VE LOADOUT",
-                20, Gold, FontStyle.Bold,
-                new Vector2(20f, -18f),
-                new Vector2(270f, 30f)
-            );
-            silverText = CreateText(
-                rect, font, "0 SILVER",
-                15, Cream, FontStyle.Bold,
-                new Vector2(310f, -20f),
-                new Vector2(120f, 26f),
-                TextAnchor.UpperRight
-            );
-            currentText = CreateText(
-                rect, font, "",
-                12, Cream, FontStyle.Normal,
-                new Vector2(20f, -54f),
-                new Vector2(410f, 42f)
-            );
-            statusText = CreateText(
-                rect, font,
-                "Topları adet adet satın al; sahip olduğun grubu tak.",
-                11, Muted, FontStyle.Normal,
-                new Vector2(20f, -94f),
-                new Vector2(410f, 30f)
-            );
-
-            sixLb = CreateRow(
-                rect, font, "6 LB IRON CANNON",
-                -132f, true,
-                () => PurchaseCannon("iron_6lb"),
-                () => EquipCannons("iron_6lb")
-            );
-            twelveLb = CreateRow(
-                rect, font, "12 LB IRON CANNON",
-                -210f, true,
-                () => PurchaseCannon("iron_12lb"),
-                () => EquipCannons("iron_12lb")
-            );
-            patchedSail = CreateRow(
-                rect, font, "PATCHED CANVAS",
-                -288f, false, null,
-                () => EquipSail("patched_canvas")
-            );
-            ratSail = CreateRow(
-                rect, font, "RAT SAILS",
-                -366f, true,
-                () => PurchaseSail("rat_sails"),
-                () => EquipSail("rat_sails")
-            );
-        }
-
-        private MarketRow CreateRow(
-            RectTransform parent,
-            Font font,
-            string title,
-            float y,
-            bool canBuy,
-            UnityEngine.Events.UnityAction buyAction,
-            UnityEngine.Events.UnityAction equipAction)
-        {
-            GameObject block = new GameObject(
-                title,
-                typeof(RectTransform),
-                typeof(Image)
-            );
-            block.transform.SetParent(parent, false);
-            RectTransform rect =
-                block.GetComponent<RectTransform>();
-            rect.anchorMin = new Vector2(0f, 1f);
-            rect.anchorMax = new Vector2(0f, 1f);
-            rect.pivot = new Vector2(0f, 1f);
-            rect.anchoredPosition = new Vector2(20f, y);
-            rect.sizeDelta = new Vector2(410f, 66f);
-            block.GetComponent<Image>().color = NavyLight;
-
-            CreateText(
-                rect, font, title,
-                12, Cream, FontStyle.Bold,
-                new Vector2(12f, -8f),
-                new Vector2(185f, 20f)
-            );
-
-            MarketRow row = new MarketRow();
-            row.Detail = CreateText(
-                rect, font, "",
-                10, Muted, FontStyle.Normal,
-                new Vector2(12f, -34f),
-                new Vector2(185f, 20f)
-            );
-
-            if (canBuy)
-            {
-                row.Buy = CreateButton(
-                    rect, font, "SATIN AL",
-                    new Vector2(202f, -13f),
-                    new Vector2(94f, 40f),
-                    buyAction,
-                    out row.BuyLabel
-                );
-            }
-
-            row.Equip = CreateButton(
-                rect, font, "TAK",
-                new Vector2(304f, -13f),
-                new Vector2(92f, 40f),
-                equipAction,
-                out row.EquipLabel
-            );
-            return row;
         }
 
         private void Refresh()
         {
-            if (panel == null) return;
-            ResolveBindings();
-
-            bool visible =
-                inventory != null &&
-                inventory.CanUseShipyard &&
-                PrototypeHarborUiCoordinator.IsSelected(
-                    PrototypeHarborTab.Loadout);
+            if (panel == null || player == null) { if (panel != null) panel.SetActive(false); return; }
+            inventory = player.GetComponentInChildren<PrototypeEquipmentInventory>();
+            wallet = player.GetComponentInChildren<PrototypeSilverWallet>();
+            materials = player.GetComponentInChildren<PrototypeRegionalLootInventory>();
+            loadout = player.GetComponentInChildren<ShipLoadout>();
+            bool visible = inventory != null && loadout != null && inventory.CanUseShipyard &&
+                PrototypeHarborUiCoordinator.IsSelected(PrototypeHarborTab.Loadout);
             panel.SetActive(visible);
             if (!visible) return;
-
-            int silver = wallet != null ? wallet.Silver : 0;
-            silverText.text = $"{silver} SILVER";
-
-            ShipProfileController shipProfile =
-                player != null
-                    ? player.GetComponent<ShipProfileController>()
-                    : null;
-            int cannonCapacity =
-                shipProfile?.Definition != null
-                    ? shipProfile.EffectiveCannonSlots
-                    : 0;
-            int storedCannons =
-                loadout != null && inventory != null
-                    ? Mathf.Max(
-                        0,
-                        inventory.GetOwnedCannons(
-                            loadout.CannonId) -
-                        loadout.InstalledCannons)
-                    : 0;
-
-            BroadsideController battery = player != null
-                ? player.GetComponentInChildren<BroadsideController>() : null;
-            int portCount = battery != null ? battery.GetBroadsideCannonCount(BroadsideSide.Port) : 0;
-            int starboardCount = battery != null ? battery.GetBroadsideCannonCount(BroadsideSide.Starboard) : 0;
-            currentText.text = loadout != null
-                ? $"Kurulu: {loadout.Cannon?.displayName ?? loadout.CannonId}" +
-                  $"  {loadout.InstalledCannons}/{cannonCapacity}" +
-                  $"  •  Depoda {storedCannons}\n" +
-                  $"Aktif borda: İskele {portCount} / Sancak {starboardCount}"
-                : "Loadout hazırlanıyor";
-
-            RefreshCannonRow(
-                sixLb,
-                "iron_6lb",
-                silver
-            );
-            RefreshCannonRow(
-                twelveLb,
-                "iron_12lb",
-                silver
-            );
-            RefreshSailRow(
-                patchedSail,
-                "patched_canvas",
-                silver
-            );
-            RefreshSailRow(
-                ratSail,
-                "rat_sails",
-                silver
-            );
-
-            if (Time.unscaledTime >= statusExpiresAt)
+            if (slots.Count != loadout.CannonSlotCount) RebuildSlots();
+            selectedSlot = Mathf.Clamp(selectedSlot, 0, Mathf.Max(0, slots.Count - 1));
+            for (int i = 0; i < slots.Count; i++)
             {
-                statusText.text =
-                    "Topları adet adet satın al; sahip olduğun grubu tak.";
-                statusText.color = Muted;
+                EquipmentCatalog.TryGetCannon(loadout.GetCannonAt(i), out var cannon);
+                slots[i].GetComponentInChildren<Text>().text = $"{SlotName(i)}\n{(cannon != null ? cannon.caliberPounds + " lb" : "BOŞ")}";
+                slots[i].GetComponent<Image>().color = i == selectedSlot ? Gold : Muted;
             }
+            var battery = player.GetComponentInChildren<BroadsideController>();
+            summary.text = $"{wallet?.Silver ?? 0} SILVER   •   {loadout.InstalledCannons}/{loadout.CannonSlotCount} top takılı\n" +
+                $"Temel dolum: İskele {battery?.GetBaseBroadsideReload(BroadsideSide.Port) ?? 0:0.0} sn / Sancak {battery?.GetBaseBroadsideReload(BroadsideSide.Starboard) ?? 0:0.0} sn";
+            selected.text = "SEÇİLİ YUVA • " + SlotName(selectedSlot);
+            EquipmentCatalog.TryGetCannon(loadout.GetCannonAt(selectedSlot), out var current);
+            EquipmentCatalog.TryGetCannon("iron_6lb", out var six);
+            EquipmentCatalog.TryGetCannon("iron_12lb", out var heavy);
+            if (six == null || heavy == null) return;
+            comparison.text = (current == null ? "Bu yuva boş." : $"Takılı: {current.caliberPounds} lb • {current.damage:0} temel hasar • {current.reloadDuration:0.0} sn") +
+                $"\n6 lb → 12 lb: +{heavy.damage - six.damage:0} hasar, +{heavy.reloadDuration - six.reloadDuration:0.0} sn dolum.\nBorda birlikte doldurulur; en yavaş takılı top süreyi belirler.";
+            remove.interactable = current != null;
+            CannonRow("iron_6lb", six, sixDetail, sixBuy, sixFit);
+            CannonRow("iron_12lb", heavy, heavyDetail, heavyBuy, heavyFit);
+            int iron = materials?.CorsairIron ?? 0;
+            craftLabel.text = $"12 LB ÜRET • {PrototypeEquipmentInventory.HeavyForgeSilver} S + {iron}/{PrototypeEquipmentInventory.HeavyForgeIron} KORSAN DEMİRİ";
+            craft.interactable = iron >= PrototypeEquipmentInventory.HeavyForgeIron &&
+                (wallet?.Silver ?? 0) >= PrototypeEquipmentInventory.HeavyForgeSilver;
+            patchedFit.interactable = inventory.GetOwnedSails("patched_canvas") > 0 && loadout.SailId != "patched_canvas";
+            ratFit.interactable = inventory.GetOwnedSails("rat_sails") > 0 && loadout.SailId != "rat_sails";
+            EquipmentCatalog.TryGetSail("rat_sails", out var sail);
+            ratLabel.text = $"RAT YELKENİ SATIN AL • {sail?.silverPrice ?? 0} S • Sahip {inventory.GetOwnedSails("rat_sails")}";
+            ratBuy.interactable = sail != null && (wallet?.Silver ?? 0) >= sail.silverPrice;
+            if (Time.unscaledTime >= statusUntil)
+                status.text = "Satın alınan veya üretilen top depoya gider. Seçili yuvaya ayrıca tak.";
         }
 
-        private void RefreshCannonRow(
-            MarketRow row,
-            string id,
-            int silver)
+        private void CannonRow(string id, CannonDefinition definition, Text detail, Button buy, Button fit)
         {
-            EquipmentCatalog.TryGetCannon(
-                id,
-                out CannonDefinition definition);
-            int owned = inventory.GetOwnedCannons(id);
-            bool equipped =
-                loadout != null &&
-                loadout.CannonId == id;
+            detail.text = $"{definition.caliberPounds} lb • {definition.damage:0} hasar • {definition.reloadDuration:0.0} sn\nTakılı {loadout.CountCannons(id)} • Depo {inventory.GetStoredCannons(id)}";
+            buy.GetComponentInChildren<Text>().text = $"{definition.silverPrice} S\nSATIN AL";
+            buy.interactable = (wallet?.Silver ?? 0) >= definition.silverPrice;
+            fit.interactable = inventory.GetStoredCannons(id) > 0 && loadout.GetCannonAt(selectedSlot) != id;
+        }
 
-            ShipProfileController profile =
-                player != null
-                    ? player.GetComponent<ShipProfileController>()
-                    : null;
-            int capacity = profile?.Definition != null
-                ? profile.Definition.cannonSlots
-                : 0;
-            int installed = equipped && loadout != null
-                ? loadout.InstalledCannons
-                : 0;
-            int stored = Mathf.Max(0, owned - installed);
-
-            row.Detail.text = equipped
-                ? $"Sahip {owned} • Kurulu {installed}/{capacity} • Depo {stored}"
-                : $"Sahip {owned}  •  {definition.damage:0} hasar";
-            if (row.Buy != null)
+        private void RebuildSlots()
+        {
+            foreach (var button in slots) { button.gameObject.SetActive(false); Destroy(button.gameObject); }
+            slots.Clear();
+            for (int i = 0; i < loadout.CannonSlotCount; i++)
             {
-                row.BuyLabel.text =
-                    $"{definition.silverPrice} S";
-                row.Buy.interactable =
-                    silver >= definition.silverPrice;
+                int slot = i;
+                slots.Add(Button(slotContent, "", (i % 2) * 220, (i / 2) * 64, 200, 54,
+                    () => { selectedSlot = slot; Refresh(); }));
             }
-
-            int targetInstalled =
-                Mathf.Min(owned, capacity);
-            bool canCompleteBattery =
-                equipped &&
-                installed < targetInstalled;
-
-            row.EquipLabel.text = equipped
-                ? canCompleteBattery
-                    ? $"TAMAMLA {targetInstalled}/{capacity}"
-                    : $"TAKILI {installed}/{capacity}"
-                : "TAK";
-            row.Equip.interactable =
-                owned > 0 &&
-                (!equipped || canCompleteBattery);
+            slotContent.sizeDelta = new Vector2(420, Mathf.Max(374, ((slots.Count + 1) / 2) * 64));
         }
 
-        private void RefreshSailRow(
-            MarketRow row,
-            string id,
-            int silver)
+        private static string SlotName(int slot) => $"{(slot % 2 == 0 ? "İSKELE" : "SANCAK")} {slot / 2 + 1}";
+        private void Fit(string id) => Show(loadout.TryEquipCannonAt(selectedSlot, id)
+            ? (string.IsNullOrEmpty(id) ? "Top depoya kaldırıldı." : "Top seçili yuvaya takıldı.")
+            : "İşlem yapılamadı; yuva ve depo stokunu kontrol et.");
+        private void Purchase(string id) => ShowPurchase(inventory.TryPurchaseCannon(id));
+        private void Forge() => ShowPurchase(inventory.TryForgeHeavyCannon());
+        private void EquipSail(string id) => Show(inventory.TryEquipSail(id) ? "Yelken takıldı." : "Yelken takılamadı.");
+        private void ShowPurchase(EquipmentPurchaseResult result) => Show(result switch
         {
-            EquipmentCatalog.TryGetSail(
-                id,
-                out SailDefinition definition);
-            int owned = inventory.GetOwnedSails(id);
-            bool equipped =
-                loadout != null &&
-                loadout.SailId == id;
+            EquipmentPurchaseResult.Completed => "Donanım depoya eklendi; istediğin yuvaya takabilirsin.",
+            EquipmentPurchaseResult.InsufficientSilver => "Yeterli Silver yok.",
+            EquipmentPurchaseResult.InsufficientMaterials => "Depoda yeterli Korsan Demiri yok.",
+            _ => "Bu işlem için tersaneye yanaş."
+        });
+        private void Show(string message) { status.text = message; statusUntil = Time.unscaledTime + 4; Refresh(); }
 
-            row.Detail.text =
-                $"Sahip: {owned}  •  " +
-                $"Hız x{definition.speedMultiplier:0.00}";
-            if (row.Buy != null)
-            {
-                row.BuyLabel.text =
-                    $"{definition.silverPrice} S";
-                row.Buy.interactable =
-                    silver >= definition.silverPrice;
-            }
-
-            row.EquipLabel.text =
-                equipped ? "TAKILI" : "TAK";
-            row.Equip.interactable =
-                owned > 0 && !equipped;
-        }
-
-        private void PurchaseCannon(string id)
+        private Button Button(Transform parent, string title, float x, float y, float w, float h, UnityEngine.Events.UnityAction action)
         {
-            EquipmentPurchaseResult result =
-                inventory.TryPurchaseCannon(id);
-            ShowPurchaseResult(result);
-        }
-
-        private void PurchaseSail(string id)
-        {
-            EquipmentPurchaseResult result =
-                inventory.TryPurchaseSail(id);
-            ShowPurchaseResult(result);
-        }
-
-        private void EquipCannons(string id)
-        {
-            bool success = inventory.TryEquipCannons(id);
-            ShowStatus(
-                success
-                    ? "Top bataryası gemiye takıldı."
-                    : "Bu top grubunu takamazsın.",
-                success ? Success : Danger
-            );
-        }
-
-        private void EquipSail(string id)
-        {
-            bool success = inventory.TryEquipSail(id);
-            ShowStatus(
-                success
-                    ? "Yelken gemiye takıldı."
-                    : "Bu yelkene sahip değilsin.",
-                success ? Success : Danger
-            );
-        }
-
-        private void ShowPurchaseResult(
-            EquipmentPurchaseResult result)
-        {
-            switch (result)
-            {
-                case EquipmentPurchaseResult.Completed:
-                    ShowStatus("Satın alma tamamlandı.", Success);
-                    break;
-                case EquipmentPurchaseResult.InsufficientSilver:
-                    ShowStatus("Yeterli silver yok.", Danger);
-                    break;
-                default:
-                    ShowStatus(
-                        "Bu işlem tersanede yapılamıyor.",
-                        Muted
-                    );
-                    break;
-            }
-        }
-
-        private void ShowStatus(string message, Color color)
-        {
-            statusText.text = message;
-            statusText.color = color;
-            statusExpiresAt = Time.unscaledTime + 3f;
-            Refresh();
-        }
-
-        private static Button CreateButton(
-            RectTransform parent,
-            Font font,
-            string label,
-            Vector2 position,
-            Vector2 size,
-            UnityEngine.Events.UnityAction action,
-            out Text labelText)
-        {
-            GameObject item = new GameObject(
-                label,
-                typeof(RectTransform),
-                typeof(Image),
-                typeof(Button)
-            );
-            item.transform.SetParent(parent, false);
-            RectTransform rect =
-                item.GetComponent<RectTransform>();
-            rect.anchorMin = new Vector2(0f, 1f);
-            rect.anchorMax = new Vector2(0f, 1f);
-            rect.pivot = new Vector2(0f, 1f);
-            rect.anchoredPosition = position;
-            rect.sizeDelta = size;
-            item.GetComponent<Image>().color = Gold;
-
-            Button button = item.GetComponent<Button>();
-            button.targetGraphic = item.GetComponent<Image>();
-            if (action != null)
-            {
-                button.onClick.AddListener(action);
-            }
-
-            labelText = CreateText(
-                rect, font, label,
-                11, Navy, FontStyle.Bold,
-                Vector2.zero, size,
-                TextAnchor.MiddleCenter
-            );
-            RectTransform textRect =
-                labelText.GetComponent<RectTransform>();
-            textRect.anchorMin = Vector2.zero;
-            textRect.anchorMax = Vector2.one;
-            textRect.offsetMin = Vector2.zero;
-            textRect.offsetMax = Vector2.zero;
+            var rect = Rect(parent, title, x, y, w, h);
+            rect.gameObject.AddComponent<Image>().color = Gold;
+            var button = rect.gameObject.AddComponent<Button>();
+            button.targetGraphic = rect.GetComponent<Image>();
+            button.onClick.AddListener(action);
+            var text = Label(rect, title, 12, 0, 0, w, h);
+            text.alignment = TextAnchor.MiddleCenter;
+            text.color = Navy;
             return button;
         }
-
-        private static void CreateAccent(
-            RectTransform parent)
+        private Text Label(Transform parent, string value, int size, float x, float y, float w, float h)
         {
-            GameObject accent = new GameObject(
-                "Accent",
-                typeof(RectTransform),
-                typeof(Image)
-            );
-            accent.transform.SetParent(parent, false);
-            RectTransform rect =
-                accent.GetComponent<RectTransform>();
-            rect.anchorMin = new Vector2(0f, 1f);
-            rect.anchorMax = new Vector2(1f, 1f);
-            rect.pivot = new Vector2(0.5f, 1f);
-            rect.sizeDelta = new Vector2(0f, 3f);
-            accent.GetComponent<Image>().color = Gold;
-        }
-
-        private static Text CreateText(
-            RectTransform parent,
-            Font font,
-            string value,
-            int size,
-            Color color,
-            FontStyle style,
-            Vector2 position,
-            Vector2 dimensions,
-            TextAnchor alignment = TextAnchor.UpperLeft)
-        {
-            GameObject item = new GameObject(
-                "Text",
-                typeof(RectTransform),
-                typeof(Text)
-            );
-            item.transform.SetParent(parent, false);
-            RectTransform rect =
-                item.GetComponent<RectTransform>();
-            rect.anchorMin = new Vector2(0f, 1f);
-            rect.anchorMax = new Vector2(0f, 1f);
-            rect.pivot = new Vector2(0f, 1f);
-            rect.anchoredPosition = position;
-            rect.sizeDelta = dimensions;
-
-            Text text = item.GetComponent<Text>();
-            text.font = font;
-            text.text = value;
-            text.fontSize = size;
-            text.fontStyle = style;
-            text.color = color;
-            text.alignment = alignment;
+            var text = Rect(parent, "Label", x, y, w, h).gameObject.AddComponent<Text>();
+            text.font = font; text.text = value; text.fontSize = size; text.color = Cream;
             text.raycastTarget = false;
             return text;
         }
+        private static RectTransform Rect(Transform parent, string name, float x, float y, float w, float h)
+        {
+            var rect = new GameObject(name, typeof(RectTransform)).GetComponent<RectTransform>();
+            rect.SetParent(parent, false);
+            rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(0, 1);
+            rect.anchoredPosition = new Vector2(x, -y);
+            rect.sizeDelta = new Vector2(w, h);
+            return rect;
+        }
     }
 }
-

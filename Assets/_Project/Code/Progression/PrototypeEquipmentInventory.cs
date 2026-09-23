@@ -12,7 +12,8 @@ namespace Seaborn.Progression
         Completed,
         NotAtShipyard,
         UnknownItem,
-        InsufficientSilver
+        InsufficientSilver,
+        InsufficientMaterials
     }
 
     [DisallowMultipleComponent]
@@ -34,8 +35,7 @@ namespace Seaborn.Progression
         public int GetStoredCannons(string id)
         {
             if (loadout == null) loadout = GetComponentInChildren<ShipLoadout>();
-            int fitted = loadout != null && string.Equals(loadout.CannonId, id,
-                StringComparison.OrdinalIgnoreCase) ? loadout.InstalledCannons : 0;
+            int fitted = loadout != null ? loadout.CountCannons(id) : 0;
             return Mathf.Max(0, GetOwnedCannons(id) - fitted);
         }
 
@@ -153,6 +153,36 @@ namespace Seaborn.Progression
             return EquipmentPurchaseResult.Completed;
         }
 
+        public const int HeavyForgeSilver = 360;
+        public const int HeavyForgeIron = 4;
+        private bool forging;
+
+        public EquipmentPurchaseResult TryForgeHeavyCannon()
+        {
+            if (!CanUseShipyard || forging) return EquipmentPurchaseResult.NotAtShipyard;
+            var depot = GetComponent<PrototypeRegionalLootInventory>();
+            if (depot == null || !depot.CanAfford(RegionalMaterialType.CorsairIron, HeavyForgeIron))
+                return EquipmentPurchaseResult.InsufficientMaterials;
+            if (wallet == null || wallet.Silver < HeavyForgeSilver)
+                return EquipmentPurchaseResult.InsufficientSilver;
+            forging = true;
+            try
+            {
+                if (!wallet.TrySpendSilver(HeavyForgeSilver, "12 lb top üretimi"))
+                    return EquipmentPurchaseResult.InsufficientSilver;
+                if (!depot.TrySpend(RegionalMaterialType.CorsairIron, HeavyForgeIron))
+                {
+                    // Refund without recording expedition income.
+                    wallet.RestoreSilver(wallet.Silver + HeavyForgeSilver);
+                    return EquipmentPurchaseResult.InsufficientMaterials;
+                }
+                iron12LbCannons++;
+                InventoryChanged?.Invoke();
+                return EquipmentPurchaseResult.Completed;
+            }
+            finally { forging = false; }
+        }
+
         public EquipmentPurchaseResult TryPurchaseSail(
             string sailId)
         {
@@ -200,7 +230,7 @@ namespace Seaborn.Progression
             ShipProfileController profile =
                 GetComponent<ShipProfileController>();
             int capacity = profile?.Definition != null
-                ? profile.Definition.cannonSlots
+                ? profile.EffectiveCannonSlots
                 : owned;
 
             return loadout.TryEquipCannons(

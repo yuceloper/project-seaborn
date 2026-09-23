@@ -284,8 +284,10 @@ namespace Seaborn.Harbor.UI
 
         private void BuildLoadout()
         {
-            Row("Top takımı", "Takılı top türü ve adedi", () =>
-                $"{loadout?.Cannon?.displayName ?? "—"} ×{loadout?.InstalledCannons ?? 0}", SeabornHudArt.Icon(0));
+            Row("6 lb demir top", "Takılı hafif toplar", () =>
+                $"×{loadout?.CountCannons("iron_6lb") ?? 0}", SeabornHudArt.Icon(0));
+            Row("12 lb demir top", "Takılı ağır toplar", () =>
+                $"×{loadout?.CountCannons("iron_12lb") ?? 0}", SeabornHudArt.Icon(0));
             Row("Yelken", "Takılı yelken", () => loadout?.Sail?.displayName ?? "—", SeabornHudArt.Glyph(3));
             Row("Zıpkın", "Seçili av mühimmatı", () => harpoons?.SelectedHarpoon?.displayName ?? "—", SeabornHudArt.Icon(3));
         }

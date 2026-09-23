@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Seaborn.Expeditions;
+using Seaborn.Equipment;
 using UnityEngine;
 
 namespace Seaborn.Combat
@@ -33,6 +34,50 @@ namespace Seaborn.Combat
         [SerializeField, Min(1)] private int installedCannons = 6;
 
         [SerializeField, Min(0f)] private float cannonHitDamage = 25f;
+
+        private CannonDefinition[] modularCannons;
+        private float modularRangeCap;
+
+        public void SetModularLoadout(string[] slots, float shipRange)
+        {
+            modularCannons = new CannonDefinition[slots.Length];
+            modularRangeCap = Mathf.Max(0.1f, shipRange);
+            cannonSlotCapacity = Mathf.Max(1, slots.Length);
+            installedCannons = 0;
+            projectileRange = 0.1f;
+            broadsideCooldown = 0.1f;
+            for (int i = 0; i < slots.Length; i++)
+                if (EquipmentCatalog.TryGetCannon(slots[i], out var cannon))
+                {
+                    modularCannons[i] = cannon;
+                    installedCannons++;
+                    projectileRange = Mathf.Max(projectileRange, Mathf.Min(modularRangeCap, cannon.range));
+                    broadsideCooldown = Mathf.Max(broadsideCooldown, cannon.reloadDuration);
+                }
+            AmmunitionStateChanged?.Invoke();
+        }
+
+        private CannonDefinition CannonAtMuzzle(Transform muzzle)
+        {
+            if (modularCannons == null) return null;
+            int index = portMuzzles == null ? -1 : Array.IndexOf(portMuzzles, muzzle);
+            int slot = index >= 0 ? index * 2 : -1;
+            if (slot < 0 && starboardMuzzles != null)
+            {
+                index = Array.IndexOf(starboardMuzzles, muzzle);
+                if (index >= 0) slot = index * 2 + 1;
+            }
+            return slot >= 0 && slot < modularCannons.Length ? modularCannons[slot] : null;
+        }
+
+        public float GetBaseBroadsideReload(BroadsideSide side)
+        {
+            if (modularCannons == null) return broadsideCooldown;
+            float duration = 0f;
+            foreach (var muzzle in GetFiringMuzzles(side))
+                duration = Mathf.Max(duration, CannonAtMuzzle(muzzle)?.reloadDuration ?? 0f);
+            return duration;
+        }
 
         private float nextPortFireTime;
         private float nextStarboardFireTime;
@@ -132,6 +177,7 @@ namespace Seaborn.Combat
             float reloadDuration,
             float hitDamage)
         {
+            modularCannons = null; // NPC/uniform battery compatibility.
             SetShipConfiguration(
                 slotCapacity,
                 cannonCount,
@@ -294,9 +340,15 @@ namespace Seaborn.Combat
             var result = new List<Transform>();
             Transform[] candidates = GetMuzzles(side);
             if (candidates == null) return result.ToArray();
-            foreach (Transform muzzle in candidates)
+            for (int i = 0; i < candidates.Length; i++)
             {
-                if (result.Count >= budget) break;
+                Transform muzzle = candidates[i];
+                if (modularCannons == null && result.Count >= budget) break;
+                if (modularCannons != null)
+                {
+                    int slot = i * 2 + (side == BroadsideSide.Port ? 0 : 1);
+                    if (slot >= modularCannons.Length || modularCannons[slot] == null) continue;
+                }
                 if (muzzle == null || !muzzle.gameObject.activeInHierarchy || result.Contains(muzzle)) continue;
                 float localX = transform.InverseTransformPoint(muzzle.position).x;
                 if (side == BroadsideSide.Port ? localX >= 0f : localX <= 0f) continue;
@@ -308,7 +360,7 @@ namespace Seaborn.Combat
         private void SetReload(BroadsideSide side, float reloadMultiplier)
         {
             float duration =
-                broadsideCooldown *
+                GetBaseBroadsideReload(side) *
                 reloadMultiplier *
                 equipmentReloadMultiplier *
                 skillReloadMultiplier *
@@ -381,7 +433,9 @@ namespace Seaborn.Combat
             toTarget.y = 0f;
             if (toTarget.sqrMagnitude <= Mathf.Epsilon) return;
 
-            float maximumRange = projectileRange * profile.RangeMultiplier * skillRangeMultiplier;
+            CannonDefinition fitted = CannonAtMuzzle(muzzle);
+            float range = fitted != null ? Mathf.Min(modularRangeCap, fitted.range) : projectileRange;
+            float maximumRange = range * profile.RangeMultiplier * skillRangeMultiplier;
             float distance = Mathf.Clamp(toTarget.magnitude, 0.1f, maximumRange);
             Vector3 clampedTarget = muzzle.position + toTarget.normalized * distance;
             clampedTarget.y = targetPoint.y;
@@ -397,7 +451,7 @@ namespace Seaborn.Combat
             );
             projectile.ConfigureAbsoluteDamage(
                 ammunitionType,
-                cannonHitDamage *
+                (fitted != null ? fitted.damage : cannonHitDamage) *
                     profile.DamageMultiplier *
                     equipmentDamageMultiplier *
                     skillDamageMultiplier *
@@ -427,4 +481,3 @@ namespace Seaborn.Combat
         }
     }
 }
-

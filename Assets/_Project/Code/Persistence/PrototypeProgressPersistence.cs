@@ -39,6 +39,7 @@ namespace Seaborn.Persistence
             public int heavyHarpoonStock;
             public string selectedHarpoonId;
             public string cannonId;
+            public string[] cannonSlots;
             public int installedCannons;
             public string sailId;
             public int iron6LbCannons;
@@ -309,6 +310,7 @@ namespace Seaborn.Persistence
                     data.sailId,
                     data.selectedHarpoonId
                 );
+                loadout.RestoreCannonSlots(data.cannonSlots);
                 equipment.RestoreLevels(
                     data.hullLevel,
                     data.cannonLevel,
@@ -377,6 +379,7 @@ namespace Seaborn.Persistence
                 selectedHarpoonId = harpoons != null
                     ? harpoons.SelectedHarpoonId
                     : "light_2kg",
+                cannonSlots = loadout != null ? loadout.CaptureCannonSlots() : null,
                 cannonId = loadout != null
                     ? loadout.CannonId
                     : "iron_6lb",
@@ -544,6 +547,7 @@ namespace Seaborn.Persistence
                     first.cannonId,
                     second.cannonId,
                     StringComparison.Ordinal) &&
+                SameSlots(first.cannonSlots, second.cannonSlots) &&
                 first.installedCannons ==
                     second.installedCannons &&
                 string.Equals(
@@ -598,6 +602,15 @@ namespace Seaborn.Persistence
                 first.corsairIron == second.corsairIron &&
                 first.lostChartFragments ==
                     second.lostChartFragments;
+        }
+
+        private static bool SameSlots(string[] first, string[] second)
+        {
+            if (ReferenceEquals(first, second)) return true;
+            if (first == null || second == null || first.Length != second.Length) return false;
+            for (int i = 0; i < first.Length; i++)
+                if (!string.Equals(first[i], second[i], StringComparison.Ordinal)) return false;
+            return true;
         }
 
         private void SaveNow()

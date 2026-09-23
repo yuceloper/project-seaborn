@@ -82,6 +82,8 @@ namespace Seaborn.Ship
             );
 
             ProfileApplied?.Invoke(definition);
+            // Profile refresh must not overwrite the fitted mixed battery.
+            GetComponentInChildren<ShipLoadout>()?.Apply();
         }
 
         public void SetDeckExtensions(

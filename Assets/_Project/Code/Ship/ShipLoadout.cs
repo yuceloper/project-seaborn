@@ -2,6 +2,7 @@ using System;
 using Seaborn.Combat;
 using Seaborn.Equipment;
 using Seaborn.Hunting;
+using Seaborn.Progression;
 using Seaborn.Ship.Data;
 using UnityEngine;
 
@@ -10,12 +11,60 @@ namespace Seaborn.Ship
     [DisallowMultipleComponent]
     public sealed class ShipLoadout : MonoBehaviour
     {
-        private const float CannonDamageScale = 1f;
-
         [SerializeField] private string cannonId = "iron_6lb";
-        [SerializeField, Min(1)] private int installedCannons = 6;
+        [SerializeField, Min(0)] private int installedCannons = 6;
         [SerializeField] private string sailId = "patched_canvas";
         [SerializeField] private string harpoonId = "light_2kg";
+
+        // Stable interleaved hardpoints: port 1, starboard 1, port 2, ...
+        [SerializeField] private string[] cannonSlots;
+        public int CannonSlotCount => cannonSlots?.Length ?? 0;
+        public string GetCannonAt(int slot) => slot >= 0 && slot < CannonSlotCount
+            ? cannonSlots[slot] : null;
+        public string[] CaptureCannonSlots() => cannonSlots == null ? null : (string[])cannonSlots.Clone();
+        public int CountCannons(string id)
+        {
+            int count = 0;
+            if (cannonSlots != null)
+                foreach (string fitted in cannonSlots)
+                    if (!string.IsNullOrEmpty(fitted) && string.Equals(fitted, id,
+                        StringComparison.OrdinalIgnoreCase)) count++;
+            return count;
+        }
+
+        public bool TryEquipCannonAt(int slot, string id)
+        {
+            var inventory = GetComponent<PrototypeEquipmentInventory>();
+            if (inventory == null || !inventory.CanUseShipyard || slot < 0 || slot >= CannonSlotCount)
+                return false;
+            if (!string.IsNullOrEmpty(id) && (!EquipmentCatalog.TryGetCannon(id, out _) ||
+                inventory.GetStoredCannons(id) <= 0)) return false;
+            cannonSlots[slot] = string.IsNullOrEmpty(id) ? null : id;
+            Apply();
+            return true;
+        }
+
+        public void RestoreCannonSlots(string[] saved)
+        {
+            // Missing field is a v1 uniform battery, already migrated by Restore/Apply.
+            if (saved != null && saved.Length > 0)
+            {
+                cannonSlots = new string[CannonSlotCount];
+                Array.Copy(saved, cannonSlots, Mathf.Min(saved.Length, cannonSlots.Length));
+            }
+            var inventory = GetComponent<PrototypeEquipmentInventory>();
+            var used = new System.Collections.Generic.Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            for (int i = 0; i < CannonSlotCount; i++)
+            {
+                string id = cannonSlots[i];
+                if (string.IsNullOrEmpty(id)) continue;
+                used.TryGetValue(id, out int count);
+                if (!EquipmentCatalog.TryGetCannon(id, out _) ||
+                    (inventory != null && count >= inventory.GetOwnedCannons(id))) cannonSlots[i] = null;
+                else used[id] = count + 1;
+            }
+            Apply();
+        }
 
         public event Action LoadoutChanged;
 
@@ -72,6 +121,7 @@ namespace Seaborn.Ship
 
             cannonId = nextCannonId;
             installedCannons = count;
+            cannonSlots = null;
             Apply();
             return true;
         }
@@ -138,6 +188,7 @@ namespace Seaborn.Ship
                 installedCannons = savedCannonCount;
             }
 
+            cannonSlots = null;
             Apply();
         }
 
@@ -176,23 +227,25 @@ namespace Seaborn.Ship
             int cannonCapacity = profile != null
                 ? profile.EffectiveCannonSlots
                 : ship.cannonSlots;
-            installedCannons = Mathf.Clamp(
-                installedCannons,
-                1,
-                cannonCapacity
-            );
+            cannonCapacity = Mathf.Max(1, cannonCapacity);
+            if (cannonSlots == null)
+            {
+                cannonSlots = new string[cannonCapacity];
+                for (int i = 0; i < Mathf.Min(installedCannons, cannonCapacity); i++)
+                    cannonSlots[i] = cannonId;
+            }
+            else if (cannonSlots.Length != cannonCapacity)
+                Array.Resize(ref cannonSlots, cannonCapacity);
+            installedCannons = 0;
+            foreach (string id in cannonSlots)
+                if (EquipmentCatalog.TryGetCannon(id, out var fitted))
+                {
+                    if (installedCannons == 0) { cannonId = fitted.id; Cannon = fitted; }
+                    installedCannons++;
+                }
 
-            BroadsideController broadside =
-                GetComponentInChildren<
-                    BroadsideController>();
-            broadside?.SetCannonLoadout(
-                cannonCapacity,
-                installedCannons,
-                Mathf.Min(ship.cannonRange, cannon.range),
-                cannon.reloadDuration,
-                cannon.damage *
-                    CannonDamageScale
-            );
+            GetComponent<PrototypeModularShipAssembler>()?.RefreshHardpointCapacity(cannonCapacity);
+            GetComponentInChildren<BroadsideController>()?.SetModularLoadout(cannonSlots, ship.cannonRange);
 
             ShipMotor motor =
                 GetComponentInChildren<ShipMotor>();
