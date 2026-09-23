@@ -74,11 +74,9 @@ namespace Seaborn.World
         private MapGatewayApproachView approachView;
         private string approachedScene;
         private EntrySide approachedSide;
-        private float approachElapsed;
         private string cancelledGate;
         private const float FogDistance = 24f;
-        private const float CountdownDistance = 6f;
-        private const float CountdownSeconds = 10f;
+        private const float ConfirmationDistance = 6f;
         private float nextBlockedNoticeTime;
 
         public static void EnsureCreated(Transform player)
@@ -157,27 +155,21 @@ namespace Seaborn.World
             }
             if (approachedScene != destination)
             {
-                approachElapsed = 0f;
                 cancelledGate = null;
             }
             approachedScene = destination;
             approachedSide = side;
-            bool inside = distance <= CountdownDistance;
-            if (!inside) approachElapsed = 0f;
+            bool inside = distance <= ConfirmationDistance;
             int requiredTier = RequiredTier(destination);
             var progression = player.GetComponent<PrototypeCaptainProgression>();
             bool unlocked = (progression != null ? progression.HighestUnlockedMapTier : 1) >= requiredTier;
-            if (inside && unlocked && cancelledGate == null)
-                approachElapsed = Mathf.Min(CountdownSeconds, approachElapsed + Time.deltaTime);
-            else if (!unlocked) approachElapsed = 0f;
 
             float fog = 1f - Mathf.Clamp01(distance / FogDistance);
             string status = !unlocked ? $"KAPTAN SV. {RequiredLevelForTier(requiredTier)} GEREKİR"
                 : !inside ? "GEÇİŞ ALANINA YAKLAŞ"
-                : approachElapsed < CountdownSeconds ? $"GEÇİŞE HAZIRLANIYOR • {Mathf.CeilToInt(CountdownSeconds - approachElapsed)} sn"
                 : "GEÇİŞ HAZIR • ONAYINI BEKLİYOR";
             approachView.Show(GetMapDisplayName(destination), status, fog,
-                inside && unlocked && approachElapsed >= CountdownSeconds,
+                inside && unlocked,
                 cancelledGate == null);
         }
 
@@ -230,12 +222,12 @@ namespace Seaborn.World
 
         private void ConfirmApproach()
         {
-            if (transitioning || player == null || approachElapsed < CountdownSeconds || cancelledGate != null) return;
+            if (transitioning || player == null || cancelledGate != null) return;
             var health = player.GetComponent<Seaborn.Ship.ShipHealth>();
             if (health == null || health.IsSunk) return;
             FindApproach(SceneManager.GetActiveScene().name, player.position,
                 out string destination, out EntrySide side, out float distance);
-            if (destination != approachedScene || side != approachedSide || distance > CountdownDistance) return;
+            if (destination != approachedScene || side != approachedSide || distance > ConfirmationDistance) return;
             if (!Application.CanStreamedLevelBeLoaded(destination))
             {
                 approachView.Show(GetMapDisplayName(destination), "HARİTA YÜKLENEMİYOR", 1f, false, true);
@@ -250,7 +242,6 @@ namespace Seaborn.World
         private void CancelApproach()
         {
             cancelledGate = approachedScene;
-            approachElapsed = 0f;
             approachView.HideCard();
         }
 
@@ -258,7 +249,6 @@ namespace Seaborn.World
         {
             approachedScene = null;
             approachedSide = EntrySide.None;
-            approachElapsed = 0f;
             cancelledGate = null;
             if (approachView != null) approachView.Hide();
         }
