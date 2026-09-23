@@ -25,9 +25,11 @@ namespace Seaborn.Harbor.UI
         private ShipLoadout loadout;
         private PrototypeModularShipAssembler assembler;
         private RectTransform itemContent, pinRoot;
-        private GameObject view, cannonPage, supplyPage;
+        private GameObject view, cannonPage, supplyPage, modulePage;
+        private ShipyardModuleEquipmentView moduleView;
+        private Button sailPin, hullPin;
         private Text title, detail, recipe, status, supplyText;
-        private Button fit, remove, upgrade, sixBuy, heavyBuy, forge, patchedFit, ratFit, ratBuy;
+        private Button fit, remove, upgrade, sixBuy, heavyBuy, forge;
         private readonly List<Button> pins = new();
         private readonly List<RectTransform> leaders = new();
         private readonly List<RectTransform> dots = new();
@@ -74,8 +76,9 @@ namespace Seaborn.Harbor.UI
             card.anchoredPosition = new Vector2(-24, -30);
             card.gameObject.AddComponent<Image>().color = Navy;
             title = Label(card, "GEMİ ÜZERİNDEN BİR YUVA SEÇ", 19, 20, 16, 510, 32);
-            Button(card, "TOP ENVANTERİ", 20, 58, 250, 36, () => SetPage(false));
-            Button(card, "TEDARİK / YELKEN", 280, 58, 250, 36, () => SetPage(true));
+            Button(card, "TOPLAR", 20, 58, 164, 36, () => SetPage(false));
+            Button(card, "TOP TEDARİĞİ", 192, 58, 164, 36, () => SetPage(true));
+            Button(card, "YELKEN / GÖVDE", 364, 58, 166, 36, () => OpenModule(ShipModuleSlot.Sail));
             var guns = Rect(card, "Cannons", 0, 108, 550, 590);
             cannonPage = guns.gameObject;
             detail = Label(guns, "", 14, 20, 0, 510, 96);
@@ -97,15 +100,22 @@ namespace Seaborn.Harbor.UI
             heavyBuy = Button(supplies, "", 280, 150, 250, 44, () => Purchase("iron_12lb"));
             forge = Button(supplies, "", 20, 210, 510, 48, Forge);
             Label(supplies, "Korsan Demiri: korsan enkazından alıp limana taşı.\nAlınan ve üretilen toplar +0 olarak depoya eklenir.", 13, 20, 274, 510, 62);
-            patchedFit = Button(supplies, "YAMALI YELKEN TAK", 20, 368, 250, 40, () => EquipSail("patched_canvas"));
-            ratFit = Button(supplies, "RAT YELKENİ TAK", 280, 368, 250, 40, () => EquipSail("rat_sails"));
-            ratBuy = Button(supplies, "", 20, 428, 510, 44, () => Result(inventory.TryPurchaseSail("rat_sails")));
+            var modules = Rect(card, "Ship Modules", 0, 108, 550, 590);
+            modulePage = modules.gameObject;
+            moduleView = modulePage.AddComponent<ShipyardModuleEquipmentView>();
+            sailPin = Button(root, "YELKEN", 0, 0, 140, 34, () => OpenModule(ShipModuleSlot.Sail));
+            hullPin = Button(root, "GÖVDE", 0, 0, 140, 34, () => OpenModule(ShipModuleSlot.Hull));
+            foreach (var button in new[] { sailPin, hullPin })
+            {
+                var pinRect = button.GetComponent<RectTransform>();
+                pinRect.anchorMin = pinRect.anchorMax = pinRect.pivot = new Vector2(0.5f, 0.5f);
+            }
             status = Label(card, "", 13, 20, 706, 510, 44);
             var hint = Rect(root, "Hint", 0, 0, 580, 56);
             hint.anchorMin = hint.anchorMax = hint.pivot = new Vector2(0.32f, 0f);
             hint.anchoredPosition = new Vector2(0, 205);
             hint.gameObject.AddComponent<Image>().color = Navy;
-            Label(hint, "GEMİDEKİ YUVAYA TIKLA • E: Tersaneden ayrıl\nTopun + seviyesi sökülünce ve gemi değişince korunur.", 13, 16, 8, 548, 42);
+            Label(hint, "GEMİDEKİ YUVAYA TIKLA • E: Tersaneden ayrıl\nParçaların + seviyesi sökülünce ve gemi değişince korunur.", 13, 16, 8, 548, 42);
             SetPage(false);
             view.SetActive(false);
         }
@@ -119,6 +129,7 @@ namespace Seaborn.Harbor.UI
                 PrototypeHarborUiCoordinator.IsSelected(PrototypeHarborTab.Loadout);
             view.SetActive(visible);
             if (!visible) { wasVisible = false; return; }
+            moduleView.Bind(player);
             inventory = player.GetComponentInChildren<PrototypeEquipmentInventory>();
             wallet = player.GetComponentInChildren<PrototypeSilverWallet>();
             materials = player.GetComponentInChildren<PrototypeRegionalLootInventory>();
@@ -138,9 +149,12 @@ namespace Seaborn.Harbor.UI
 
         private void LateUpdate()
         {
-            if (!view.activeSelf || assembler == null || loadout == null) return;
+            if (!view.activeSelf || loadout == null) return;
             var camera = UnityEngine.Camera.main;
             if (camera == null) return;
+            PositionModulePin(sailPin, ShipModuleSlot.Sail, camera, 112);
+            PositionModulePin(hullPin, ShipModuleSlot.Hull, camera, -112);
+            if (assembler == null) return;
             int portCount = (loadout.CannonSlotCount + 1) / 2;
             int starboardCount = loadout.CannonSlotCount / 2;
             Vector3 centerScreen = camera.WorldToScreenPoint(player.position + Vector3.up * 0.4f);
@@ -180,7 +194,8 @@ namespace Seaborn.Harbor.UI
                 pins[i].GetComponent<Image>().color = i == selectedSlot ? Gold : Muted;
                 leaders[i].GetComponent<Image>().color = dots[i].GetComponent<Image>().color = i == selectedSlot ? Gold : Cream;
             }
-            title.text = selectedSlot < 0 ? "GEMİ ÜZERİNDEN BİR YUVA SEÇ" : SlotName(selectedSlot);
+            title.text = modulePage.activeSelf ? "YELKEN VE GÖVDE DONANIMI" :
+                selectedSlot < 0 ? "GEMİ ÜZERİNDEN BİR YUVA SEÇ" : SlotName(selectedSlot);
             var installed = loadout.GetCannonItemAt(selectedSlot);
             if (inventory.FindCannon(previewId) == null ||
                 (loadout.IsCannonInstalled(previewId) && previewId != installed?.InstanceId)) previewId = installed?.InstanceId;
@@ -205,7 +220,8 @@ namespace Seaborn.Harbor.UI
             upgrade.GetComponentInChildren<Text>().text = max ? "+10 • TAMAMLANDI" : "+ GELİŞTİR";
             RefreshSupply();
             if (Time.unscaledTime >= statusUntil)
-                status.text = "Sökülen top depoya döner. Geliştirme yalnız seçtiğin topu etkiler.";
+                status.text = modulePage.activeSelf ? "Parçalar aynı gemiye birlikte etki eder. Karşılaştırmalar parça çarpanlarıdır." :
+                    "Sökülen top depoya döner. Geliştirme yalnız seçtiğin topu etkiler.";
         }
 
         private void RefreshItems(CannonItem installed)
@@ -241,7 +257,6 @@ namespace Seaborn.Harbor.UI
         {
             EquipmentCatalog.TryGetCannon("iron_6lb", out var six);
             EquipmentCatalog.TryGetCannon("iron_12lb", out var heavy);
-            EquipmentCatalog.TryGetSail("rat_sails", out var sail);
             int silver = wallet?.Silver ?? 0;
             supplyText.text = $"{silver} SILVER\n6 lb: {six?.damage ?? 0:0} hasar / {six?.reloadDuration ?? 0:0.0} sn\n" +
                 $"12 lb: {heavy?.damage ?? 0:0} hasar / {heavy?.reloadDuration ?? 0:0.0} sn\n" +
@@ -254,10 +269,7 @@ namespace Seaborn.Harbor.UI
                 $"{materials?.CorsairIron ?? 0}/{PrototypeEquipmentInventory.HeavyForgeIron} KORSAN DEMİRİ";
             forge.interactable = silver >= PrototypeEquipmentInventory.HeavyForgeSilver &&
                 (materials?.CorsairIron ?? 0) >= PrototypeEquipmentInventory.HeavyForgeIron;
-            patchedFit.interactable = inventory.GetOwnedSails("patched_canvas") > 0 && loadout.SailId != "patched_canvas";
-            ratFit.interactable = inventory.GetOwnedSails("rat_sails") > 0 && loadout.SailId != "rat_sails";
-            ratBuy.GetComponentInChildren<Text>().text = $"RAT YELKENİ SATIN AL • {sail?.silverPrice ?? 0} S";
-            ratBuy.interactable = sail != null && silver >= sail.silverPrice;
+
         }
 
         private void RebuildPins()
@@ -286,7 +298,24 @@ namespace Seaborn.Harbor.UI
             selectedSlot = slot; previewId = loadout.GetCannonItemId(slot);
             SetPage(false); Refresh();
         }
-        private void SetPage(bool supply) { cannonPage.SetActive(!supply); supplyPage.SetActive(supply); }
+        private void SetPage(bool supply)
+        { cannonPage.SetActive(!supply); supplyPage.SetActive(supply); modulePage.SetActive(false); }
+        private void OpenModule(ShipModuleSlot slot)
+        {
+            cannonPage.SetActive(false); supplyPage.SetActive(false); modulePage.SetActive(true);
+            moduleView.Bind(player); moduleView.SelectSlot(slot); Refresh();
+        }
+        private void PositionModulePin(Button button, ShipModuleSlot slot, UnityEngine.Camera camera, float offsetY)
+        {
+            Vector3 screen = camera.WorldToScreenPoint(player.position + Vector3.up * 0.8f);
+            button.gameObject.SetActive(screen.z > 0);
+            if (screen.z <= 0) return;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(pinRoot, screen, null, out var point);
+            button.GetComponent<RectTransform>().anchoredPosition = point + new Vector2(0, offsetY);
+            var item = loadout.GetModule(slot);
+            button.GetComponentInChildren<Text>().text = (slot == ShipModuleSlot.Sail ? "YELKEN" : "GÖVDE") +
+                (item == null ? " • BOŞ" : " +" + item.Enhancement);
+        }
         private bool Affordable(CannonUpgradeCost cost) => materials != null && wallet != null && wallet.Silver >= cost.Silver &&
             materials.CorsairIron >= cost.Iron && materials.LostChartFragments >= cost.Charts && materials.StormjawScales >= cost.Scales;
         private static string SlotName(int slot) => $"{(slot % 2 == 0 ? "İSKELE" : "SANCAK")} • TOP YUVASI {slot / 2 + 1}";

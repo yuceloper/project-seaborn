@@ -42,6 +42,10 @@ namespace Seaborn.Persistence
             public string[] cannonSlots;
             public string[] cannonItemIds;
             public CannonItem[] cannonItems;
+            public ShipModuleItem[] moduleItems;
+            public bool hasModuleLayout;
+            public string sailItemId;
+            public string hullItemId;
             public int installedCannons;
             public string sailId;
             public int iron6LbCannons;
@@ -307,6 +311,7 @@ namespace Seaborn.Persistence
                     data.ratSails
                 );
                 inventory.RestoreCannonItems(data.cannonItems);
+                inventory.RestoreModules(data.moduleItems);
                 loadout.Restore(
                     data.cannonId,
                     data.installedCannons,
@@ -314,6 +319,7 @@ namespace Seaborn.Persistence
                     data.selectedHarpoonId
                 );
                 loadout.RestoreCannonSlots(data.cannonSlots, data.cannonItemIds);
+                loadout.RestoreModuleLayout(data.hasModuleLayout, data.sailItemId, data.hullItemId);
                 equipment.RestoreLevels(
                     data.hullLevel,
                     data.cannonLevel,
@@ -382,6 +388,10 @@ namespace Seaborn.Persistence
                 selectedHarpoonId = harpoons != null
                     ? harpoons.SelectedHarpoonId
                     : "light_2kg",
+                moduleItems = inventory != null ? inventory.CaptureModules() : null,
+                hasModuleLayout = loadout != null,
+                sailItemId = loadout != null ? loadout.GetModuleId(ShipModuleSlot.Sail) : null,
+                hullItemId = loadout != null ? loadout.GetModuleId(ShipModuleSlot.Hull) : null,
                 cannonItems = inventory != null ? inventory.CaptureCannonItems() : null,
                 cannonItemIds = loadout != null ? loadout.CaptureCannonItemIds() : null,
                 cannonSlots = loadout != null ? loadout.CaptureCannonSlots() : null,
@@ -555,6 +565,9 @@ namespace Seaborn.Persistence
                 SameSlots(first.cannonSlots, second.cannonSlots) &&
                 SameSlots(first.cannonItemIds, second.cannonItemIds) &&
                 SameCannonItems(first.cannonItems, second.cannonItems) &&
+                SameModuleItems(first.moduleItems, second.moduleItems) &&
+                first.hasModuleLayout == second.hasModuleLayout &&
+                first.sailItemId == second.sailItemId && first.hullItemId == second.hullItemId &&
                 first.installedCannons ==
                     second.installedCannons &&
                 string.Equals(
@@ -609,6 +622,16 @@ namespace Seaborn.Persistence
                 first.corsairIron == second.corsairIron &&
                 first.lostChartFragments ==
                     second.lostChartFragments;
+        }
+
+        private static bool SameModuleItems(ShipModuleItem[] first, ShipModuleItem[] second)
+        {
+            if (ReferenceEquals(first, second)) return true;
+            if (first == null || second == null || first.Length != second.Length) return false;
+            for (int i = 0; i < first.Length; i++)
+                if (first[i] == null || second[i] == null || first[i].InstanceId != second[i].InstanceId ||
+                    first[i].DefinitionId != second[i].DefinitionId || first[i].Enhancement != second[i].Enhancement) return false;
+            return true;
         }
 
         private static bool SameCannonItems(CannonItem[] first, CannonItem[] second)

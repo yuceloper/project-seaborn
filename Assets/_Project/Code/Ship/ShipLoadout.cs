@@ -16,6 +16,52 @@ namespace Seaborn.Ship
         [SerializeField] private string sailId = "patched_canvas";
         [SerializeField] private string harpoonId = "light_2kg";
 
+        [SerializeField] private string sailItemId;
+        [SerializeField] private string hullItemId;
+        [SerializeField] private bool moduleLayoutInitialized;
+        public string GetModuleId(ShipModuleSlot slot) => slot == ShipModuleSlot.Sail ? sailItemId : hullItemId;
+        public ShipModuleItem GetModule(ShipModuleSlot slot) => GetComponent<PrototypeEquipmentInventory>()?.FindModule(GetModuleId(slot));
+        public bool IsModuleInstalled(string id) => !string.IsNullOrEmpty(id) && (id == sailItemId || id == hullItemId);
+        public ShipModuleStats GetModuleStats(ShipModuleSlot slot) => GetModule(slot)?.Stats ?? ShipModuleStats.Empty(slot);
+
+        public bool TryEquipModule(ShipModuleSlot slot, string itemId)
+        {
+            var inventory = GetComponent<PrototypeEquipmentInventory>();
+            if (inventory == null || !inventory.CanUseShipyard || !Enum.IsDefined(typeof(ShipModuleSlot), slot)) return false;
+            var item = inventory.FindModule(itemId);
+            if (!string.IsNullOrEmpty(itemId) && (item == null || item.Definition.Slot != slot || IsModuleInstalled(itemId))) return false;
+            if (slot == ShipModuleSlot.Sail) sailItemId = item?.InstanceId;
+            else hullItemId = item?.InstanceId;
+            moduleLayoutInitialized = true;
+            Apply(); return true;
+        }
+
+        public void RestoreModuleLayout(bool hasLayout, string sail, string hull)
+        {
+            moduleLayoutInitialized = hasLayout;
+            sailItemId = sail; hullItemId = hull;
+            Apply();
+        }
+
+        private void ResolveModules()
+        {
+            var inventory = GetComponent<PrototypeEquipmentInventory>();
+            if (inventory == null) return;
+            if (!moduleLayoutInitialized)
+            {
+                sailItemId = hullItemId = null;
+                foreach (var item in inventory.Modules)
+                {
+                    if (item.DefinitionId == sailId && sailItemId == null) sailItemId = item.InstanceId;
+                    if (item.DefinitionId == "timber_plating" && hullItemId == null) hullItemId = item.InstanceId;
+                }
+                moduleLayoutInitialized = true;
+            }
+            if (inventory.FindModule(sailItemId)?.Definition.Slot != ShipModuleSlot.Sail) sailItemId = null;
+            if (inventory.FindModule(hullItemId)?.Definition.Slot != ShipModuleSlot.Hull) hullItemId = null;
+            sailId = GetModule(ShipModuleSlot.Sail)?.DefinitionId ?? string.Empty;
+        }
+
         // Stable interleaved hardpoints: port 1, starboard 1, port 2, ...
         [SerializeField] private string[] cannonSlots;
         [SerializeField] private string[] cannonItemIds;
@@ -172,16 +218,12 @@ namespace Seaborn.Ship
 
         public bool TryEquipSail(string nextSailId)
         {
-            if (!EquipmentCatalog.TryGetSail(
-                    nextSailId,
-                    out _))
-            {
-                return false;
-            }
-
-            sailId = nextSailId;
-            Apply();
-            return true;
+            var inventory = GetComponent<PrototypeEquipmentInventory>();
+            if (inventory == null) return false;
+            foreach (var item in inventory.Modules)
+                if (item.DefinitionId == nextSailId && !IsModuleInstalled(item.InstanceId))
+                    return TryEquipModule(ShipModuleSlot.Sail, item.InstanceId);
+            return false;
         }
 
         public bool TryEquipHarpoon(string nextHarpoonId)
@@ -213,9 +255,7 @@ namespace Seaborn.Ship
                 cannonId = savedCannonId;
             }
 
-            if (EquipmentCatalog.TryGetSail(
-                    savedSailId,
-                    out _))
+            if (ShipModuleCatalog.Find(savedSailId)?.Slot == ShipModuleSlot.Sail)
             {
                 sailId = savedSailId;
             }
@@ -232,6 +272,7 @@ namespace Seaborn.Ship
                 installedCannons = savedCannonCount;
             }
 
+            moduleLayoutInitialized = false;
             cannonSlots = null;
             cannonItemIds = null;
             Apply();
@@ -254,19 +295,18 @@ namespace Seaborn.Ship
                 return;
             }
 
-            if (!EquipmentCatalog.TryGetSail(
-                    sailId,
-                    out SailDefinition sail))
-            {
-                Debug.LogError(
-                    $"Unknown sail definition: {sailId}",
-                    this
-                );
-                return;
-            }
-
+            ResolveModules();
+            var sailStats = GetModuleStats(ShipModuleSlot.Sail);
+            var hullStats = GetModuleStats(ShipModuleSlot.Hull);
+            var sailItem = GetModule(ShipModuleSlot.Sail);
             Cannon = cannon;
-            Sail = sail;
+            Sail = new SailDefinition
+            {
+                id = sailItem?.DefinitionId ?? "bare_rig",
+                displayName = sailItem == null ? "Yelken yok" : sailItem.Definition.Name + " +" + sailItem.Enhancement,
+                speedMultiplier = sailStats.Speed, maneuverMultiplier = sailStats.Turning,
+                silverPrice = sailItem?.Definition.PurchaseCost.Silver ?? 0
+            };
             ShipProfileController profile =
                 GetComponent<ShipProfileController>();
             int cannonCapacity = profile != null
@@ -298,12 +338,12 @@ namespace Seaborn.Ship
             ShipMotor motor =
                 GetComponentInChildren<ShipMotor>();
             motor?.SetRuntimePerformance(
-                ship.speedMultiplier *
-                    sail.speedMultiplier,
-                sail.speedMultiplier,
-                ship.maneuverMultiplier *
-                    sail.maneuverMultiplier
+                ship.speedMultiplier * sailStats.Speed * hullStats.Speed,
+                sailStats.Acceleration * hullStats.Acceleration,
+                ship.maneuverMultiplier * sailStats.Turning * hullStats.Turning
             );
+            GetComponentInChildren<ShipHealth>()?.SetHullModuleHealthMultiplier(hullStats.HullHealth);
+            GetComponentInChildren<ShipSubsystemController>()?.SetSailDurability(sailStats.SailDurability);
 
             HarpoonHuntingController harpoons =
                 GetComponentInChildren<

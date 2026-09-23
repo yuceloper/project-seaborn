@@ -82,3 +82,5 @@ Play Mode checks:
    quotes and +10. A failed request must not consume resources or create/change equipment.
 6. Verify purchases and forging grant +0 items; existing material/ship upgrades still work.
 7. While the panel is open, mouse clicks and consumable hotkeys must not fire/use equipment.
+
+Sail and hull equipment now use the same inspection screen. See SAIL_AND_HULL_MODULES.md.

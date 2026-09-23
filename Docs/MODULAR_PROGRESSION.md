@@ -1,7 +1,10 @@
-# Modular progression — playable first slice
+# Modular progression
 
 Goal: outings earn specific ship parts. A captain chooses a build and works toward it,
 with secured materials and persistent equipment ownership. Story quests remain separate.
+
+Current functional categories: individual cannon hardpoints, one sail slot and one hull-plating slot.
+See SAIL_AND_HULL_MODULES.md for item progression, choices and save migration.
 
 ## Implemented: individual cannon hardpoints
 
@@ -47,7 +50,8 @@ These initial recipe numbers are tuning values, not validated pacing measurement
    keel and hunting/crew deck. Fit benefits against mass, acceleration, turning and target size.
    Existing production models are monolithic: sectional assets/connectors are needed for
    genuine hull-length changes. Do not substitute stretched meshes or invisible bonuses.
-3. Mast slots and sail plans, cloth/rigging quality; meaningful speed, response and sail durability.
+3. Single-item sail and hull-plating slots with +0–+10 progression are implemented.
+   Multiple mast slots, sail plans and separate rigging remain later work.
 4. A broader crafting catalogue and item progression after the first build is playtested.
    Do not erase legacy investments or impose item-loss RNG as a substitute for content.
 

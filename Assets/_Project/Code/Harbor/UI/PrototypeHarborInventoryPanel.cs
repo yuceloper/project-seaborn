@@ -285,8 +285,15 @@ namespace Seaborn.Harbor.UI
                         "Depodaki tekil top • Seviyesi korunur",
                         () => $"+{equipment?.FindCannon(id)?.Enhancement ?? 0}", SeabornHudArt.Icon(0));
                 }
-            Row("Yamalı yelken", "Depodaki yedek yelkenler", () => $"×{equipment?.GetStoredSails("patched_canvas") ?? 0}", SeabornHudArt.Glyph(3));
-            Row("Rat yelkeni", "Depodaki yedek yelkenler", () => $"×{equipment?.GetStoredSails("rat_sails") ?? 0}", SeabornHudArt.Glyph(3));
+            if (equipment != null)
+                foreach (var item in equipment.Modules)
+                {
+                    string id = item.InstanceId;
+                    if (loadout != null && loadout.IsModuleInstalled(id)) continue;
+                    Row(item.Definition.Name, "Depodaki tekil parça • Seviyesi korunur", () =>
+                        $"+{equipment?.FindModule(id)?.Enhancement ?? 0}",
+                        item.Definition.Slot == ShipModuleSlot.Sail ? SeabornHudArt.Glyph(3) : SeabornHudArt.Icon(9));
+                }
         }
 
         private void BuildLoadout()
@@ -301,7 +308,15 @@ namespace Seaborn.Harbor.UI
                         return item == null ? "BOŞ" : $"{(item.DefinitionId == "iron_12lb" ? "12 lb" : "6 lb")} +{item.Enhancement}";
                     }, SeabornHudArt.Icon(0));
                 }
-            Row("Yelken", "Takılı yelken", () => loadout?.Sail?.displayName ?? "—", SeabornHudArt.Glyph(3));
+            foreach (ShipModuleSlot kind in new[] { ShipModuleSlot.Sail, ShipModuleSlot.Hull })
+            {
+                var slot = kind;
+                Row(slot == ShipModuleSlot.Sail ? "Yelken" : "Gövde kaplaması", "Takılı parça ve geliştirme seviyesi", () =>
+                {
+                    var item = loadout?.GetModule(slot);
+                    return item == null ? "BOŞ" : $"{item.Definition.Name} +{item.Enhancement}";
+                }, slot == ShipModuleSlot.Sail ? SeabornHudArt.Glyph(3) : SeabornHudArt.Icon(9));
+            }
             Row("Zıpkın", "Seçili av mühimmatı", () => harpoons?.SelectedHarpoon?.displayName ?? "—", SeabornHudArt.Icon(3));
         }
 

@@ -20,7 +20,7 @@ namespace Seaborn.Progression
     }
 
     [DisallowMultipleComponent]
-    public sealed class PrototypeEquipmentInventory : MonoBehaviour
+    public sealed partial class PrototypeEquipmentInventory : MonoBehaviour
     {
         [SerializeField, Min(0)] private int iron6LbCannons = 6;
         [SerializeField, Min(0)] private int iron12LbCannons;
@@ -196,23 +196,7 @@ namespace Seaborn.Progression
                 : 0;
         }
 
-        public int GetOwnedSails(string sailId)
-        {
-            if (string.Equals(
-                    sailId,
-                    "rat_sails",
-                    StringComparison.OrdinalIgnoreCase))
-            {
-                return ratSails;
-            }
-
-            return string.Equals(
-                    sailId,
-                    "patched_canvas",
-                    StringComparison.OrdinalIgnoreCase)
-                ? patchedCanvasSails
-                : 0;
-        }
+        public int GetOwnedSails(string sailId) => CountModules(sailId);
 
         public EquipmentPurchaseResult TryPurchaseCannon(
             string cannonId)
@@ -272,42 +256,11 @@ namespace Seaborn.Progression
             finally { forging = false; }
         }
 
-        public EquipmentPurchaseResult TryPurchaseSail(
-            string sailId)
+        public EquipmentPurchaseResult TryPurchaseSail(string sailId)
         {
-            if (!CanUseShipyard)
-                return EquipmentPurchaseResult.NotAtShipyard;
-
-            if (!EquipmentCatalog.TryGetSail(
-                    sailId,
-                    out SailDefinition definition))
-            {
-                return EquipmentPurchaseResult.UnknownItem;
-            }
-
-            if (wallet == null ||
-                !wallet.TrySpendSilver(
-                    definition.silverPrice,
-                    definition.displayName))
-            {
-                return EquipmentPurchaseResult
-                    .InsufficientSilver;
-            }
-
-            if (string.Equals(
-                    sailId,
-                    "rat_sails",
-                    StringComparison.OrdinalIgnoreCase))
-            {
-                ratSails++;
-            }
-            else
-            {
-                patchedCanvasSails++;
-            }
-
-            InventoryChanged?.Invoke();
-            return EquipmentPurchaseResult.Completed;
+            var definition = ShipModuleCatalog.Find(sailId);
+            return definition == null || definition.Slot != ShipModuleSlot.Sail
+                ? EquipmentPurchaseResult.UnknownItem : TryPurchaseModule(sailId);
         }
 
         public bool TryEquipCannons(string cannonId)
@@ -362,6 +315,8 @@ namespace Seaborn.Progression
 
             itemsInitialized = false;
             EnsureItems();
+            modulesInitialized = false;
+            EnsureModules();
             InventoryChanged?.Invoke();
         }
 

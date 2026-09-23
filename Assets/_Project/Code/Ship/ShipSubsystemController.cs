@@ -10,6 +10,9 @@ namespace Seaborn.Ship
         MonoBehaviour
     {
         private const float MaximumIntegrity = 100f;
+        private float sailDurability = 1f;
+        public float SailDurability => sailDurability;
+        public void SetSailDurability(float value) => sailDurability = Mathf.Max(0.1f, value);
 
         public event Action SubsystemsChanged;
 
@@ -89,7 +92,7 @@ namespace Seaborn.Ship
 
             SailIntegrity = Mathf.Max(
                 0f,
-                SailIntegrity - sailDamage
+                SailIntegrity - sailDamage / sailDurability
             );
             CrewReadiness = Mathf.Max(
                 0f,

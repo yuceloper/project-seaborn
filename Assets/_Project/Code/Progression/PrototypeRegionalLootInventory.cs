@@ -209,6 +209,17 @@ namespace Seaborn.Progression
             return true;
         }
 
+        public bool CanAffordModule(ShipModuleCost cost) => cost.Oil >= 0 && cost.Iron >= 0 && cost.Charts >= 0 && cost.Scales >= 0 &&
+            TideOil >= cost.Oil && CorsairIron >= cost.Iron && LostChartFragments >= cost.Charts && StormjawScales >= cost.Scales;
+
+        public bool TrySpendModuleCost(ShipModuleCost cost)
+        {
+            if (!CanAffordModule(cost)) return false;
+            TideOil -= cost.Oil; CorsairIron -= cost.Iron;
+            LostChartFragments -= cost.Charts; StormjawScales -= cost.Scales;
+            MaterialsChanged?.Invoke(); return true;
+        }
+
         public void Restore(
             int tideOil,
             int stormjawScales,

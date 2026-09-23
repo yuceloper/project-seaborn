@@ -20,11 +20,12 @@ namespace Seaborn.Ship
             maximumHealth *
             maximumHealthMultiplier *
             equipmentHealthMultiplier *
-            skillHealthMultiplier;
+            skillHealthMultiplier * hullModuleHealthMultiplier;
 
         public float MaximumHealthMultiplier =>
             maximumHealthMultiplier;
 
+        private float hullModuleHealthMultiplier = 1f;
         private float maximumHealthMultiplier = 1f;
         private float equipmentHealthMultiplier = 1f;
         private float skillHealthMultiplier = 1f;
@@ -76,6 +77,16 @@ namespace Seaborn.Ship
 
             IsSunk = true;
             Sunk?.Invoke();
+        }
+
+        public void SetHullModuleHealthMultiplier(float multiplier)
+        {
+            multiplier = Mathf.Max(0.1f, multiplier);
+            if (Mathf.Approximately(hullModuleHealthMultiplier, multiplier)) return;
+            hullModuleHealthMultiplier = multiplier;
+            // Equipment swaps/upgrades must not heal or resurrect a ship.
+            CurrentHealth = Mathf.Min(CurrentHealth, MaximumHealth);
+            HealthChanged?.Invoke(CurrentHealth, MaximumHealth);
         }
 
         public void SetConsumableDamageTakenMultiplier(
