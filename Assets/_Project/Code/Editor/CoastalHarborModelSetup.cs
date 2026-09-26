@@ -74,23 +74,9 @@ namespace Seaborn.Editor
             importer.SaveAndReimport();
             foreach (string kind in new[] { "BaseColor", "Normal", "MetallicSmoothness" })
             {
-                var texture = AssetImporter.GetAtPath(Texture(name, kind)) as TextureImporter;
-                if (texture == null) throw new InvalidOperationException("Missing texture importer: " + kind);
-                texture.textureType = kind == "Normal" ? TextureImporterType.NormalMap : TextureImporterType.Default;
-                texture.sRGBTexture = kind == "BaseColor";
-                texture.alphaSource = TextureImporterAlphaSource.FromInput;
-                texture.maxTextureSize = 2048;
-                texture.mipmapEnabled = true;
-                texture.isReadable = false;
-                texture.textureCompression = TextureImporterCompression.Compressed;
-                AssetDatabase.WriteImportSettingsIfDirty(Texture(name, kind));
-                AssetDatabase.ImportAsset(Texture(name, kind),
-                    ImportAssetOptions.ForceUpdate | ImportAssetOptions.ForceSynchronousImport);
-                var imported = RequireTexture(name, kind);
-                if (imported.width != 2048 || imported.height != 2048)
-                    Debug.LogWarning($"Coastal texture imported at {imported.width}x{imported.height}: {Texture(name, kind)}. " +
-                        "Source is verified 2048x2048; check platform Max Size overrides if full 2K is intended.");
+                ImportTexture(name, kind);
             }
+
             Shader shader = Shader.Find("Universal Render Pipeline/Lit");
             if (shader == null) throw new InvalidOperationException("URP Lit shader missing.");
             string materialPath = $"{Root}/{name}/Materials/MAT_{name}_URP.mat";
@@ -150,6 +136,62 @@ namespace Seaborn.Editor
             finally { UnityEngine.Object.DestroyImmediate(root); }
         }
 
+        private static void ImportTexture(string name, string kind)
+        {
+            string path = Texture(name, kind);
+            var importer = AssetImporter.GetAtPath(path) as TextureImporter;
+            if (importer == null) throw new InvalidOperationException("Missing texture importer: " + path);
+
+            // The asset pack carries GUID-only metadata. Explicitly initialize all relevant
+            // settings rather than relying on missing serialized fields to have valid defaults.
+            var settings = new TextureImporterSettings();
+            settings.ApplyTextureType(kind == "Normal" ? TextureImporterType.NormalMap : TextureImporterType.Default);
+            settings.textureShape = TextureImporterShape.Texture2D;
+            settings.sRGBTexture = kind == "BaseColor";
+            settings.alphaSource = TextureImporterAlphaSource.FromInput;
+            settings.mipmapEnabled = true;
+            settings.readable = false;
+            settings.convertToNormalMap = false;
+            settings.filterMode = FilterMode.Bilinear;
+            settings.wrapMode = TextureWrapMode.Repeat;
+            importer.SetTextureSettings(settings);
+            importer.maxTextureSize = 2048;
+            importer.textureCompression = TextureImporterCompression.Compressed;
+            importer.crunchedCompression = false;
+            var platform = importer.GetDefaultPlatformTextureSettings();
+            platform.maxTextureSize = 2048;
+            platform.format = TextureImporterFormat.Automatic;
+            platform.textureCompression = TextureImporterCompression.Compressed;
+            platform.crunchedCompression = false;
+            importer.SetPlatformTextureSettings(platform);
+            importer.ClearPlatformTextureSettings("Standalone");
+            ReimportTexture(path);
+
+            if (AssetDatabase.LoadAssetAtPath<Texture2D>(path) == null)
+            {
+                // One bounded retry isolates platform compression failures while still using
+                // Unity's normal-map importer. Preserve the source and its GUID throughout.
+                importer = AssetImporter.GetAtPath(path) as TextureImporter;
+                if (importer == null) throw new InvalidOperationException("Texture importer disappeared: " + path);
+                platform = importer.GetDefaultPlatformTextureSettings();
+                platform.textureCompression = TextureImporterCompression.Uncompressed;
+                importer.SetPlatformTextureSettings(platform);
+                importer.textureCompression = TextureImporterCompression.Uncompressed;
+                ReimportTexture(path);
+                if (AssetDatabase.LoadAssetAtPath<Texture2D>(path) != null)
+                    Debug.LogWarning("Coastal texture recovered with uncompressed import (higher texture memory): " + path);
+            }
+            var imported = RequireTexture(name, kind);
+            if (imported.width != 2048 || imported.height != 2048)
+                Debug.LogWarning($"Coastal texture imported at {imported.width}x{imported.height}: {path}. Source is verified 2K.");
+        }
+
+        private static void ReimportTexture(string path)
+        {
+            AssetDatabase.WriteImportSettingsIfDirty(path);
+            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate | ImportAssetOptions.ForceSynchronousImport);
+        }
+
         internal static void ValidateSourceTexture(string path)
         {
             var probe = new Texture2D(2, 2, TextureFormat.RGBA32, false);
@@ -172,9 +214,15 @@ namespace Seaborn.Editor
             string path = Texture(name, kind);
             var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
             if (texture == null)
-                throw new InvalidDataException("Unity returned no Texture2D after synchronous import: " + path +
-                    ". Source PNG decoding passed. Inspect the preceding Unity importer error; active build target: " +
-                    EditorUserBuildSettings.activeBuildTarget);
+            {
+                var importer = AssetImporter.GetAtPath(path) as TextureImporter;
+                var main = AssetDatabase.LoadMainAssetAtPath(path);
+                string actualType = main == null ? "null" : main.GetType().FullName;
+                string shape = importer == null ? "no importer" : importer.textureShape.ToString();
+                throw new InvalidDataException($"Texture import failed after settings repair and uncompressed retry: {path}. " +
+                    $"Source decode passed; main asset={actualType}; shape={shape}; GUID={AssetDatabase.AssetPathToGUID(path)}; " +
+                    $"target={EditorUserBuildSettings.activeBuildTarget}. Include this PNG's .meta file and preceding importer errors when reporting.");
+            }
             if (texture.width <= 0 || texture.height <= 0)
                 throw new InvalidDataException($"Invalid imported texture size {texture.width}x{texture.height}: {path}");
             return texture;

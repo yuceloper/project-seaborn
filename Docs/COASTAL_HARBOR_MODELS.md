@@ -70,3 +70,10 @@ Imported textures may be reduced by platform Max Size overrides. The builder che
 the decoded source, accepts valid reduced imported maps, and reports their actual dimensions.
 Texture settings are saved before a forced synchronous import. A missing Texture2D is reported
 separately from a source decoding failure, with the active build target for diagnosis.
+
+For GUID-only texture metadata, setup explicitly initializes TextureImporterSettings including
+Texture2D shape and automatic default platform format. Generated coastal textures have their
+Standalone override cleared. If import still returns no Texture2D, one uncompressed retry is made
+through Unity's importer (including normal-map conversion); successful recovery logs increased
+texture memory use. A final failure reports actual main asset type, shape, GUID and build target.
+This repair preserves PNG contents and GUIDs; it does not delete project-wide import caches.
