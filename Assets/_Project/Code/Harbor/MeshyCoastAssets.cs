@@ -26,7 +26,8 @@ namespace Seaborn.Harbor
         {
             if (Resources.Load<GameObject>("SeabornDockModuleVisual") == null) return false;
             // Builder normalizes pier footprint to 3.48 x 8; Y=0 is the walking surface.
-            int columns = Mathf.Max(1, Mathf.RoundToInt(footprint.x / 3.48f));
+            // A single wide loading deck avoids rows of embedded piles through the work area.
+            int columns = 1;
             int rows = Mathf.Max(1, Mathf.CeilToInt(footprint.y / 8f));
             Vector2 cell = new Vector2(footprint.x / columns, footprint.y / rows);
             Transform root = new GameObject(name).transform;

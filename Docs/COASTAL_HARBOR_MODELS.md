@@ -77,3 +77,19 @@ Standalone override cleared. If import still returns no Texture2D, one uncompres
 through Unity's importer (including normal-map conversion); successful recovery logs increased
 texture memory use. A final failure reports actual main asset type, shape, GUID and build target.
 This repair preserves PNG contents and GUIDs; it does not delete project-wide import caches.
+
+## Cove layout follow-up
+
+- The rectangular land slab is replaced with a curved bank and gently raised inland surface.
+- A short masonry quay joins the existing piers; all three station coordinates stay unchanged.
+- Rock clusters form irregular shoulders and both breakwaters; the long cube/sphere breakwaters are removed.
+- Loading platforms use one wide dock mesh each to remove interior pile rows. They meet the
+  pier edges without the previous 0.7-unit overlap and share the same deck height.
+  The authored pier module still has end posts; a dedicated platform/junction model can improve this further.
+- A shadowless cool fill light improves shaded hull readability while the harbor exists.
+- No land/rock colliders are introduced by this visual pass. Terrain navigation remains future work.
+- Trade warehouse, office and crane are still blockouts pending dedicated models.
+
+Validate in Unity: all docking snaps and ropes; shipyard camera; bank/platform joins; no visible
+mesh underside; lighthouse base sits on rocks; daytime lighting; leave/re-enter harbor.
+Syntax and numeric layout checks outside Unity do not replace this Play Mode check.

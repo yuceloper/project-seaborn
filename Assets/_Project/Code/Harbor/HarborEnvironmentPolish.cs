@@ -224,13 +224,13 @@ namespace Seaborn.Harbor
         {
             // Repeated low bollards tie the shore wall to the timber piers while
             // keeping the navigation lane and all docking volumes untouched.
-            for (int x = -18; x <= 18; x += 6)
+            for (int x = -6; x <= 6; x += 6)
             {
                 CreatePart($"Quay Bollard {x}", PrimitiveType.Cylinder,
-                    new Vector3(x + 1.45f, 1.92f, -14.75f),
+                    new Vector3(x + 1.45f, 1.56f, -15.45f),
                     new Vector3(0.30f, 0.42f, 0.30f), Timber);
                 CreatePart($"Quay Bollard Cap {x}", PrimitiveType.Cylinder,
-                    new Vector3(x + 1.45f, 2.35f, -14.75f),
+                    new Vector3(x + 1.45f, 1.99f, -15.45f),
                     new Vector3(0.39f, 0.08f, 0.39f), TimberLight);
             }
         }
