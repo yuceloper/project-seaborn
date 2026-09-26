@@ -63,6 +63,21 @@ namespace Seaborn.Harbor
             BuildBreakwaters();
             BuildLighthouse();
             BuildNavigationLane();
+            BuildCoastalRim();
+        }
+
+        private void BuildCoastalRim()
+        {
+            // Surround the existing quay; keep the central water lane and station approaches clear.
+            for (int side = -1; side <= 1; side += 2)
+            {
+                MeshyCoastAssets.Rock(transform, "Coastal Shoulder", new Vector3(side * 27f, -0.35f, -22f), 16f, side * 23f);
+                MeshyCoastAssets.Rock(transform, "Cove Wing", new Vector3(side * 30f, -0.35f, -11f), 14f, side * 48f);
+                MeshyCoastAssets.Rock(transform, "Outer Cove", new Vector3(side * 31f, -0.45f, 1f), 13f, side * 70f);
+            }
+            for (int i = -2; i <= 2; i++)
+                MeshyCoastAssets.Rock(transform, "Southern Coast " + i,
+                    new Vector3(i * 12f, -0.25f, -33f), 17f, i * 31f);
         }
 
         private void BuildShore()
@@ -354,6 +369,8 @@ namespace Seaborn.Harbor
             Vector3 position,
             Vector3 scale)
         {
+            if (MeshyCoastAssets.Dock(transform, objectName,
+                position + Vector3.up * (scale.y * 0.5f + 0.09f), new Vector2(scale.x, scale.z))) return;
             // The dark support stays under the boards, making real seams
             // without transparent surfaces or overlapping coplanar faces.
             CreatePart(objectName, PrimitiveType.Cube, position,
@@ -410,6 +427,8 @@ namespace Seaborn.Harbor
             Vector3 scale,
             Color wallColor)
         {
+            if (objectName == "Shipwright Workshop" && MeshyCoastAssets.Place(transform,
+                "ShipwrightWorkshop", objectName, new Vector3(position.x, 1.25f, position.z), Vector3.one)) return;
             CreatePart(
                 objectName,
                 PrimitiveType.Cube,

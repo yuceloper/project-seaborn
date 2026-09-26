@@ -175,6 +175,7 @@ namespace Seaborn.Harbor
 
         private void BuildShipyardDetail()
         {
+            if (MeshyCoastAssets.HasWorkshop) return; // Authored roof/awning replaces blockout details.
             CreatePart("Shipyard Work Awning", PrimitiveType.Cube,
                 new Vector3(-16f, 3.50f, -7.25f),
                 new Vector3(8.2f, 0.18f, 1.65f), Roof,
@@ -237,7 +238,7 @@ namespace Seaborn.Harbor
         private void TuneWorldLabels()
         {
             TuneLabel("TERSANE Label", "TERSANE",
-                new Vector3(-16f, 4.27f, -7.35f), 0.052f);
+                new Vector3(-16f, MeshyCoastAssets.HasWorkshop ? 5.5f : 4.27f, -7.35f), 0.052f);
             TuneLabel("TİCARET Label", "TİCARET",
                 new Vector3(16f, 4.40f, -6.56f), 0.052f);
             TuneLabel("LİMAN İDARESİ Label", "LİMAN İDARESİ",

@@ -31,6 +31,7 @@ namespace Seaborn.Harbor
             foreach (Renderer renderer in renderers)
             {
                 if (renderer == null) continue;
+                if (renderer.GetComponentInParent<MeshyEnvironmentVisual>() != null) continue;
                 string n = renderer.gameObject.name;
                 if (!IsHarborPart(n)) continue;
 

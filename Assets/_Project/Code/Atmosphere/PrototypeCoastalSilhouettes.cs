@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.SceneManagement;
+using Seaborn.Harbor;
 
 namespace Seaborn.Atmosphere
 {
@@ -20,6 +22,15 @@ namespace Seaborn.Atmosphere
         [RuntimeInitializeOnLoadMethod(
             RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void CreateForPrototypeOcean()
+        {
+            SceneManager.sceneLoaded -= OnSeaSceneLoaded;
+            SceneManager.sceneLoaded += OnSeaSceneLoaded;
+            EnsureForScene();
+        }
+
+        private static void OnSeaSceneLoaded(Scene scene, LoadSceneMode mode) => EnsureForScene();
+
+        private static void EnsureForScene()
         {
             if (GameObject.Find("Ocean") == null ||
                 FindFirstObjectByType<
@@ -74,6 +85,8 @@ namespace Seaborn.Atmosphere
             float height,
             int seed)
         {
+            if (MeshyCoastAssets.Rock(transform, islandName,
+                position - Vector3.up * 0.55f, radius.x * 2f, seed % 71)) return;
             GameObject island = new GameObject(islandName);
             island.transform.SetParent(transform, false);
             island.transform.position = position;
