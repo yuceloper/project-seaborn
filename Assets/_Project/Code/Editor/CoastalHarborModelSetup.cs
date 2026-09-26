@@ -58,7 +58,7 @@ namespace Seaborn.Editor
             catch (Exception exception)
             {
                 Debug.LogError("Coastal harbor build stopped: " + exception.Message +
-                    "\nReplace damaged textures from the corrected asset archive, then run Build Coastal Harbor Models again.");
+                    "\nSee the specific cause above. Source decoding and Unity asset import are checked separately.");
             }
             finally { building = false; }
         }
@@ -83,8 +83,13 @@ namespace Seaborn.Editor
                 texture.mipmapEnabled = true;
                 texture.isReadable = false;
                 texture.textureCompression = TextureImporterCompression.Compressed;
-                texture.SaveAndReimport();
-                RequireTexture(name, kind);
+                AssetDatabase.WriteImportSettingsIfDirty(Texture(name, kind));
+                AssetDatabase.ImportAsset(Texture(name, kind),
+                    ImportAssetOptions.ForceUpdate | ImportAssetOptions.ForceSynchronousImport);
+                var imported = RequireTexture(name, kind);
+                if (imported.width != 2048 || imported.height != 2048)
+                    Debug.LogWarning($"Coastal texture imported at {imported.width}x{imported.height}: {Texture(name, kind)}. " +
+                        "Source is verified 2048x2048; check platform Max Size overrides if full 2K is intended.");
             }
             Shader shader = Shader.Find("Universal Render Pipeline/Lit");
             if (shader == null) throw new InvalidOperationException("URP Lit shader missing.");
@@ -145,7 +150,7 @@ namespace Seaborn.Editor
             finally { UnityEngine.Object.DestroyImmediate(root); }
         }
 
-        private static void ValidateSourceTexture(string path)
+        internal static void ValidateSourceTexture(string path)
         {
             var probe = new Texture2D(2, 2, TextureFormat.RGBA32, false);
             try
@@ -156,7 +161,8 @@ namespace Seaborn.Editor
             }
             catch (Exception exception)
             {
-                throw new InvalidDataException("Source texture failed: " + path, exception);
+                throw new InvalidDataException("Source texture failed: " + path + " — " + exception.Message +
+                    ". Replace this source file from the corrected asset archive.", exception);
             }
             finally { UnityEngine.Object.DestroyImmediate(probe); }
         }
@@ -165,8 +171,12 @@ namespace Seaborn.Editor
         {
             string path = Texture(name, kind);
             var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
-            if (texture == null || texture.width != 2048 || texture.height != 2048)
-                throw new InvalidDataException("Texture import failed: " + path);
+            if (texture == null)
+                throw new InvalidDataException("Unity returned no Texture2D after synchronous import: " + path +
+                    ". Source PNG decoding passed. Inspect the preceding Unity importer error; active build target: " +
+                    EditorUserBuildSettings.activeBuildTarget);
+            if (texture.width <= 0 || texture.height <= 0)
+                throw new InvalidDataException($"Invalid imported texture size {texture.width}x{texture.height}: {path}");
             return texture;
         }
 

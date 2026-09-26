@@ -33,8 +33,9 @@ namespace Seaborn.Editor
                             foreach (string property in new[] { "_BaseMap", "_BumpMap", "_MetallicGlossMap" })
                             {
                                 var texture = material.GetTexture(property);
-                                Require(texture != null && texture.width == 2048 && texture.height == 2048,
-                                    name + ": missing/non-2K " + property);
+                                Require(texture != null && texture.width > 0 && texture.height > 0,
+                                    name + ": missing/invalid " + property);
+                                CoastalHarborModelSetup.ValidateSourceTexture(AssetDatabase.GetAssetPath(texture));
                             }
                             Require(material.GetColor("_BaseColor") == Color.white, name + ": unwanted material tint.");
                         }

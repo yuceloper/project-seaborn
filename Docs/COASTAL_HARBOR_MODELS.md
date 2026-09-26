@@ -65,3 +65,8 @@ PNG encoding now uses an in-memory buffer followed by an atomic file replacement
 PNG chunk checksums and fully decodes all nine images from the final ZIP. The Unity builder decodes
 all sources before modifying materials/prefabs and rejects missing imported maps instead of reporting
 success. After a failed automatic build, repair the files and run the build menu manually.
+
+Imported textures may be reduced by platform Max Size overrides. The builder checks 2K on
+the decoded source, accepts valid reduced imported maps, and reports their actual dimensions.
+Texture settings are saved before a forced synchronous import. A missing Texture2D is reported
+separately from a source decoding failure, with the active build target for diagnosis.
