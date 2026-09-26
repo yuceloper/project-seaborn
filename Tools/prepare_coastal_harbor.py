@@ -16,6 +16,20 @@ source, output = map(Path, sys.argv[1:3])
 stage = output / 'coastal-harbor-staging'
 root = stage / 'Assets/_Project/Art/Environment/SeabornCoast'
 records = []
+
+def save_png(image, path):
+    # Encode in memory to avoid partial low-level encoder writes on hosted filesystems.
+    buffer = io.BytesIO()
+    image.save(buffer, format='PNG')
+    data = buffer.getvalue()
+    with Image.open(io.BytesIO(data)) as check:
+        check.verify()
+    with Image.open(io.BytesIO(data)) as check:
+        check.load()
+    temporary = path.with_suffix('.png.tmp')
+    temporary.write_bytes(data)
+    temporary.replace(path)
+
 for name, filename in [
     ('CoastalRock', 'Meshy_AI_Weathered_Stone_Outcr_0923231715_texture_fbx.zip'),
     ('DockModule', 'Meshy_AI_Weathered_Wooden_Dock_0923231920_texture_fbx.zip'),
@@ -37,12 +51,12 @@ for name, filename in [
             with Image.open(io.BytesIO(archive.read(stem + suffix + '.png'))) as image:
                 return image.convert(mode).resize((2048, 2048), Image.Resampling.LANCZOS)
 
-        texture('', 'RGB').save(target / 'Textures' / f'T_{name}_BaseColor.png')
-        texture('_normal', 'RGB').save(target / 'Textures' / f'T_{name}_Normal.png')
+        save_png(texture('', 'RGB'), target / 'Textures' / f'T_{name}_BaseColor.png')
+        save_png(texture('_normal', 'RGB'), target / 'Textures' / f'T_{name}_Normal.png')
         metal = texture('_metallic', 'L')
         smooth = ImageOps.invert(texture('_roughness', 'L'))
         zero = Image.new('L', metal.size, 0)
-        Image.merge('RGBA', (metal, zero, zero, smooth)).save(
+        save_png(Image.merge('RGBA', (metal, zero, zero, smooth)),
             target / 'Textures' / f'T_{name}_MetallicSmoothness.png')
         records.append({'asset': name, 'source': filename,
                         'source_sha256': hashlib.sha256(original.read_bytes()).hexdigest()})
@@ -82,6 +96,9 @@ with zipfile.ZipFile(archive_path) as archive:
     for path in archive.namelist():
         if path.endswith('.png'):
             with Image.open(io.BytesIO(archive.read(path))) as image:
+                image.verify()  # Validate every PNG chunk and CRC, not just its header.
+            with Image.open(io.BytesIO(archive.read(path))) as image:
+                image.load()  # Decode the full pixel stream; rejects truncated IDAT data.
                 assert image.size == (2048, 2048), path
 print(json.dumps({'path': str(archive_path.resolve()), 'size_bytes': archive_path.stat().st_size,
                   'sha256': hashlib.sha256(archive_path.read_bytes()).hexdigest(), 'source_assets': records}))

@@ -12,6 +12,7 @@ namespace Seaborn.Editor
         private const string Root = "Assets/_Project/Art/Environment/SeabornCoast";
         private static readonly string[] Names = { "CoastalRock", "DockModule", "ShipwrightWorkshop" };
         private static bool building;
+        private static bool automaticBuildAttempted;
         static CoastalHarborModelSetup() => EditorApplication.delayCall += TryBuildMissing;
         private static string Model(string name) => $"{Root}/{name}/Models/SM_{name}.fbx";
         private static string Texture(string name, string kind) => $"{Root}/{name}/Textures/T_{name}_{kind}.png";
@@ -22,7 +23,7 @@ namespace Seaborn.Editor
 
         internal static void TryBuildMissing()
         {
-            if (building || EditorApplication.isPlayingOrWillChangePlaymode) return;
+            if (building || automaticBuildAttempted || EditorApplication.isPlayingOrWillChangePlaymode) return;
             if (EditorApplication.isCompiling || EditorApplication.isUpdating)
             {
                 EditorApplication.delayCall += TryBuildMissing;
@@ -30,7 +31,7 @@ namespace Seaborn.Editor
             }
             foreach (string name in Names) if (!InputsExist(name)) return;
             foreach (string name in Names)
-                if (AssetDatabase.LoadAssetAtPath<GameObject>(Prefab(name)) == null) { Build(); return; }
+                if (AssetDatabase.LoadAssetAtPath<GameObject>(Prefab(name)) == null) { automaticBuildAttempted = true; Build(); return; }
         }
 
         [MenuItem("Seaborn/Art/Build Coastal Harbor Models")]
@@ -46,9 +47,18 @@ namespace Seaborn.Editor
             building = true;
             try
             {
+                // Decode every source before changing any generated material or prefab.
+                foreach (string name in Names)
+                    foreach (string kind in new[] { "BaseColor", "Normal", "MetallicSmoothness" })
+                        ValidateSourceTexture(Texture(name, kind));
                 foreach (string name in Names) BuildOne(name);
                 AssetDatabase.SaveAssets();
                 Debug.Log("Coastal harbor models ready. Enter Play Mode; docking positions are unchanged.");
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError("Coastal harbor build stopped: " + exception.Message +
+                    "\nReplace damaged textures from the corrected asset archive, then run Build Coastal Harbor Models again.");
             }
             finally { building = false; }
         }
@@ -74,6 +84,7 @@ namespace Seaborn.Editor
                 texture.isReadable = false;
                 texture.textureCompression = TextureImporterCompression.Compressed;
                 texture.SaveAndReimport();
+                RequireTexture(name, kind);
             }
             Shader shader = Shader.Find("Universal Render Pipeline/Lit");
             if (shader == null) throw new InvalidOperationException("URP Lit shader missing.");
@@ -85,9 +96,9 @@ namespace Seaborn.Editor
             if (material == null) { material = new Material(shader); AssetDatabase.CreateAsset(material, materialPath); }
             material.shader = shader;
             material.SetColor("_BaseColor", Color.white);
-            material.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>(Texture(name, "BaseColor")));
-            material.SetTexture("_BumpMap", AssetDatabase.LoadAssetAtPath<Texture2D>(Texture(name, "Normal")));
-            material.SetTexture("_MetallicGlossMap", AssetDatabase.LoadAssetAtPath<Texture2D>(Texture(name, "MetallicSmoothness")));
+            material.SetTexture("_BaseMap", RequireTexture(name, "BaseColor"));
+            material.SetTexture("_BumpMap", RequireTexture(name, "Normal"));
+            material.SetTexture("_MetallicGlossMap", RequireTexture(name, "MetallicSmoothness"));
             material.SetFloat("_BumpScale", 1);
             material.SetFloat("_Metallic", 1);
             material.SetFloat("_Smoothness", 1);
@@ -132,6 +143,31 @@ namespace Seaborn.Editor
                 if (PrefabUtility.SaveAsPrefabAsset(root, Prefab(name)) == null) throw new InvalidOperationException("Prefab save failed: " + name);
             }
             finally { UnityEngine.Object.DestroyImmediate(root); }
+        }
+
+        private static void ValidateSourceTexture(string path)
+        {
+            var probe = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+            try
+            {
+                if (!ImageConversion.LoadImage(probe, File.ReadAllBytes(path), false) ||
+                    probe.width != 2048 || probe.height != 2048)
+                    throw new InvalidDataException("Unreadable or non-2K texture: " + path);
+            }
+            catch (Exception exception)
+            {
+                throw new InvalidDataException("Source texture failed: " + path, exception);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(probe); }
+        }
+
+        private static Texture2D RequireTexture(string name, string kind)
+        {
+            string path = Texture(name, kind);
+            var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+            if (texture == null || texture.width != 2048 || texture.height != 2048)
+                throw new InvalidDataException("Texture import failed: " + path);
+            return texture;
         }
 
         private static Bounds BoundsOf(GameObject root)

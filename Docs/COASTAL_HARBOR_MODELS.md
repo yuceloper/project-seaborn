@@ -56,3 +56,12 @@ workshop entrance direction, no old roof clipping, no unwanted brown tint, model
 With Pillow installed, run `python Tools/prepare_coastal_harbor.py INPUT_DIRECTORY OUTPUT_DIRECTORY`.
 It reads the three original FBX ZIPs without changing them and writes the normalized-name asset package.
 Geometry is retained; generated `.meta` GUIDs are deterministic for this asset pack.
+
+## Texture import repair
+
+The first distributed ZIP contained truncated CoastalRock Normal and MetallicSmoothness PNGs.
+Extract the corrected package over Assets and run the build menu again; paths and GUIDs are unchanged.
+PNG encoding now uses an in-memory buffer followed by an atomic file replacement. Packaging checks
+PNG chunk checksums and fully decodes all nine images from the final ZIP. The Unity builder decodes
+all sources before modifying materials/prefabs and rejects missing imported maps instead of reporting
+success. After a failed automatic build, repair the files and run the build menu manually.
