@@ -132,3 +132,16 @@ Numerical checks: closed manifold, nonzero face area, outward winding and statio
 with a 1.2 half-width / 2.2 half-length envelope. Unity physics must be checked locally: glancing
 contact, head-on steering and reverse, all docking snaps, upgraded hull sizes and harbor re-entry.
 No automatic relocation is made for a ship already saved inside land.
+
+## Ground surface pass
+
+User confirmed docking works after the boundary pass. Ground work changes visuals only.
+HarborGroundSurface maps a generated 512px albedo atlas over the existing shore: dark wet bank,
+stone promenade, worn soil routes and patchy inland vegetation. Mipmaps and trilinear filtering
+reduce distant shimmer. Grass and stones are two combined visual meshes without colliders;
+a local random seed leaves gameplay random state unchanged. Generated materials, meshes and
+texture are released with the harbor. No download or prefab build is required.
+
+This is an initial procedural surface pass, not scanned PBR terrain. Inspect repetition, path scale,
+shoreline transition and startup cost in Unity; compilation and rendering were not available here.
+The crane replacement still needs a separate Meshy reference/model pass.

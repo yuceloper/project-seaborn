@@ -133,6 +133,7 @@ namespace Seaborn.Harbor
             block.SetColor("_BaseColor", new Color(0.32f, 0.31f, 0.24f));
             renderer.SetPropertyBlock(block);
             BuildShoreBoundary(mesh, columns);
+            shore.AddComponent<HarborGroundSurface>().Build(mesh, renderer);
 
             // The working quay remains short and straight between the two existing piers.
             CreatePart("Harbor Wall", PrimitiveType.Cube,
