@@ -93,3 +93,27 @@ This repair preserves PNG contents and GUIDs; it does not delete project-wide im
 Validate in Unity: all docking snaps and ropes; shipyard camera; bank/platform joins; no visible
 mesh underside; lighthouse base sits on rocks; daytime lighting; leave/re-enter harbor.
 Syntax and numeric layout checks outside Unity do not replace this Play Mode check.
+
+## Harbor office and trade warehouse asset pack
+
+Extract `Seaborn_Harbor_Buildings_2K.zip` beside Assets, then run
+**Seaborn > Art > Build Harbor Buildings** outside Play Mode. This is an additive pack;
+the original rock, pier and workshop assets remain installed.
+
+- Meshy Stonewatch Manor becomes HarborOffice: 10-unit width, ground pivot at shore height 1.1.
+- Meshy Medieval Stable becomes TradeWarehouse: 9-unit width, ground pivot at deck height 1.235.
+- Preserve the FBX authored -90 X / 100 scale transform. The final entrance direction needs
+  visual confirmation in Unity; geometry inspection outside Unity confirms upright proportions.
+- Their generated Resource prefabs replace the named blockout buildings. Old office door,
+  tower, wings and trade awning/annex/roof additions are skipped when the corresponding model exists.
+- The same validated 2K PBR importer and palette protection are used. No new colliders.
+- The two building inputs can build independently of the original coastal group.
+- Six packed textures pass full PNG decode and chunk verification. Archive CRC and C# syntax
+  were checked; Unity compilation, import and Play Mode must be verified locally.
+
+Run **Seaborn > Validation > Check Coastal Harbor Models** after both packs are installed.
+Check entrances face the water, roofs have no old geometry, footprints stay on their platforms,
+station labels remain visible and all three docking actions still work. Commit generated assets
+and their metadata using the project's existing large-file workflow.
+
+Reproduce the additive pack with `python Tools/prepare_harbor_buildings.py upload output`.

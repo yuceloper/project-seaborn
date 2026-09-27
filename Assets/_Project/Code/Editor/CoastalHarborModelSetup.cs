@@ -11,6 +11,7 @@ namespace Seaborn.Editor
     {
         private const string Root = "Assets/_Project/Art/Environment/SeabornCoast";
         private static readonly string[] Names = { "CoastalRock", "DockModule", "ShipwrightWorkshop" };
+        private static readonly string[] BuildingNames = { "HarborOffice", "TradeWarehouse" };
         private static bool building;
         private static bool automaticBuildAttempted;
         static CoastalHarborModelSetup() => EditorApplication.delayCall += TryBuildMissing;
@@ -29,31 +30,47 @@ namespace Seaborn.Editor
                 EditorApplication.delayCall += TryBuildMissing;
                 return;
             }
-            foreach (string name in Names) if (!InputsExist(name)) return;
-            foreach (string name in Names)
-                if (AssetDatabase.LoadAssetAtPath<GameObject>(Prefab(name)) == null) { automaticBuildAttempted = true; Build(); return; }
+            foreach (var group in new[] { Names, BuildingNames })
+            {
+                bool complete = true;
+                bool missing = false;
+                foreach (string name in group)
+                {
+                    complete &= InputsExist(name);
+                    missing |= AssetDatabase.LoadAssetAtPath<GameObject>(Prefab(name)) == null;
+                }
+                if (!complete || !missing) continue;
+                automaticBuildAttempted = true;
+                BuildSet(group);
+            }
         }
 
         [MenuItem("Seaborn/Art/Build Coastal Harbor Models")]
-        public static void Build()
+        public static void Build() => BuildSet(Names);
+
+        [MenuItem("Seaborn/Art/Build Harbor Buildings")]
+        public static void BuildBuildings() => BuildSet(BuildingNames);
+
+        private static void BuildSet(string[] names)
         {
             if (building || EditorApplication.isPlayingOrWillChangePlaymode) return;
-            foreach (string name in Names)
+            foreach (string name in names)
                 if (!InputsExist(name))
                 {
-                    Debug.LogWarning("Missing " + name + ". Extract Seaborn_Coastal_Harbor_2K.zip into the project root, beside Assets.");
+                    string archive = names == BuildingNames ? "Seaborn_Harbor_Buildings_2K.zip" : "Seaborn_Coastal_Harbor_2K.zip";
+                    Debug.LogWarning("Missing " + name + ". Extract " + archive + " into the project root, beside Assets.");
                     return;
                 }
             building = true;
             try
             {
                 // Decode every source before changing any generated material or prefab.
-                foreach (string name in Names)
+                foreach (string name in names)
                     foreach (string kind in new[] { "BaseColor", "Normal", "MetallicSmoothness" })
                         ValidateSourceTexture(Texture(name, kind));
-                foreach (string name in Names) BuildOne(name);
+                foreach (string name in names) BuildOne(name);
                 AssetDatabase.SaveAssets();
-                Debug.Log("Coastal harbor models ready. Enter Play Mode; docking positions are unchanged.");
+                Debug.Log("Harbor models ready: " + string.Join(", ", names) + ". Enter Play Mode; docking positions are unchanged.");
             }
             catch (Exception exception)
             {
@@ -119,7 +136,7 @@ namespace Seaborn.Editor
                 Bounds bounds = BoundsOf(visual);
                 float span = name == "DockModule" ? bounds.size.z : bounds.size.x;
                 if (span < 0.001f || bounds.size.y > span) throw new InvalidOperationException("Unexpected model axes: " + name);
-                visual.transform.localScale *= (name == "CoastalRock" ? 12f : 8f) / span;
+                visual.transform.localScale *= ModelWidth(name) / span;
                 bounds = BoundsOf(visual);
                 float pivotY = name == "DockModule" ? bounds.min.y + bounds.size.y * 0.82f : bounds.min.y;
                 visual.transform.localPosition -= new Vector3(bounds.center.x, pivotY, bounds.center.z);
@@ -135,6 +152,9 @@ namespace Seaborn.Editor
             }
             finally { UnityEngine.Object.DestroyImmediate(root); }
         }
+
+        internal static float ModelWidth(string name) => name == "CoastalRock" ? 12f :
+            name == "HarborOffice" ? 10f : name == "TradeWarehouse" ? 9f : 8f;
 
         private static void ImportTexture(string name, string kind)
         {

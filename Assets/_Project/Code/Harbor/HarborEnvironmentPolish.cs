@@ -67,6 +67,7 @@ namespace Seaborn.Harbor
 
         private void BuildHarborOfficeSilhouette()
         {
+            if (MeshyCoastAssets.HasOffice) return;
             // A small central watch tower and lower side wings stop the office
             // reading as one large rectangular block from the tactical camera.
             CreatePart("Office West Wing", PrimitiveType.Cube,
@@ -131,6 +132,7 @@ namespace Seaborn.Harbor
 
         private void BuildTradeWarehouseDetail()
         {
+            if (MeshyCoastAssets.HasWarehouse) return;
             // Loading canopy and bays establish function at a glance and break
             // the huge blank warehouse face seen in the accepted HUD capture.
             CreatePart("Trade Loading Awning", PrimitiveType.Cube,
@@ -240,9 +242,9 @@ namespace Seaborn.Harbor
             TuneLabel("TERSANE Label", "TERSANE",
                 new Vector3(-16f, MeshyCoastAssets.HasWorkshop ? 5.5f : 4.27f, -7.35f), 0.052f);
             TuneLabel("TİCARET Label", "TİCARET",
-                new Vector3(16f, 4.40f, -6.56f), 0.052f);
+                new Vector3(16f, 4.40f, MeshyCoastAssets.HasWarehouse ? -5.8f : -6.56f), 0.052f);
             TuneLabel("LİMAN İDARESİ Label", "LİMAN İDARESİ",
-                new Vector3(0f, 4.52f, -16.94f), 0.046f);
+                new Vector3(0f, 4.52f, MeshyCoastAssets.HasOffice ? -16.2f : -16.94f), 0.046f);
             TuneLabel("AÇIK DENİZ Label", "AÇIK DENİZ",
                 new Vector3(0f, 2.25f, 58f), 0.054f);
         }

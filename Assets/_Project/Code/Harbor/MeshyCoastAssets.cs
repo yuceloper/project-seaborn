@@ -4,6 +4,8 @@ namespace Seaborn.Harbor
 {
     internal static class MeshyCoastAssets
     {
+        internal static bool HasOffice => Resources.Load<GameObject>("SeabornHarborOfficeVisual") != null;
+        internal static bool HasWarehouse => Resources.Load<GameObject>("SeabornTradeWarehouseVisual") != null;
         internal static bool HasWorkshop => Resources.Load<GameObject>("SeabornShipwrightWorkshopVisual") != null;
 
         internal static bool Place(Transform parent, string asset, string name, Vector3 position,

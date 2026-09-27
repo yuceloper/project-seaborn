@@ -10,7 +10,7 @@ namespace Seaborn.Editor
         [MenuItem("Seaborn/Validation/Check Coastal Harbor Models")]
         public static void Check()
         {
-            foreach (string name in new[] { "CoastalRock", "DockModule", "ShipwrightWorkshop" })
+            foreach (string name in new[] { "CoastalRock", "DockModule", "ShipwrightWorkshop", "HarborOffice", "TradeWarehouse" })
             {
                 var prefab = Resources.Load<GameObject>("Seaborn" + name + "Visual");
                 Require(prefab != null, "Missing " + name + "; build the coastal models first.");
@@ -51,7 +51,7 @@ namespace Seaborn.Editor
                     else
                     {
                         Require(Mathf.Abs(bounds.min.y) < 0.03f, name + ": ground pivot is incorrect.");
-                        Require(Mathf.Abs(bounds.size.x - (name == "CoastalRock" ? 12f : 8f)) < 0.03f,
+                        Require(Mathf.Abs(bounds.size.x - CoastalHarborModelSetup.ModelWidth(name)) < 0.03f,
                             name + ": wrong scale.");
                     }
                 }

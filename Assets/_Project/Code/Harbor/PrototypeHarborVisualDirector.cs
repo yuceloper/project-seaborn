@@ -253,7 +253,7 @@ namespace Seaborn.Harbor
                 new Vector3(10f, 4.2f, 5f),
                 new Color(0.57f, 0.54f, 0.43f, 1f)
             );
-            CreatePart(
+            if (!MeshyCoastAssets.HasOffice) CreatePart(
                 "Office Door",
                 PrimitiveType.Cube,
                 new Vector3(0f, 1.75f, -17.42f),
@@ -415,6 +415,10 @@ namespace Seaborn.Harbor
             Vector3 scale,
             Color wallColor)
         {
+            if (objectName == "Trade Warehouse" && MeshyCoastAssets.Place(transform,
+                "TradeWarehouse", objectName, new Vector3(position.x, 1.235f, position.z), Vector3.one)) return;
+            if (objectName == "Harbor Office" && MeshyCoastAssets.Place(transform,
+                "HarborOffice", objectName, new Vector3(position.x, 1.1f, position.z), Vector3.one)) return;
             if (objectName == "Shipwright Workshop" && MeshyCoastAssets.Place(transform,
                 "ShipwrightWorkshop", objectName, new Vector3(position.x, 1.25f, position.z), Vector3.one)) return;
             CreatePart(
