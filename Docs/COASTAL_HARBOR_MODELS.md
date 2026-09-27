@@ -117,3 +117,18 @@ station labels remain visible and all three docking actions still work. Commit g
 and their metadata using the project's existing large-file workflow.
 
 Reproduce the additive pack with `python Tools/prepare_harbor_buildings.py upload output`.
+
+## Harbor navigation follow-up
+
+The cove now has a closed static collision volume with vertical waterline faces, plus
+frictionless solid footprints under piers/platforms, breakwaters and the lighthouse foundation.
+It reuses ShipContactResponse sliding and contact steering; no collision damage is added.
+Model prefabs remain collider-free; boundaries belong to the harbor scene root.
+Office and warehouse instances rotate 180 degrees toward the water. Breakwater rocks are raised
+from -0.95 to -0.25; the lighthouse gains a 10-unit rock base and roof height reduces to 7.15.
+No model rebuild is required.
+
+Numerical checks: closed manifold, nonzero face area, outward winding and station clearance
+with a 1.2 half-width / 2.2 half-length envelope. Unity physics must be checked locally: glancing
+contact, head-on steering and reverse, all docking snaps, upgraded hull sizes and harbor re-entry.
+No automatic relocation is made for a ship already saved inside land.
