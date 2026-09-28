@@ -9,6 +9,7 @@ namespace Seaborn.Harbor
         private readonly List<Material> materials = new();
         private readonly List<Mesh> meshes = new();
         private Texture2D ground;
+        private Material groundMaterial;
         private const int Resolution = 1024;
         private static float Front(float x) => -16f + 28f * Mathf.Pow(Mathf.Abs(x) / 40f, 2.2f);
         private static float PathDistance(float x, float z) => Mathf.Min(
@@ -23,11 +24,7 @@ namespace Seaborn.Harbor
 
         public void Build(Mesh mesh, MeshRenderer renderer)
         {
-            var uv = new Vector2[mesh.vertexCount];
-            var vertices = mesh.vertices;
-            for (int i = 0; i < uv.Length; i++)
-                uv[i] = new Vector2((vertices[i].x + 40f) / 80f, (vertices[i].z + 43f) / 57f);
-            mesh.uv = uv;
+            ApplyUV(mesh);
             ground = new Texture2D(Resolution, Resolution, TextureFormat.RGB24, true)
             { name = "Harbor ground stone soil grass", wrapMode = TextureWrapMode.Clamp,
                 filterMode = FilterMode.Trilinear, anisoLevel = 4 };
@@ -35,11 +32,13 @@ namespace Seaborn.Harbor
             for (int y = 0; y < Resolution; y++)
                 for (int x = 0; x < Resolution; x++)
                 {
-                    float wx = x / (Resolution - 1f) * 80f - 40f;
-                    float wz = y / (Resolution - 1f) * 57f - 43f;
+                    float wx = x / (Resolution - 1f) * 96f - 48f;
+                    float wz = y / (Resolution - 1f) * 67f - 53f;
                     float grain = Mathf.PerlinNoise(wx * 5f + 300f, wz * 5f + 300f);
                     float patches = Mathf.PerlinNoise(wx * .22f + 150f, wz * .22f + 150f);
-                    float depth = Front(wx) - wz;
+                    float frontDepth = Front(wx) - wz;
+                    float outerDepth = Mathf.Min(40f - Mathf.Abs(wx), wz + 43f);
+                    float depth = Mathf.Min(frontDepth, outerDepth);
                     Color soil = Color.Lerp(new Color(.24f, .21f, .15f), new Color(.43f, .37f, .25f), grain);
                     float path = 1f - Mask(.8f, 1.65f, PathDistance(wx, wz) + (patches - .5f) * .5f);
                     float vegetation = Mask(3f, 8f, depth) * (1f - path) *
@@ -47,11 +46,11 @@ namespace Seaborn.Harbor
                     Color color = Color.Lerp(soil, new Color(.25f, .29f, .16f) * (.8f + grain * .4f), vegetation);
                     color = Color.Lerp(color, new Color(.45f, .39f, .29f) * (.85f + grain * .3f), path * .75f);
                     // Narrow irregular stone promenade inside the bank; worn seams stay readable from above.
-                    float promenade = (1f - Mask(2.5f, 3.4f, depth)) * Mask(.6f, 1.8f, depth);
+                    float promenade = (1f - Mask(2.5f, 3.4f, frontDepth)) * Mask(.6f, 1.8f, frontDepth);
                     float plazas = Mathf.Max(Plaza(wx, wz, 0f, -20f, 5.5f, 4f),
                         Plaza(wx, wz, 16f, -12f, 4.5f, 4.5f));
                     float inlandFade = Mask(-42f, -37f, wz);
-                    float paving = Mathf.Max(promenade, Mathf.Max(path, plazas)) * inlandFade;
+                    float paving = Mathf.Max(promenade, Mathf.Max(path, plazas)) * inlandFade * Mask(1f, 3f, outerDepth);
                     float row = Mathf.Floor(wz / .7f);
                     float sx = Mathf.Repeat(wx / 1.1f + Mathf.Repeat(row, 2f) * .5f, 1f);
                     float sz = Mathf.Repeat(wz / .7f, 1f);
@@ -61,7 +60,8 @@ namespace Seaborn.Harbor
                     color = Color.Lerp(color, stone, paving);
                     float gravel = 1f - Mask(.8f, 2f, depth + (patches - .5f) * 1.1f);
                     color = Color.Lerp(color, new Color(.48f, .43f, .33f) * (.7f + grain * .6f), gravel);
-                    float wet = 1f - Mask(-.6f, .65f, depth);
+                    float wet = Mathf.Max(1f - Mask(-.6f, .65f, frontDepth),
+                        1f - Mask(-3f, -.6f, outerDepth));
                     color = Color.Lerp(color, new Color(.12f, .17f, .15f) * (.8f + grain * .4f), wet);
                     pixels[y * Resolution + x] = color;
                 }
@@ -71,7 +71,24 @@ namespace Seaborn.Harbor
             material.SetTexture("_BaseMap", ground);
             renderer.SetPropertyBlock(null);
             renderer.sharedMaterial = material;
+            groundMaterial = material;
             BuildDetails();
+        }
+
+        private static void ApplyUV(Mesh mesh)
+        {
+            var vertices = mesh.vertices;
+            var uv = new Vector2[vertices.Length];
+            for (int i = 0; i < vertices.Length; i++)
+                uv[i] = new Vector2((vertices[i].x + 48f) / 96f, (vertices[i].z + 53f) / 67f);
+            mesh.uv = uv;
+        }
+
+        public void ApplyToBank(Mesh mesh, MeshRenderer renderer)
+        {
+            ApplyUV(mesh);
+            renderer.SetPropertyBlock(null);
+            renderer.sharedMaterial = groundMaterial;
         }
 
         private static float Height(float x, float z)
@@ -87,7 +104,6 @@ namespace Seaborn.Harbor
         {
             var random = new System.Random(927);
             var grass = new List<Vector3>();
-            var stones = new List<Vector3>();
             for (int i = 0; i < 380; i++)
             {
                 float x = (float)random.NextDouble() * 72f - 36f;
@@ -96,21 +112,10 @@ namespace Seaborn.Harbor
                 if (Mathf.Abs(x) < 7f && z > -25f) continue;
                 var p = new Vector3(x, Height(x, z) + .02f, z);
                 float h = .18f + (float)random.NextDouble() * .25f;
-                if (i % 4 == 0)
-                {
-                    float r = h * 1.2f;
-                    Vector3 a = p + new Vector3(-r, 0, -r), b = p + new Vector3(r, 0, -r);
-                    Vector3 c = p + new Vector3(r, 0, r), d = p + new Vector3(-r, 0, r), tip = p + Vector3.up * h;
-                    stones.AddRange(new[] { a, tip, b, b, tip, c, c, tip, d, d, tip, a });
-                }
-                else
-                {
                     grass.AddRange(new[] { p - Vector3.right * .16f, p + Vector3.up * h, p + Vector3.right * .16f,
                         p - Vector3.forward * .16f, p + Vector3.up * h * .85f, p + Vector3.forward * .16f });
-                }
             }
             DetailMesh("Sparse Coastal Grass", grass, new Color(.28f, .32f, .17f), true);
-            DetailMesh("Small Ground Stones", stones, new Color(.39f, .38f, .32f), false);
         }
 
         private void DetailMesh(string label, List<Vector3> vertices, Color color, bool doubleSided)

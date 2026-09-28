@@ -137,22 +137,32 @@ namespace Seaborn.Harbor
             AddSolidBoundary(name, center, new Vector3(bounds.size.x * .85f, 8f, bounds.size.z * .85f));
         }
 
-        private void BuildShoreSkirt(Vector3[] shore, int columns)
+        private void BuildShoreSkirt(Vector3[] shore, int columns, HarborGroundSurface ground)
         {
             // Close the exposed left, rear and right edges down below the water.
             var edge = new List<Vector3>();
             for (int row = 0; row < 4; row++) edge.Add(shore[row]);
             for (int col = 1; col < columns; col++) edge.Add(shore[col * 4 + 3]);
             for (int row = 2; row >= 0; row--) edge.Add(shore[(columns - 1) * 4 + row]);
+            // Subdivide long side segments so the waterline can curve without large flat panels.
+            var sampled = new List<Vector3>();
+            for (int i = 0; i < edge.Count - 1; i++)
+            {
+                int steps = Mathf.Max(1, Mathf.CeilToInt(Vector3.Distance(edge[i], edge[i + 1]) / 2f));
+                for (int j = 0; j < steps; j++) sampled.Add(Vector3.Lerp(edge[i], edge[i + 1], j / (float)steps));
+            }
+            sampled.Add(edge[edge.Count - 1]);
+            edge = sampled;
             var vertices = new List<Vector3>();
             var triangles = new List<int>();
             for (int i = 0; i < edge.Count; i++)
             {
                 Vector3 top = edge[i];
                 Vector3 foot = top;
-                float variation = .6f * Mathf.Sin(i * 1.7f);
-                if (Mathf.Abs(top.x) > 39f) foot.x += Mathf.Sign(top.x) * (3f + variation);
-                if (top.z < -42f) foot.z -= 4f + variation;
+                float variation = 1.5f * Mathf.Sin(top.x * .32f + top.z * .27f)
+                    + .65f * Mathf.Sin(top.x * .73f - top.z * .51f);
+                if (Mathf.Abs(top.x) > 39f) foot.x += Mathf.Sign(top.x) * (4.5f + variation);
+                if (top.z < -42f) foot.z -= 5f + variation;
                 foot.y = -2.5f;
                 vertices.Add(top); vertices.Add(foot);
                 if (i == 0) continue;
@@ -164,9 +174,7 @@ namespace Seaborn.Harbor
             mesh.RecalculateNormals(); mesh.RecalculateBounds(); generatedMeshes.Add(mesh);
             var root = new GameObject("Outer Shore Bank"); root.transform.SetParent(transform, false);
             root.AddComponent<MeshFilter>().sharedMesh = mesh;
-            var renderer = root.AddComponent<MeshRenderer>(); renderer.sharedMaterial = ResolveMaterial();
-            var tint = new MaterialPropertyBlock(); tint.SetColor("_BaseColor", new Color(.27f, .25f, .19f));
-            renderer.SetPropertyBlock(tint);
+            ground.ApplyToBank(mesh, root.AddComponent<MeshRenderer>());
         }
 
         private void BuildShore()
@@ -205,8 +213,9 @@ namespace Seaborn.Harbor
             block.SetColor("_BaseColor", new Color(0.32f, 0.31f, 0.24f));
             renderer.SetPropertyBlock(block);
             BuildShoreBoundary(mesh, columns);
-            BuildShoreSkirt(vertices, columns);
-            shore.AddComponent<HarborGroundSurface>().Build(mesh, renderer);
+            var ground = shore.AddComponent<HarborGroundSurface>();
+            ground.Build(mesh, renderer);
+            BuildShoreSkirt(vertices, columns, ground);
 
             // The working quay remains short and straight between the two existing piers.
             CreatePart("Harbor Wall", PrimitiveType.Cube,

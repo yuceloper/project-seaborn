@@ -163,3 +163,9 @@ Reproduce the asset ZIP with `python Tools/prepare_harbor_props.py INPUT_DIRECTO
 Added a sloping visual bank along both side edges and the rear, ending at Y=-2.5 below water. The existing shore solid and all docking positions remain unchanged. Cove-shoulder and rear rocks now have frictionless vertical box footprints (85% of renderer X/Z bounds); these are simplified contacts, not exact rock meshes. Rear outcrops are smaller and moved to the back edge; pine groups are moved inward to reduce overlap. Stone paths and plazas are narrower and darker, and paving fades before the rear edge. No asset archive or prefab rebuild is needed.
 
 Validated skirt triangle winding/nondegeneracy numerically. Unity compilation, sliding around rocks and final visual placement require Play Mode testing.
+
+## Textured outer bank
+
+The bank now shares the ground material and world-aligned UV mapping, with the texture domain expanded to include the submerged edges. Gravel blends across the shared top edge into darker wet soil down the bank. Side segments are subdivided at roughly two-unit intervals and the submerged foot varies smoothly to break the straight waterline. Removed the procedural pyramid stones; sparse grass remains. Existing navigation colliders and docking positions are unchanged.
+
+C# syntax, bank winding, nondegenerate triangles and UV-domain bounds checked. Unity rendering and collision behavior still require local Play Mode verification. No ZIP or prefab rebuild required.
