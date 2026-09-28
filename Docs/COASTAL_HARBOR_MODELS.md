@@ -175,3 +175,9 @@ C# syntax, bank winding, nondegenerate triangles and UV-domain bounds checked. U
 Added one narrow transparent ribbon at the outer bank water intersection (local Y=0.04). A small generated seamless alpha texture produces broken patches; slow UV drift and opacity changes suggest gentle wash. The ribbon sits toward the water, casts no shadows, and uses no colliders or particles. Runtime mesh, texture and material are cleaned up with the harbor. The inner quay and docking positions are unchanged. No archive or prefab rebuild is needed.
 
 Unity rendering remains unverified: check visibility against the ocean material, depth ordering and intensity in Play Mode. This is a cosmetic first pass, not simulated breaking waves.
+
+## Outer bank contact alignment
+
+The outer bank now derives static frictionless vertical contact strips directly from each visual triangle's intersection with local water level Y=0.04. The prior inland shore solid is retained as a backstop; the new strips stop the hull at the sloping bank's visible waterline. Strips are 0.3 units thick, extend from Y=-4 to Y=4, and overlap slightly at their ends. No collider is placed on the sloped surface, so collision response should remain horizontal. No docking stations, inner quay, player controls or saves are changed.
+
+C# syntax and numerical intersection coverage checked. Local Play Mode verification is still required: approach the rear bank head-on, steer away while touching it, and check the corners. A saved ship already inside the newly blocked strip is not automatically relocated. No asset download or prefab rebuild required.

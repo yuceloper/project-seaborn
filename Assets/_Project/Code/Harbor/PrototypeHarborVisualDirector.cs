@@ -175,9 +175,49 @@ namespace Seaborn.Harbor
             var root = new GameObject("Outer Shore Bank"); root.transform.SetParent(transform, false);
             root.AddComponent<MeshFilter>().sharedMesh = mesh;
             ground.ApplyToBank(mesh, root.AddComponent<MeshRenderer>());
+            BuildBankWaterlineBoundary(mesh);
             var foam = new GameObject("Outer Shore Foam");
             foam.transform.SetParent(transform, false);
             foam.AddComponent<HarborShoreFoam>().Build(vertices);
+        }
+
+        private void BuildBankWaterlineBoundary(Mesh bank)
+        {
+            // Intersect the actual triangles, including their diagonals, instead of using
+            // the old inland edge. Vertical contacts keep the ship from climbing the slope.
+            const float waterY = .04f;
+            var source = bank.vertices;
+            var indices = bank.triangles;
+            var root = new GameObject("Outer Bank Waterline Boundary").transform;
+            root.SetParent(transform, false);
+            var intersections = new Vector3[2];
+            for (int i = 0; i < indices.Length; i += 3)
+            {
+                int count = 0;
+                for (int edge = 0; edge < 3; edge++)
+                {
+                    Vector3 a = source[indices[i + edge]];
+                    Vector3 b = source[indices[i + (edge + 1) % 3]];
+                    if ((a.y > waterY) == (b.y > waterY)) continue;
+                    Vector3 point = Vector3.Lerp(a, b, (waterY - a.y) / (b.y - a.y));
+                    if (count < 2) intersections[count++] = point;
+                }
+                if (count != 2) continue;
+                Vector3 direction = intersections[1] - intersections[0];
+                direction.y = 0f;
+                float length = direction.magnitude;
+                if (length < .001f) continue;
+                var part = new GameObject("Bank Contact " + (i / 3)).transform;
+                part.SetParent(root, false);
+                Vector3 center = (intersections[0] + intersections[1]) * .5f;
+                center.y = 0f;
+                part.localPosition = center;
+                part.localRotation = Quaternion.LookRotation(direction / length, Vector3.up);
+                var collider = part.gameObject.AddComponent<BoxCollider>();
+                // Small overlap closes seams; no ramp or upward-facing contact at ship height.
+                collider.size = new Vector3(.3f, 8f, length + .06f);
+                collider.sharedMaterial = BoundaryMaterial();
+            }
         }
 
         private void BuildShore()
