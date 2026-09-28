@@ -41,22 +41,23 @@ namespace Seaborn.Harbor
                     float patches = Mathf.PerlinNoise(wx * .22f + 150f, wz * .22f + 150f);
                     float depth = Front(wx) - wz;
                     Color soil = Color.Lerp(new Color(.24f, .21f, .15f), new Color(.43f, .37f, .25f), grain);
-                    float path = 1f - Mask(1.8f, 3.2f, PathDistance(wx, wz));
+                    float path = 1f - Mask(.8f, 1.65f, PathDistance(wx, wz) + (patches - .5f) * .5f);
                     float vegetation = Mask(3f, 8f, depth) * (1f - path) *
                         Mask(.32f, .7f, patches);
                     Color color = Color.Lerp(soil, new Color(.25f, .29f, .16f) * (.8f + grain * .4f), vegetation);
                     color = Color.Lerp(color, new Color(.45f, .39f, .29f) * (.85f + grain * .3f), path * .75f);
                     // Narrow irregular stone promenade inside the bank; worn seams stay readable from above.
-                    float promenade = (1f - Mask(4f, 5.5f, depth)) * Mask(.6f, 1.8f, depth);
-                    float plazas = Mathf.Max(Plaza(wx, wz, 0f, -20f, 7f, 5.5f),
-                        Plaza(wx, wz, 16f, -12f, 6f, 6f));
-                    float paving = Mathf.Max(promenade, Mathf.Max(path, plazas));
+                    float promenade = (1f - Mask(2.5f, 3.4f, depth)) * Mask(.6f, 1.8f, depth);
+                    float plazas = Mathf.Max(Plaza(wx, wz, 0f, -20f, 5.5f, 4f),
+                        Plaza(wx, wz, 16f, -12f, 4.5f, 4.5f));
+                    float inlandFade = Mask(-42f, -37f, wz);
+                    float paving = Mathf.Max(promenade, Mathf.Max(path, plazas)) * inlandFade;
                     float row = Mathf.Floor(wz / .7f);
                     float sx = Mathf.Repeat(wx / 1.1f + Mathf.Repeat(row, 2f) * .5f, 1f);
                     float sz = Mathf.Repeat(wz / .7f, 1f);
                     float edge = Mathf.Min(Mathf.Min(sx, 1f - sx), Mathf.Min(sz, 1f - sz));
                     Color stone = Color.Lerp(new Color(.20f, .21f, .19f),
-                        new Color(.64f, .60f, .49f) * (.8f + grain * .35f), Mask(.025f, .10f, edge));
+                        new Color(.52f, .49f, .41f) * (.8f + grain * .35f), Mask(.025f, .10f, edge));
                     color = Color.Lerp(color, stone, paving);
                     float gravel = 1f - Mask(.8f, 2f, depth + (patches - .5f) * 1.1f);
                     color = Color.Lerp(color, new Color(.48f, .43f, .33f) * (.7f + grain * .6f), gravel);
@@ -91,7 +92,7 @@ namespace Seaborn.Harbor
             {
                 float x = (float)random.NextDouble() * 72f - 36f;
                 float z = -24f - (float)random.NextDouble() * 17f;
-                if (PathDistance(x, z) < 3.5f || Front(x) - z < 4f) continue;
+                if (PathDistance(x, z) < 2f || Front(x) - z < 4f) continue;
                 if (Mathf.Abs(x) < 7f && z > -25f) continue;
                 var p = new Vector3(x, Height(x, z) + .02f, z);
                 float h = .18f + (float)random.NextDouble() * .25f;

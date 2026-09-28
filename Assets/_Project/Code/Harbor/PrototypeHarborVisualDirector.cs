@@ -84,10 +84,10 @@ namespace Seaborn.Harbor
         {
             // Inland groups keep the quay, paths and station silhouettes clear.
             Vector2[] positions = {
-                new Vector2(-30, -31), new Vector2(-25, -35), new Vector2(-32, -39),
-                new Vector2(-18, -38), new Vector2(-14, -33),
-                new Vector2(16, -34), new Vector2(22, -38), new Vector2(29, -32),
-                new Vector2(33, -38), new Vector2(3, -37)
+                new Vector2(-27, -31), new Vector2(-22, -35), new Vector2(-33, -34),
+                new Vector2(-17, -35), new Vector2(-13, -32),
+                new Vector2(16, -33), new Vector2(22, -35), new Vector2(28, -31),
+                new Vector2(33, -34), new Vector2(2, -34)
             };
             for (int i = 0; i < positions.Length; i++)
             {
@@ -108,14 +108,65 @@ namespace Seaborn.Harbor
                 {
                     float x = side * (25f + i * 3.3f);
                     float z = CoastFront(x) - 3.5f + Mathf.Sin(i * 2.1f + side) * 1.4f;
-                    MeshyCoastAssets.Rock(transform, "Cove Shoulder " + side + " " + i,
+                    PlaceCoastalRock( "Cove Shoulder " + side + " " + i,
                         new Vector3(x, -0.65f - (i % 2) * 0.4f, z),
                         9f + (i % 3) * 1.6f, i * 67f + side * 19f);
                 }
             for (int i = 0; i < 5; i++)
-                MeshyCoastAssets.Rock(transform, "Inland Outcrop " + i,
-                    new Vector3(-30f + i * 15f, 0.4f, -36f - (i % 2) * 3f),
-                    14f + (i % 2) * 4f, i * 73f);
+                PlaceCoastalRock( "Inland Outcrop " + i,
+                    new Vector3(-30f + i * 15f, 0.2f, -43f),
+                    7f + (i % 2) * 1.5f, i * 73f);
+        }
+
+        private void PlaceCoastalRock(string name, Vector3 position, float width, float yaw)
+        {
+            var holder = new GameObject(name).transform;
+            holder.SetParent(transform, false);
+            if (!MeshyCoastAssets.Rock(holder, "Rock Visual", position, width, yaw))
+            {
+                Destroy(holder.gameObject);
+                return;
+            }
+            var renderers = holder.GetComponentsInChildren<Renderer>();
+            if (renderers.Length == 0) return;
+            Bounds bounds = renderers[0].bounds;
+            foreach (var renderer in renderers) bounds.Encapsulate(renderer.bounds);
+            // A simple vertical footprint avoids hull climbing and expensive detailed mesh contacts.
+            Vector3 center = transform.InverseTransformPoint(bounds.center);
+            center.y = 0f;
+            AddSolidBoundary(name, center, new Vector3(bounds.size.x * .85f, 8f, bounds.size.z * .85f));
+        }
+
+        private void BuildShoreSkirt(Vector3[] shore, int columns)
+        {
+            // Close the exposed left, rear and right edges down below the water.
+            var edge = new List<Vector3>();
+            for (int row = 0; row < 4; row++) edge.Add(shore[row]);
+            for (int col = 1; col < columns; col++) edge.Add(shore[col * 4 + 3]);
+            for (int row = 2; row >= 0; row--) edge.Add(shore[(columns - 1) * 4 + row]);
+            var vertices = new List<Vector3>();
+            var triangles = new List<int>();
+            for (int i = 0; i < edge.Count; i++)
+            {
+                Vector3 top = edge[i];
+                Vector3 foot = top;
+                float variation = .6f * Mathf.Sin(i * 1.7f);
+                if (Mathf.Abs(top.x) > 39f) foot.x += Mathf.Sign(top.x) * (3f + variation);
+                if (top.z < -42f) foot.z -= 4f + variation;
+                foot.y = -2.5f;
+                vertices.Add(top); vertices.Add(foot);
+                if (i == 0) continue;
+                int v = (i - 1) * 2;
+                triangles.AddRange(new[] { v, v + 2, v + 1, v + 2, v + 3, v + 1 });
+            }
+            var mesh = new Mesh { name = "Submerged Outer Shore" };
+            mesh.SetVertices(vertices); mesh.SetTriangles(triangles, 0);
+            mesh.RecalculateNormals(); mesh.RecalculateBounds(); generatedMeshes.Add(mesh);
+            var root = new GameObject("Outer Shore Bank"); root.transform.SetParent(transform, false);
+            root.AddComponent<MeshFilter>().sharedMesh = mesh;
+            var renderer = root.AddComponent<MeshRenderer>(); renderer.sharedMaterial = ResolveMaterial();
+            var tint = new MaterialPropertyBlock(); tint.SetColor("_BaseColor", new Color(.27f, .25f, .19f));
+            renderer.SetPropertyBlock(tint);
         }
 
         private void BuildShore()
@@ -154,6 +205,7 @@ namespace Seaborn.Harbor
             block.SetColor("_BaseColor", new Color(0.32f, 0.31f, 0.24f));
             renderer.SetPropertyBlock(block);
             BuildShoreBoundary(mesh, columns);
+            BuildShoreSkirt(vertices, columns);
             shore.AddComponent<HarborGroundSurface>().Build(mesh, renderer);
 
             // The working quay remains short and straight between the two existing piers.

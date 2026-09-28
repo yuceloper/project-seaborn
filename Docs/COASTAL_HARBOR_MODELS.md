@@ -157,3 +157,9 @@ Install `Seaborn_Harbor_Props_2K.zip` at the project root, then run **Seaborn > 
 Ten pine instances form sparse inland groups with varied uniform scales and headings. The pine prefab has width 7 and a ground-level pivot. The crane has width 5.2, a ground-level pivot, and is placed on the shipyard deck with 180-degree yaw so its hook faces the pier. It replaces all three primitive crane parts only when its prefab is available. Model colliders are removed; existing navigation and docking boundaries remain authoritative.
 
 Reproduce the asset ZIP with `python Tools/prepare_harbor_props.py INPUT_DIRECTORY OUTPUT_DIRECTORY`. Supplied FBX geometry and authored -90 X rotation are preserved. External albedo/normal maps are 2K; 4K source metallic/roughness maps are resized and packed into R=metallic, A=smoothness at 2K. Original FBX files may still embed higher-resolution source textures. Both source archives passed CRC checks and all output PNGs were fully decoded from the final ZIP. Geometry axes/bounds were inspected. C# syntax checks passed; Unity compilation, appearance and performance still need local validation.
+
+## Outer shore closure and layout correction
+
+Added a sloping visual bank along both side edges and the rear, ending at Y=-2.5 below water. The existing shore solid and all docking positions remain unchanged. Cove-shoulder and rear rocks now have frictionless vertical box footprints (85% of renderer X/Z bounds); these are simplified contacts, not exact rock meshes. Rear outcrops are smaller and moved to the back edge; pine groups are moved inward to reduce overlap. Stone paths and plazas are narrower and darker, and paving fades before the rear edge. No asset archive or prefab rebuild is needed.
+
+Validated skirt triangle winding/nondegeneracy numerically. Unity compilation, sliding around rocks and final visual placement require Play Mode testing.
