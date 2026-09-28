@@ -337,11 +337,13 @@ namespace Seaborn.Harbor
                 {
                     float z = 4f + i * 4.5f;
                     float x = side * (24f - i * 0.8f);
-                    var position = new Vector3(x, -0.25f, z);
+                    // Keep the tested solid boundary in place; vary only the visible rock cluster.
+                    var position = new Vector3(x + Mathf.Sin(i * 2.3f + side) * .35f,
+                        -.45f + Mathf.Sin(i * 1.7f + side) * .3f, z + Mathf.Cos(i * 2.1f) * .3f);
                     AddSolidBoundary("Breakwater " + side + " " + i,
                         new Vector3(x, 0f, z), new Vector3(4.2f, 5f, 4.6f));
                     if (!MeshyCoastAssets.Rock(transform, "Rock Breakwater " + side + " " + i,
-                        position, 6.6f + (i % 2) * 0.6f, i * 53f + side * 17f))
+                        position, 7f + Mathf.Sin(i * 1.9f + side) * .8f, i * 79f + side * 31f))
                         CreatePart("Breakwater Rock", PrimitiveType.Sphere,
                             position + Vector3.up * 0.8f, new Vector3(5f, 2.3f, 5.8f), Stone);
                 }

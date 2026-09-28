@@ -145,3 +145,7 @@ texture are released with the harbor. No download or prefab build is required.
 This is an initial procedural surface pass, not scanned PBR terrain. Inspect repetition, path scale,
 shoreline transition and startup cost in Unity; compilation and rendering were not available here.
 The crane replacement still needs a separate Meshy reference/model pass.
+
+## Ground readability correction
+
+Corrected the terrain blend masks to normalize sampled distances with InverseLerp before SmoothStep. The previous use treated distance thresholds as interpolation endpoints, suppressing the intended paths and paving. Ground albedo is now 1024 square, with wider pale stone paths, two building plazas and an irregular gravel-to-wet-bank transition. Breakwater visuals vary in height, width and angle; tested docking and collision boundaries stay unchanged. Trees and a replacement crane await Meshy models made from separate reference images. Unity visual verification remains required.
