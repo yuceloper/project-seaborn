@@ -65,6 +65,7 @@ namespace Seaborn.Harbor
             BuildLighthouse();
             BuildNavigationLane();
             BuildCoastalRim();
+            BuildCoastalTrees();
             // Soft harbor-only fill keeps the player's shaded hull readable.
             var fillObject = new GameObject("Harbor Sky Fill");
             fillObject.transform.SetParent(transform, false);
@@ -78,6 +79,26 @@ namespace Seaborn.Harbor
 
         private static float CoastFront(float x) =>
             -16f + 28f * Mathf.Pow(Mathf.Abs(x) / 40f, 2.2f);
+
+        private void BuildCoastalTrees()
+        {
+            // Inland groups keep the quay, paths and station silhouettes clear.
+            Vector2[] positions = {
+                new Vector2(-30, -31), new Vector2(-25, -35), new Vector2(-32, -39),
+                new Vector2(-18, -38), new Vector2(-14, -33),
+                new Vector2(16, -34), new Vector2(22, -38), new Vector2(29, -32),
+                new Vector2(33, -38), new Vector2(3, -37)
+            };
+            for (int i = 0; i < positions.Length; i++)
+            {
+                var p = positions[i];
+                float height = Mathf.Lerp(1.1f, 3.2f + Mathf.Sin(p.x * .16f) * .5f,
+                    Mathf.Clamp01((-p.y - 28f) / 15f));
+                float scale = .78f + (i % 4) * .12f;
+                MeshyCoastAssets.Place(transform, "CoastalPine", "Coastal Pine " + (i + 1),
+                    new Vector3(p.x, height - .12f, p.y), Vector3.one * scale, i * 137.5f);
+            }
+        }
 
         private void BuildCoastalRim()
         {
@@ -226,27 +247,31 @@ namespace Seaborn.Harbor
                 TimberLight
             );
 
-            CreatePart(
-                "Crane Mast",
-                PrimitiveType.Cylinder,
-                new Vector3(-12.3f, 4.2f, -4.2f),
-                new Vector3(0.45f, 3.4f, 0.45f),
-                Timber
-            );
-            CreatePart(
-                "Crane Arm",
-                PrimitiveType.Cube,
-                new Vector3(-10f, 6.9f, -4.2f),
-                new Vector3(5.2f, 0.35f, 0.42f),
-                Timber
-            );
-            CreatePart(
-                "Crane Rope",
-                PrimitiveType.Cylinder,
-                new Vector3(-8f, 5.15f, -4.2f),
-                new Vector3(0.08f, 1.7f, 0.08f),
-                new Color(0.12f, 0.09f, 0.05f, 1f)
-            );
+            if (!MeshyCoastAssets.Place(transform, "HarborCrane", "Shipyard Timber Crane",
+                new Vector3(-11.7f, 1.235f, -5.6f), Vector3.one, 180f))
+            {
+                CreatePart(
+                    "Crane Mast",
+                    PrimitiveType.Cylinder,
+                    new Vector3(-12.3f, 4.2f, -4.2f),
+                    new Vector3(0.45f, 3.4f, 0.45f),
+                    Timber
+                );
+                CreatePart(
+                    "Crane Arm",
+                    PrimitiveType.Cube,
+                    new Vector3(-10f, 6.9f, -4.2f),
+                    new Vector3(5.2f, 0.35f, 0.42f),
+                    Timber
+                );
+                CreatePart(
+                    "Crane Rope",
+                    PrimitiveType.Cylinder,
+                    new Vector3(-8f, 5.15f, -4.2f),
+                    new Vector3(0.08f, 1.7f, 0.08f),
+                    new Color(0.12f, 0.09f, 0.05f, 1f)
+                );
+            }
 
             CreateLabel(
                 "TERSANE",

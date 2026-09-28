@@ -149,3 +149,11 @@ The crane replacement still needs a separate Meshy reference/model pass.
 ## Ground readability correction
 
 Corrected the terrain blend masks to normalize sampled distances with InverseLerp before SmoothStep. The previous use treated distance thresholds as interpolation endpoints, suppressing the intended paths and paving. Ground albedo is now 1024 square, with wider pale stone paths, two building plazas and an irregular gravel-to-wet-bank transition. Breakwater visuals vary in height, width and angle; tested docking and collision boundaries stay unchanged. Trees and a replacement crane await Meshy models made from separate reference images. Unity visual verification remains required.
+
+## Coastal pine and shipyard crane
+
+Install `Seaborn_Harbor_Props_2K.zip` at the project root, then run **Seaborn > Art > Build Harbor Props** outside Play Mode. This separate group builds `SeabornCoastalPineVisual` and `SeabornHarborCraneVisual`; existing coast and building groups remain independent. Missing prefabs can also be generated on the next editor domain reload when both source assets exist.
+
+Ten pine instances form sparse inland groups with varied uniform scales and headings. The pine prefab has width 7 and a ground-level pivot. The crane has width 5.2, a ground-level pivot, and is placed on the shipyard deck with 180-degree yaw so its hook faces the pier. It replaces all three primitive crane parts only when its prefab is available. Model colliders are removed; existing navigation and docking boundaries remain authoritative.
+
+Reproduce the asset ZIP with `python Tools/prepare_harbor_props.py INPUT_DIRECTORY OUTPUT_DIRECTORY`. Supplied FBX geometry and authored -90 X rotation are preserved. External albedo/normal maps are 2K; 4K source metallic/roughness maps are resized and packed into R=metallic, A=smoothness at 2K. Original FBX files may still embed higher-resolution source textures. Both source archives passed CRC checks and all output PNGs were fully decoded from the final ZIP. Geometry axes/bounds were inspected. C# syntax checks passed; Unity compilation, appearance and performance still need local validation.

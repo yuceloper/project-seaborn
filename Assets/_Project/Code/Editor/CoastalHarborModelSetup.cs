@@ -12,6 +12,7 @@ namespace Seaborn.Editor
         private const string Root = "Assets/_Project/Art/Environment/SeabornCoast";
         private static readonly string[] Names = { "CoastalRock", "DockModule", "ShipwrightWorkshop" };
         private static readonly string[] BuildingNames = { "HarborOffice", "TradeWarehouse" };
+        private static readonly string[] PropNames = { "CoastalPine", "HarborCrane" };
         private static bool building;
         private static bool automaticBuildAttempted;
         static CoastalHarborModelSetup() => EditorApplication.delayCall += TryBuildMissing;
@@ -30,7 +31,7 @@ namespace Seaborn.Editor
                 EditorApplication.delayCall += TryBuildMissing;
                 return;
             }
-            foreach (var group in new[] { Names, BuildingNames })
+            foreach (var group in new[] { Names, BuildingNames, PropNames })
             {
                 bool complete = true;
                 bool missing = false;
@@ -51,13 +52,16 @@ namespace Seaborn.Editor
         [MenuItem("Seaborn/Art/Build Harbor Buildings")]
         public static void BuildBuildings() => BuildSet(BuildingNames);
 
+        [MenuItem("Seaborn/Art/Build Harbor Props")]
+        public static void BuildProps() => BuildSet(PropNames);
+
         private static void BuildSet(string[] names)
         {
             if (building || EditorApplication.isPlayingOrWillChangePlaymode) return;
             foreach (string name in names)
                 if (!InputsExist(name))
                 {
-                    string archive = names == BuildingNames ? "Seaborn_Harbor_Buildings_2K.zip" : "Seaborn_Coastal_Harbor_2K.zip";
+                    string archive = names == PropNames ? "Seaborn_Harbor_Props_2K.zip" : names == BuildingNames ? "Seaborn_Harbor_Buildings_2K.zip" : "Seaborn_Coastal_Harbor_2K.zip";
                     Debug.LogWarning("Missing " + name + ". Extract " + archive + " into the project root, beside Assets.");
                     return;
                 }
@@ -154,7 +158,8 @@ namespace Seaborn.Editor
         }
 
         internal static float ModelWidth(string name) => name == "CoastalRock" ? 12f :
-            name == "HarborOffice" ? 10f : name == "TradeWarehouse" ? 9f : 8f;
+            name == "HarborOffice" ? 10f : name == "TradeWarehouse" ? 9f :
+            name == "CoastalPine" ? 7f : name == "HarborCrane" ? 5.2f : 8f;
 
         private static void ImportTexture(string name, string kind)
         {

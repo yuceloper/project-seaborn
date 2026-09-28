@@ -10,7 +10,7 @@ namespace Seaborn.Editor
         [MenuItem("Seaborn/Validation/Check Coastal Harbor Models")]
         public static void Check()
         {
-            foreach (string name in new[] { "CoastalRock", "DockModule", "ShipwrightWorkshop", "HarborOffice", "TradeWarehouse" })
+            foreach (string name in new[] { "CoastalRock", "DockModule", "ShipwrightWorkshop", "HarborOffice", "TradeWarehouse", "CoastalPine", "HarborCrane" })
             {
                 var prefab = Resources.Load<GameObject>("Seaborn" + name + "Visual");
                 Require(prefab != null, "Missing " + name + "; build the coastal models first.");
