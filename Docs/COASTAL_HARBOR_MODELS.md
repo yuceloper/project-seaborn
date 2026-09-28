@@ -169,3 +169,9 @@ Validated skirt triangle winding/nondegeneracy numerically. Unity compilation, s
 The bank now shares the ground material and world-aligned UV mapping, with the texture domain expanded to include the submerged edges. Gravel blends across the shared top edge into darker wet soil down the bank. Side segments are subdivided at roughly two-unit intervals and the submerged foot varies smoothly to break the straight waterline. Removed the procedural pyramid stones; sparse grass remains. Existing navigation colliders and docking positions are unchanged.
 
 C# syntax, bank winding, nondegenerate triangles and UV-domain bounds checked. Unity rendering and collision behavior still require local Play Mode verification. No ZIP or prefab rebuild required.
+
+## Subtle outer shoreline foam
+
+Added one narrow transparent ribbon at the outer bank water intersection (local Y=0.04). A small generated seamless alpha texture produces broken patches; slow UV drift and opacity changes suggest gentle wash. The ribbon sits toward the water, casts no shadows, and uses no colliders or particles. Runtime mesh, texture and material are cleaned up with the harbor. The inner quay and docking positions are unchanged. No archive or prefab rebuild is needed.
+
+Unity rendering remains unverified: check visibility against the ocean material, depth ordering and intensity in Play Mode. This is a cosmetic first pass, not simulated breaking waves.

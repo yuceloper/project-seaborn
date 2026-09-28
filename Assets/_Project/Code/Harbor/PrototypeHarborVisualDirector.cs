@@ -175,6 +175,9 @@ namespace Seaborn.Harbor
             var root = new GameObject("Outer Shore Bank"); root.transform.SetParent(transform, false);
             root.AddComponent<MeshFilter>().sharedMesh = mesh;
             ground.ApplyToBank(mesh, root.AddComponent<MeshRenderer>());
+            var foam = new GameObject("Outer Shore Foam");
+            foam.transform.SetParent(transform, false);
+            foam.AddComponent<HarborShoreFoam>().Build(vertices);
         }
 
         private void BuildShore()
