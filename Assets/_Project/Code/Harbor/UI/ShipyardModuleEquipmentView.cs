@@ -58,7 +58,7 @@ namespace Seaborn.Harbor.UI
             comparison = Label(area, "", 13, 20, 184, 510, 84);
             fit = Button(area, "SEÇİLİ PARÇAYI TAK", 20, 274, 250, 34, Equip);
             remove = Button(area, "TAKILI PARÇAYI SÖK", 280, 274, 250, 34, Unequip);
-            recipe = Label(area, "", 13, 20, 320, 510, 82);
+            recipe = Label(area, "", 12, 20, 312, 510, 100);
             upgrade = Button(area, "+ GELİŞTİR", 20, 416, 510, 40, Upgrade);
             market = Rect(transform, "Market", 0, 88, 550, 460); marketPage = market.gameObject;
             status = Label(transform, "", 12, 20, 556, 510, 34);
@@ -95,9 +95,11 @@ namespace Seaborn.Harbor.UI
             bool max = selected != null && selected.Enhancement >= 10;
             var cost = ShipModuleCost.Next(selected);
             var depot = player.GetComponent<PrototypeRegionalLootInventory>();
-            string stock = $"Depo: Yağ {depot?.TideOil ?? 0}, Demir {depot?.CorsairIron ?? 0}, Harita {depot?.LostChartFragments ?? 0}, Pul {depot?.StormjawScales ?? 0}";
+            string guidance = ShipyardUpgradeGuidance.Describe(cost.Silver, cost.Oil, cost.Iron, cost.Charts, cost.Scales,
+                player.GetComponent<Seaborn.Hunting.PrototypeSilverWallet>()?.Silver ?? 0, depot,
+                player.GetComponent<Seaborn.Hunting.PrototypeHuntCargo>());
             recipe.text = selected == null ? "Geliştirmek için bir parça seç." : max ? "+10 • Maksimum seviye" :
-                $"+{selected.Enhancement} → +{selected.Enhancement + 1} • Başarı %100\n{Cost(cost)}\n{stock}\n" +
+                $"+{selected.Enhancement} → +{selected.Enhancement + 1} • Başarı %100\n{Cost(cost)}\n{guidance}\n" +
                 (slot == ShipModuleSlot.Sail ? "+ başına temel hız %1, hızlanma %1,5 ve kumaş dayanıklılığı %3 artar."
                     : "+ başına kaplamanın temel gövde canı çarpanı %3 artar. Hareket bedeli değişmez.");
             upgrade.interactable = selected != null && !max && inventory.CanAffordModule(cost);

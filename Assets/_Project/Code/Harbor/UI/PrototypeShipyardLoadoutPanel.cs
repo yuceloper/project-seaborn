@@ -91,7 +91,7 @@ namespace Seaborn.Harbor.UI
             scroll.movementType = ScrollRect.MovementType.Clamped;
             fit = Button(guns, "SEÇİLİ TOPU TAK", 20, 348, 250, 38, Equip);
             remove = Button(guns, "YUVADAKİ TOPU SÖK", 280, 348, 250, 38, Unequip);
-            recipe = Label(guns, "", 14, 20, 406, 510, 110);
+            recipe = Label(guns, "", 12, 20, 406, 510, 110);
             upgrade = Button(guns, "+ GELİŞTİR", 20, 532, 510, 44, Upgrade);
             var supplies = Rect(card, "Supplies", 0, 108, 550, 590);
             supplyPage = supplies.gameObject;
@@ -215,7 +215,9 @@ namespace Seaborn.Harbor.UI
                 : $"+{preview.Enhancement} → +{preview.Enhancement + 1}  •  Hasar {Damage(preview):0.0} → {NextDamage(preview):0.0}\n" +
                   $"Silver {wallet?.Silver ?? 0}/{cost.Silver}  •  Korsan Demiri {materials?.CorsairIron ?? 0}/{cost.Iron}\n" +
                   $"Harita Parçası {materials?.LostChartFragments ?? 0}/{cost.Charts}  •  Stormjaw Pulu {materials?.StormjawScales ?? 0}/{cost.Scales}\n" +
-                  "Başarı %100 • Her + seviye temel hasara %8 ekler.";
+                  "Başarı %100 • Her + seviye temel hasara %8 ekler.\n" +
+                  ShipyardUpgradeGuidance.Describe(cost.Silver, 0, cost.Iron, cost.Charts, cost.Scales,
+                      wallet?.Silver ?? 0, materials, player.GetComponent<PrototypeHuntCargo>());
             upgrade.interactable = preview != null && !max && Affordable(cost);
             upgrade.GetComponentInChildren<Text>().text = max ? "+10 • TAMAMLANDI" : "+ GELİŞTİR";
             RefreshSupply();
