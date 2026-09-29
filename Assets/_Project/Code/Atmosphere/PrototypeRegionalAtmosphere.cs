@@ -50,9 +50,9 @@ namespace Seaborn.Atmosphere
             RenderSettings.ambientMode =
                 AmbientMode.Trilight;
             RenderSettings.ambientSkyColor =
-                profile.AmbientSky;
+                Color.Lerp(profile.AmbientSky, new Color(0.40f, 0.44f, 0.48f), 0.45f);
             RenderSettings.ambientEquatorColor =
-                profile.AmbientEquator;
+                Color.Lerp(profile.AmbientEquator, new Color(0.26f, 0.30f, 0.33f), 0.4f);
             RenderSettings.ambientGroundColor =
                 profile.AmbientGround;
             RenderSettings.reflectionIntensity =
@@ -71,7 +71,7 @@ namespace Seaborn.Atmosphere
             Light sun = FindSun();
             if (sun != null)
             {
-                sun.color = profile.SunColor;
+                sun.color = Color.Lerp(profile.SunColor, Color.white, 0.72f);
                 sun.intensity = profile.SunIntensity;
                 sun.transform.rotation =
                     Quaternion.Euler(profile.SunRotation);
@@ -132,6 +132,8 @@ namespace Seaborn.Atmosphere
             );
             SetFloat("_WaveSpeedA", profile.WaveSpeedA);
             SetFloat("_WaveSpeedB", profile.WaveSpeedB);
+
+            OceanHorizonExtension.Ensure(oceanRenderer, activeCamera);
 
             // Calm harbor -> open sea -> rough western waters.
             float roughness = Mathf.InverseLerp(0.12f, 0.22f, profile.LargeWave);

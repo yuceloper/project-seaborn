@@ -10,6 +10,9 @@ namespace Seaborn.Ship
         MonoBehaviour
     {
         private const float MaximumIntegrity = 100f;
+        private float sailDurability = 1f;
+        public float SailDurability => sailDurability;
+        public void SetSailDurability(float value) => sailDurability = Mathf.Max(0.1f, value);
 
         public event Action SubsystemsChanged;
 
@@ -24,8 +27,10 @@ namespace Seaborn.Ship
             CrewReadiness / MaximumIntegrity;
         public float MovementSpeedMultiplier =>
             Mathf.Lerp(0.55f, 1f, SailNormalized);
+        public float AccelerationMultiplier =>
+            Mathf.Lerp(0.8f, 1f, SailNormalized);
         public float TurnMultiplier =>
-            Mathf.Lerp(0.7f, 1f, SailNormalized);
+            Mathf.Lerp(0.85f, 1f, SailNormalized);
         public float MissingIntegrity =>
             MaximumIntegrity - SailIntegrity +
             MaximumIntegrity - CrewReadiness;
@@ -66,17 +71,17 @@ namespace Seaborn.Ship
             switch (damageInfo.AmmunitionType)
             {
                 case AmmunitionType.Chain:
-                    // Chain shot is primarily a mobility weapon. A strong
-                    // broadside should cripple sails over roughly two passes,
-                    // not erase them with the first projectile that connects.
+                    // Integrity uses a 100-point scale independently of hull HP.
+                    // Limit a single chain impact while retaining salvo pressure.
                     sailDamage =
-                        damageInfo.Amount * 0.35f;
+                        Mathf.Min(4f, damageInfo.Amount * 0.10f);
                     break;
                 case AmmunitionType.Grapeshot:
-                    // Grapeshot trades hull damage and range for crew pressure.
-                    // Several pellets need to land before reload penalties become severe.
+                    // Each cannon fires three pellets. Count their combined pressure:
+                    // six 6 lb cannons cause ~33 readiness loss on perfect hits.
+                    // A stronger individual pellet cannot remove more than 3 points.
                     crewDamage =
-                        damageInfo.Amount * 0.55f;
+                        Mathf.Min(3f, damageInfo.Amount * 0.12f);
                     break;
             }
 
@@ -87,7 +92,7 @@ namespace Seaborn.Ship
 
             SailIntegrity = Mathf.Max(
                 0f,
-                SailIntegrity - sailDamage
+                SailIntegrity - sailDamage / sailDurability
             );
             CrewReadiness = Mathf.Max(
                 0f,
@@ -123,10 +128,12 @@ namespace Seaborn.Ship
 
         private void ApplyPenalties()
         {
-            float sail = SailNormalized;
+            // Player top speed is limited by hull/order; sails affect handling.
+            // NPCs still use MovementSpeedMultiplier for chain-shot pursuit tactics.
             motor?.SetDamagePerformance(
-                MovementSpeedMultiplier,
-                TurnMultiplier
+                1f,
+                TurnMultiplier,
+                AccelerationMultiplier
             );
 
             float crew = CrewNormalized;

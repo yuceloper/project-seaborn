@@ -62,6 +62,8 @@ namespace Seaborn.Ship
             }
 
             Definition = definition;
+            GetComponentInChildren<PrototypeHuntCargo>()?.SetRuntimeCapacity(
+                Mathf.Max(1, definition.cargoCapacity));
 
             ShipHealth health = GetComponentInChildren<ShipHealth>();
             health?.SetBaseMaximumHealth(
@@ -80,6 +82,8 @@ namespace Seaborn.Ship
             );
 
             ProfileApplied?.Invoke(definition);
+            // Profile refresh must not overwrite the fitted mixed battery.
+            GetComponentInChildren<ShipLoadout>()?.Apply();
         }
 
         public void SetDeckExtensions(

@@ -55,6 +55,7 @@ namespace Seaborn.Ship
             starboardHardpoints = new();
 
         private Transform assemblyRoot;
+        private bool productionHardpoints;
 
         public int MidshipSectionCount =>
             midshipSectionCount;
@@ -72,6 +73,7 @@ namespace Seaborn.Ship
             if (visualParent == null) return;
 
             ClearAssembly();
+            productionHardpoints = false;
             portHardpoints.Clear();
             starboardHardpoints.Clear();
             midshipSectionCount = Mathf.Clamp(
@@ -139,57 +141,49 @@ namespace Seaborn.Ship
                 portHardpoints.ToArray(),
                 starboardHardpoints.ToArray()
             );
+            RefreshHardpointCapacity(GetComponent<ShipProfileController>()?.EffectiveCannonSlots ?? 6);
         }
 
 
-        public void BuildHardpointsOnly(
-            Transform visualParent,
-            Material cannonMaterial)
+        public void BuildHardpointsOnly(Transform visualParent, Material cannonMaterial)
         {
             if (visualParent == null) return;
-
             ClearAssembly();
+            productionHardpoints = true;
             portHardpoints.Clear();
             starboardHardpoints.Clear();
-
-            GameObject root =
-                new("Production Sloop Hardpoints");
-            assemblyRoot = root.transform;
+            assemblyRoot = new GameObject("Production Sloop Hardpoints").transform;
             assemblyRoot.SetParent(visualParent, false);
+            RefreshHardpointCapacity(GetComponent<ShipProfileController>()?.EffectiveCannonSlots ?? 6);
+        }
 
-            float[] longitudinalPositions =
-                { -0.82f, 0f, 0.82f };
+        // Production meshes stay intact. The muzzle rail follows the current hull's
+        // actual capacity, including extensions, instead of silently stopping at six.
+        public void RefreshHardpointCapacity(int capacity)
+        {
+            if (assemblyRoot == null) return;
+            ResizeRail(portHardpoints, PrototypeHardpointSide.Port, (capacity + 1) / 2);
+            ResizeRail(starboardHardpoints, PrototypeHardpointSide.Starboard, capacity / 2);
+            GetComponent<BroadsideController>()?.SetRuntimeMuzzles(
+                portHardpoints.ToArray(), starboardHardpoints.ToArray());
+        }
 
-            for (int index = 0;
-                 index < longitudinalPositions.Length;
-                 index++)
+        private void ResizeRail(List<Transform> rail, PrototypeHardpointSide side, int count)
+        {
+            while (rail.Count < count)
+                CreateCannonHardpoint(assemblyRoot, side, rail.Count, Vector3.zero, null, false);
+            for (int i = 0; i < rail.Count; i++)
             {
-                float z = longitudinalPositions[index];
-
-                CreateCannonHardpoint(
-                    assemblyRoot,
-                    PrototypeHardpointSide.Port,
-                    index,
-                    new Vector3(-0.72f, 0.3f, z),
-                    cannonMaterial,
-                    false
-                );
-                CreateCannonHardpoint(
-                    assemblyRoot,
-                    PrototypeHardpointSide.Starboard,
-                    index,
-                    new Vector3(0.72f, 0.3f, z),
-                    cannonMaterial,
-                    false
-                );
+                var hardpoint = rail[i].parent;
+                hardpoint.gameObject.SetActive(i < count);
+                if (i >= count) continue;
+                float halfWidth = productionHardpoints ? 0.72f : 1.02f;
+                float halfLength = productionHardpoints ? 0.82f : midshipSectionCount * SectionLength * 0.4f;
+                hardpoint.position = assemblyRoot.TransformPoint(new Vector3(
+                    side == PrototypeHardpointSide.Port ? -halfWidth : halfWidth,
+                    productionHardpoints ? 0.3f : 0.39f,
+                    count <= 1 ? 0f : Mathf.Lerp(-halfLength, halfLength, (float)i / (count - 1))));
             }
-
-            BroadsideController broadside =
-                GetComponent<BroadsideController>();
-            broadside?.SetRuntimeMuzzles(
-                portHardpoints.ToArray(),
-                starboardHardpoints.ToArray()
-            );
         }
 
         public void SetMidshipSectionCount(

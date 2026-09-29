@@ -24,6 +24,7 @@ namespace Seaborn.Harbor
 
         private readonly List<Transform> labels = new();
         private Material sharedMaterial;
+        private PhysicsMaterial boundaryMaterial;
         private readonly List<Mesh> generatedMeshes = new();
         private Transform lighthouseBeam;
         private bool initialized;
@@ -63,55 +64,271 @@ namespace Seaborn.Harbor
             BuildBreakwaters();
             BuildLighthouse();
             BuildNavigationLane();
+            BuildCoastalRim();
+            BuildCoastalTrees();
+            // Soft harbor-only fill keeps the player's shaded hull readable.
+            var fillObject = new GameObject("Harbor Sky Fill");
+            fillObject.transform.SetParent(transform, false);
+            fillObject.transform.localRotation = Quaternion.Euler(48f, -35f, 0f);
+            var fill = fillObject.AddComponent<Light>();
+            fill.type = LightType.Directional;
+            fill.color = new Color(0.74f, 0.84f, 1f);
+            fill.intensity = 0.35f;
+            fill.shadows = LightShadows.None;
+        }
+
+        private static float CoastFront(float x) =>
+            -16f + 28f * Mathf.Pow(Mathf.Abs(x) / 40f, 2.2f);
+
+        private void BuildCoastalTrees()
+        {
+            // Inland groups keep the quay, paths and station silhouettes clear.
+            Vector2[] positions = {
+                new Vector2(-27, -31), new Vector2(-22, -35), new Vector2(-33, -34),
+                new Vector2(-17, -35), new Vector2(-13, -32),
+                new Vector2(16, -33), new Vector2(22, -35), new Vector2(28, -31),
+                new Vector2(33, -34), new Vector2(2, -34)
+            };
+            for (int i = 0; i < positions.Length; i++)
+            {
+                var p = positions[i];
+                float height = Mathf.Lerp(1.1f, 3.2f + Mathf.Sin(p.x * .16f) * .5f,
+                    Mathf.Clamp01((-p.y - 28f) / 15f));
+                float scale = .78f + (i % 4) * .12f;
+                MeshyCoastAssets.Place(transform, "CoastalPine", "Coastal Pine " + (i + 1),
+                    new Vector3(p.x, height - .12f, p.y), Vector3.one * scale, i * 137.5f);
+            }
+        }
+
+        private void BuildCoastalRim()
+        {
+            // Offset clusters follow the outer shoulders rather than lining the quay like a fence.
+            for (int side = -1; side <= 1; side += 2)
+                for (int i = 0; i < 5; i++)
+                {
+                    float x = side * (25f + i * 3.3f);
+                    float z = CoastFront(x) - 3.5f + Mathf.Sin(i * 2.1f + side) * 1.4f;
+                    PlaceCoastalRock( "Cove Shoulder " + side + " " + i,
+                        new Vector3(x, -0.65f - (i % 2) * 0.4f, z),
+                        9f + (i % 3) * 1.6f, i * 67f + side * 19f);
+                }
+            for (int i = 0; i < 5; i++)
+                PlaceCoastalRock( "Inland Outcrop " + i,
+                    new Vector3(-30f + i * 15f, 0.2f, -43f),
+                    7f + (i % 2) * 1.5f, i * 73f);
+        }
+
+        private void PlaceCoastalRock(string name, Vector3 position, float width, float yaw)
+        {
+            var holder = new GameObject(name).transform;
+            holder.SetParent(transform, false);
+            if (!MeshyCoastAssets.Rock(holder, "Rock Visual", position, width, yaw))
+            {
+                Destroy(holder.gameObject);
+                return;
+            }
+            var renderers = holder.GetComponentsInChildren<Renderer>();
+            if (renderers.Length == 0) return;
+            Bounds bounds = renderers[0].bounds;
+            foreach (var renderer in renderers) bounds.Encapsulate(renderer.bounds);
+            // A simple vertical footprint avoids hull climbing and expensive detailed mesh contacts.
+            Vector3 center = transform.InverseTransformPoint(bounds.center);
+            center.y = 0f;
+            AddSolidBoundary(name, center, new Vector3(bounds.size.x * .85f, 8f, bounds.size.z * .85f));
+        }
+
+        private void BuildShoreSkirt(Vector3[] shore, int columns, HarborGroundSurface ground)
+        {
+            // Close the exposed left, rear and right edges down below the water.
+            var edge = new List<Vector3>();
+            for (int row = 0; row < 4; row++) edge.Add(shore[row]);
+            for (int col = 1; col < columns; col++) edge.Add(shore[col * 4 + 3]);
+            for (int row = 2; row >= 0; row--) edge.Add(shore[(columns - 1) * 4 + row]);
+            // Subdivide long side segments so the waterline can curve without large flat panels.
+            var sampled = new List<Vector3>();
+            for (int i = 0; i < edge.Count - 1; i++)
+            {
+                int steps = Mathf.Max(1, Mathf.CeilToInt(Vector3.Distance(edge[i], edge[i + 1]) / 2f));
+                for (int j = 0; j < steps; j++) sampled.Add(Vector3.Lerp(edge[i], edge[i + 1], j / (float)steps));
+            }
+            sampled.Add(edge[edge.Count - 1]);
+            edge = sampled;
+            var vertices = new List<Vector3>();
+            var triangles = new List<int>();
+            for (int i = 0; i < edge.Count; i++)
+            {
+                Vector3 top = edge[i];
+                Vector3 foot = top;
+                float variation = 1.5f * Mathf.Sin(top.x * .32f + top.z * .27f)
+                    + .65f * Mathf.Sin(top.x * .73f - top.z * .51f);
+                if (Mathf.Abs(top.x) > 39f) foot.x += Mathf.Sign(top.x) * (4.5f + variation);
+                if (top.z < -42f) foot.z -= 5f + variation;
+                foot.y = -2.5f;
+                vertices.Add(top); vertices.Add(foot);
+                if (i == 0) continue;
+                int v = (i - 1) * 2;
+                triangles.AddRange(new[] { v, v + 2, v + 1, v + 2, v + 3, v + 1 });
+            }
+            var mesh = new Mesh { name = "Submerged Outer Shore" };
+            mesh.SetVertices(vertices); mesh.SetTriangles(triangles, 0);
+            mesh.RecalculateNormals(); mesh.RecalculateBounds(); generatedMeshes.Add(mesh);
+            var root = new GameObject("Outer Shore Bank"); root.transform.SetParent(transform, false);
+            root.AddComponent<MeshFilter>().sharedMesh = mesh;
+            ground.ApplyToBank(mesh, root.AddComponent<MeshRenderer>());
+            BuildBankWaterlineBoundary(mesh);
+            var foam = new GameObject("Outer Shore Foam");
+            foam.transform.SetParent(transform, false);
+            foam.AddComponent<HarborShoreFoam>().Build(vertices);
+        }
+
+        private void BuildBankWaterlineBoundary(Mesh bank)
+        {
+            // Intersect the actual triangles, including their diagonals, instead of using
+            // the old inland edge. Vertical contacts keep the ship from climbing the slope.
+            const float waterY = .04f;
+            var source = bank.vertices;
+            var indices = bank.triangles;
+            var root = new GameObject("Outer Bank Waterline Boundary").transform;
+            root.SetParent(transform, false);
+            var intersections = new Vector3[2];
+            for (int i = 0; i < indices.Length; i += 3)
+            {
+                int count = 0;
+                for (int edge = 0; edge < 3; edge++)
+                {
+                    Vector3 a = source[indices[i + edge]];
+                    Vector3 b = source[indices[i + (edge + 1) % 3]];
+                    if ((a.y > waterY) == (b.y > waterY)) continue;
+                    Vector3 point = Vector3.Lerp(a, b, (waterY - a.y) / (b.y - a.y));
+                    if (count < 2) intersections[count++] = point;
+                }
+                if (count != 2) continue;
+                Vector3 direction = intersections[1] - intersections[0];
+                direction.y = 0f;
+                float length = direction.magnitude;
+                if (length < .001f) continue;
+                var part = new GameObject("Bank Contact " + (i / 3)).transform;
+                part.SetParent(root, false);
+                Vector3 center = (intersections[0] + intersections[1]) * .5f;
+                center.y = 0f;
+                part.localPosition = center;
+                part.localRotation = Quaternion.LookRotation(direction / length, Vector3.up);
+                var collider = part.gameObject.AddComponent<BoxCollider>();
+                // Small overlap closes seams; no ramp or upward-facing contact at ship height.
+                collider.size = new Vector3(.3f, 8f, length + .06f);
+                collider.sharedMaterial = BoundaryMaterial();
+            }
         }
 
         private void BuildShore()
         {
-            CreatePart(
-                "Southern Stone Shore",
-                PrimitiveType.Cube,
-                new Vector3(0f, 0.35f, -23f),
-                new Vector3(48f, 1.5f, 14f),
-                Stone
-            );
-            CreatePart(
-                "Harbor Wall",
-                PrimitiveType.Cube,
-                new Vector3(0f, 1.05f, -15.8f),
-                new Vector3(44f, 1.2f, 1.2f),
-                StoneLight
-            );
-
-            // Small staggered courses break up the wall without changing
-            // the shoreline footprint or the station trigger locations.
-            for (int row = 0; row < 2; row++)
+            // Four rows form a submerged lip, a sloping bank, the usable shore and inland rise.
+            const int columns = 41;
+            var vertices = new Vector3[columns * 4];
+            var triangles = new List<int>();
+            for (int i = 0; i < columns; i++)
             {
-                int blocks = row == 0 ? 22 : 23;
-                float width = 44f / blocks;
-                for (int block = 0; block < blocks; block++)
+                float x = -40f + i * 2f;
+                float front = CoastFront(x);
+                vertices[i * 4] = new Vector3(x, -0.8f, front + 1.2f);
+                vertices[i * 4 + 1] = new Vector3(x, 1.1f, front);
+                vertices[i * 4 + 2] = new Vector3(x, 1.1f, -28f);
+                vertices[i * 4 + 3] = new Vector3(x, 3.2f + Mathf.Sin(x * 0.16f) * 0.5f, -43f);
+                if (i == columns - 1) continue;
+                for (int row = 0; row < 3; row++)
                 {
-                    Color tint = Color.Lerp(Stone, StoneLight,
-                        0.45f + ((block * 3 + row) % 5) * 0.1f);
-                    CreatePart($"Quay Masonry {row} {block}", PrimitiveType.Cube,
-                        new Vector3(-22f + (block + 0.5f) * width,
-                            0.78f + row * 0.55f, -15.14f),
-                        new Vector3(width - 0.045f, 0.50f, 0.16f), tint);
+                    int v = i * 4 + row;
+                    triangles.AddRange(new[] { v, v + 4, v + 1, v + 1, v + 4, v + 5 });
                 }
             }
-            CreatePart("Quay Coping", PrimitiveType.Cube,
-                new Vector3(0f, 1.72f, -15.8f),
-                new Vector3(44.2f, 0.16f, 1.32f), StoneLight);
+            var mesh = new Mesh { name = "Cove Shore Mesh" };
+            mesh.vertices = vertices;
+            mesh.triangles = triangles.ToArray();
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+            generatedMeshes.Add(mesh);
+            var shore = new GameObject("Cove Shore");
+            shore.transform.SetParent(transform, false);
+            shore.AddComponent<MeshFilter>().sharedMesh = mesh;
+            var renderer = shore.AddComponent<MeshRenderer>();
+            renderer.sharedMaterial = ResolveMaterial();
+            var block = new MaterialPropertyBlock();
+            block.SetColor("_BaseColor", new Color(0.32f, 0.31f, 0.24f));
+            renderer.SetPropertyBlock(block);
+            BuildShoreBoundary(mesh, columns);
+            var ground = shore.AddComponent<HarborGroundSurface>();
+            ground.Build(mesh, renderer);
+            BuildShoreSkirt(vertices, columns, ground);
 
-            for (int x = -18; x <= 18; x += 6)
+            // The working quay remains short and straight between the two existing piers.
+            CreatePart("Harbor Wall", PrimitiveType.Cube,
+                new Vector3(0f, 0.65f, -15.5f), new Vector3(21f, 1.3f, 0.8f), Stone);
+            CreatePart("Quay Coping", PrimitiveType.Cube,
+                new Vector3(0f, 1.34f, -15.5f), new Vector3(21.2f, 0.16f, 0.95f), StoneLight);
+            for (int i = 0; i < 14; i++)
+                CreatePart("Quay Masonry " + i, PrimitiveType.Cube,
+                    new Vector3(-9.75f + i * 1.5f, 0.75f, -15.05f),
+                    new Vector3(1.44f, 1.05f, 0.12f), StoneLight);
+        }
+
+        private PhysicsMaterial BoundaryMaterial()
+        {
+            if (boundaryMaterial == null)
+                boundaryMaterial = new PhysicsMaterial("Harbor sliding boundary")
+                {
+                    staticFriction = 0f, dynamicFriction = 0f, bounciness = 0f,
+                    frictionCombine = PhysicsMaterialCombine.Minimum,
+                    bounceCombine = PhysicsMaterialCombine.Minimum
+                };
+            return boundaryMaterial;
+        }
+
+        private void BuildShoreBoundary(Mesh surface, int columns)
+        {
+            // A closed vertical solid follows the visible bank. Sloped terrain colliders
+            // would lift the hull onto land; vertical faces preserve water-level movement.
+            var source = surface.vertices;
+            int count = source.Length;
+            var vertices = new Vector3[count * 2];
+            for (int i = 0; i < count; i++)
             {
-                CreatePart(
-                    $"Wall Post {x}",
-                    PrimitiveType.Cube,
-                    new Vector3(x, 1.65f, -15.3f),
-                    new Vector3(1.1f, 2.2f, 1.1f),
-                    Stone
-                );
+                vertices[i] = new Vector3(source[i].x, 3f, source[i].z);
+                vertices[i + count] = new Vector3(source[i].x, -4f, source[i].z);
             }
+            var triangles = new List<int>(surface.triangles);
+            var top = surface.triangles;
+            for (int i = 0; i < top.Length; i += 3)
+                triangles.AddRange(new[] { top[i] + count, top[i + 2] + count, top[i + 1] + count });
+            var rim = new List<int>();
+            for (int i = 0; i < columns; i++) rim.Add(i * 4);
+            for (int row = 1; row < 4; row++) rim.Add((columns - 1) * 4 + row);
+            for (int i = columns - 2; i >= 0; i--) rim.Add(i * 4 + 3);
+            rim.Add(2); rim.Add(1);
+            for (int i = 0; i < rim.Count; i++)
+            {
+                int a = rim[i], b = rim[(i + 1) % rim.Count];
+                triangles.AddRange(new[] { a, a + count, b, b, a + count, b + count });
+            }
+            var mesh = new Mesh { name = "Harbor Shore Collision" };
+            mesh.vertices = vertices;
+            mesh.triangles = triangles.ToArray();
+            mesh.RecalculateBounds();
+            generatedMeshes.Add(mesh);
+            var root = new GameObject("Harbor Shore Boundary");
+            root.transform.SetParent(transform, false);
+            var collider = root.AddComponent<MeshCollider>();
+            collider.sharedMesh = mesh;
+            collider.sharedMaterial = BoundaryMaterial();
+        }
+
+        private void AddSolidBoundary(string name, Vector3 position, Vector3 size)
+        {
+            var root = new GameObject(name + " Boundary");
+            root.transform.SetParent(transform, false);
+            root.transform.localPosition = position;
+            var collider = root.AddComponent<BoxCollider>();
+            collider.size = size;
+            collider.sharedMaterial = BoundaryMaterial();
         }
 
         private void BuildWestShipyard()
@@ -123,8 +340,8 @@ namespace Seaborn.Harbor
             );
             CreateDock(
                 "Shipyard Platform",
-                new Vector3(-14.5f, 0.94f, -8f),
-                new Vector3(10f, 0.5f, 8f)
+                new Vector3(-14.85f, 0.895f, -8f),
+                new Vector3(9.3f, 0.5f, 8f)
             );
 
             CreateBuilding(
@@ -134,27 +351,31 @@ namespace Seaborn.Harbor
                 TimberLight
             );
 
-            CreatePart(
-                "Crane Mast",
-                PrimitiveType.Cylinder,
-                new Vector3(-12.3f, 4.2f, -4.2f),
-                new Vector3(0.45f, 3.4f, 0.45f),
-                Timber
-            );
-            CreatePart(
-                "Crane Arm",
-                PrimitiveType.Cube,
-                new Vector3(-10f, 6.9f, -4.2f),
-                new Vector3(5.2f, 0.35f, 0.42f),
-                Timber
-            );
-            CreatePart(
-                "Crane Rope",
-                PrimitiveType.Cylinder,
-                new Vector3(-8f, 5.15f, -4.2f),
-                new Vector3(0.08f, 1.7f, 0.08f),
-                new Color(0.12f, 0.09f, 0.05f, 1f)
-            );
+            if (!MeshyCoastAssets.Place(transform, "HarborCrane", "Shipyard Timber Crane",
+                new Vector3(-11.7f, 1.235f, -5.6f), Vector3.one, 180f))
+            {
+                CreatePart(
+                    "Crane Mast",
+                    PrimitiveType.Cylinder,
+                    new Vector3(-12.3f, 4.2f, -4.2f),
+                    new Vector3(0.45f, 3.4f, 0.45f),
+                    Timber
+                );
+                CreatePart(
+                    "Crane Arm",
+                    PrimitiveType.Cube,
+                    new Vector3(-10f, 6.9f, -4.2f),
+                    new Vector3(5.2f, 0.35f, 0.42f),
+                    Timber
+                );
+                CreatePart(
+                    "Crane Rope",
+                    PrimitiveType.Cylinder,
+                    new Vector3(-8f, 5.15f, -4.2f),
+                    new Vector3(0.08f, 1.7f, 0.08f),
+                    new Color(0.12f, 0.09f, 0.05f, 1f)
+                );
+            }
 
             CreateLabel(
                 "TERSANE",
@@ -175,8 +396,8 @@ namespace Seaborn.Harbor
             );
             CreateDock(
                 "Market Platform",
-                new Vector3(14.5f, 0.94f, -8f),
-                new Vector3(10f, 0.5f, 8f)
+                new Vector3(14.85f, 0.895f, -8f),
+                new Vector3(9.3f, 0.5f, 8f)
             );
 
             CreateBuilding(
@@ -224,7 +445,7 @@ namespace Seaborn.Harbor
                 new Vector3(10f, 4.2f, 5f),
                 new Color(0.57f, 0.54f, 0.43f, 1f)
             );
-            CreatePart(
+            if (!MeshyCoastAssets.HasOffice) CreatePart(
                 "Office Door",
                 PrimitiveType.Cube,
                 new Vector3(0f, 1.75f, -17.42f),
@@ -240,73 +461,54 @@ namespace Seaborn.Harbor
 
         private void BuildBreakwaters()
         {
-            CreatePart(
-                "West Breakwater",
-                PrimitiveType.Cube,
-                new Vector3(-20f, 0.65f, 15f),
-                new Vector3(4f, 1.4f, 25f),
-                Stone
-            );
-            CreatePart(
-                "East Breakwater",
-                PrimitiveType.Cube,
-                new Vector3(20f, 0.65f, 15f),
-                new Vector3(4f, 1.4f, 25f),
-                Stone
-            );
-
             for (int side = -1; side <= 1; side += 2)
-            {
-                for (int z = 5; z <= 25; z += 5)
+                for (int i = 0; i < 6; i++)
                 {
-                    CreatePart(
-                        $"Breakwater Stone {side} {z}",
-                        PrimitiveType.Sphere,
-                        new Vector3(
-                            side * (20f + (z % 2) * 0.7f),
-                            1.1f,
-                            z
-                        ),
-                        new Vector3(3.4f, 1.5f, 3.1f),
-                        StoneLight,
-                        Quaternion.Euler(
-                            0f,
-                            z * 7f,
-                            0f
-                        )
-                    );
+                    float z = 4f + i * 4.5f;
+                    float x = side * (24f - i * 0.8f);
+                    // Keep the tested solid boundary in place; vary only the visible rock cluster.
+                    var position = new Vector3(x + Mathf.Sin(i * 2.3f + side) * .35f,
+                        -.45f + Mathf.Sin(i * 1.7f + side) * .3f, z + Mathf.Cos(i * 2.1f) * .3f);
+                    AddSolidBoundary("Breakwater " + side + " " + i,
+                        new Vector3(x, 0f, z), new Vector3(4.2f, 5f, 4.6f));
+                    if (!MeshyCoastAssets.Rock(transform, "Rock Breakwater " + side + " " + i,
+                        position, 7f + Mathf.Sin(i * 1.9f + side) * .8f, i * 79f + side * 31f))
+                        CreatePart("Breakwater Rock", PrimitiveType.Sphere,
+                            position + Vector3.up * 0.8f, new Vector3(5f, 2.3f, 5.8f), Stone);
                 }
-            }
         }
 
         private void BuildLighthouse()
         {
+            MeshyCoastAssets.Rock(transform, "Lighthouse Rock Foundation",
+                new Vector3(20f, -0.15f, 27f), 10f, 31f);
+            AddSolidBoundary("Lighthouse Foundation", new Vector3(20f, 0f, 27f), new Vector3(6f, 6f, 6f));
             CreatePart(
                 "Lighthouse Base",
                 PrimitiveType.Cylinder,
-                new Vector3(20f, 2.2f, 27f),
-                new Vector3(3.2f, 2f, 3.2f),
+                new Vector3(20f, 2.1f, 27f),
+                new Vector3(3.5f, 0.7f, 3.5f),
                 StoneLight
             );
             CreatePart(
                 "Lighthouse Tower",
                 PrimitiveType.Cylinder,
-                new Vector3(20f, 6.8f, 27f),
-                new Vector3(2.1f, 4.5f, 2.1f),
+                new Vector3(20f, 4.3f, 27f),
+                new Vector3(2.5f, 1.8f, 2.5f),
                 Plaster
             );
             CreatePart(
                 "Lighthouse Lantern",
                 PrimitiveType.Sphere,
-                new Vector3(20f, 11.5f, 27f),
+                new Vector3(20f, 6.5f, 27f),
                 new Vector3(1.6f, 1.2f, 1.6f),
                 Lantern
             );
             CreatePart(
                 "Lighthouse Roof",
                 PrimitiveType.Cylinder,
-                new Vector3(20f, 12.45f, 27f),
-                new Vector3(2.3f, 0.45f, 2.3f),
+                new Vector3(20f, 7.15f, 27f),
+                new Vector3(2.9f, 0.25f, 2.9f),
                 Roof
             );
 
@@ -314,7 +516,7 @@ namespace Seaborn.Harbor
                 "Lighthouse Beam");
             beam.transform.SetParent(transform, false);
             beam.transform.localPosition =
-                new Vector3(20f, 11.5f, 27f);
+                new Vector3(20f, 6.5f, 27f);
             Light light = beam.AddComponent<Light>();
             light.type = LightType.Spot;
             light.color =
@@ -354,6 +556,10 @@ namespace Seaborn.Harbor
             Vector3 position,
             Vector3 scale)
         {
+            AddSolidBoundary(objectName, new Vector3(position.x, 0f, position.z),
+                new Vector3(scale.x, 4f, scale.z));
+            if (MeshyCoastAssets.Dock(transform, objectName,
+                position + Vector3.up * (scale.y * 0.5f + 0.09f), new Vector2(scale.x, scale.z))) return;
             // The dark support stays under the boards, making real seams
             // without transparent surfaces or overlapping coplanar faces.
             CreatePart(objectName, PrimitiveType.Cube, position,
@@ -410,6 +616,12 @@ namespace Seaborn.Harbor
             Vector3 scale,
             Color wallColor)
         {
+            if (objectName == "Trade Warehouse" && MeshyCoastAssets.Place(transform,
+                "TradeWarehouse", objectName, new Vector3(position.x, 1.235f, position.z), Vector3.one, 180f)) return;
+            if (objectName == "Harbor Office" && MeshyCoastAssets.Place(transform,
+                "HarborOffice", objectName, new Vector3(position.x, 1.1f, position.z), Vector3.one, 180f)) return;
+            if (objectName == "Shipwright Workshop" && MeshyCoastAssets.Place(transform,
+                "ShipwrightWorkshop", objectName, new Vector3(position.x, 1.25f, position.z), Vector3.one)) return;
             CreatePart(
                 objectName,
                 PrimitiveType.Cube,
@@ -647,6 +859,7 @@ namespace Seaborn.Harbor
 
         private void OnDestroy()
         {
+            if (boundaryMaterial != null) Destroy(boundaryMaterial);
             foreach (Mesh mesh in generatedMeshes)
             {
                 if (mesh != null) Destroy(mesh);

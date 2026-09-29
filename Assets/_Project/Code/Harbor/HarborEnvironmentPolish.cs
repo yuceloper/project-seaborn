@@ -40,11 +40,34 @@ namespace Seaborn.Harbor
             BuildTradeWarehouseDetail();
             BuildShipyardDetail();
             BuildQuayClutter();
+            BuildAnnexRoofs();
             TuneWorldLabels();
+        }
+
+        private void BuildAnnexRoofs()
+        {
+            foreach (string partName in new[] { "Office West Wing Roof", "Office East Wing Roof",
+                "Trade East Annex Roof", "Shipyard West Shed Roof" })
+            {
+                Transform flat = transform.Find(partName);
+                if (flat == null) continue;
+                Vector3 center = flat.localPosition;
+                Vector3 size = flat.localScale;
+                flat.gameObject.SetActive(false);
+                for (int side = -1; side <= 1; side += 2)
+                    CreatePart(partName + " Slope " + side, PrimitiveType.Cube,
+                        center + new Vector3(side * size.x * 0.25f, size.x * 0.08f, 0f),
+                        new Vector3(size.x * 0.55f, 0.16f, size.z + 0.15f), Roof,
+                        Quaternion.Euler(0f, 0f, -side * 18f));
+                CreatePart(partName + " Ridge", PrimitiveType.Cube,
+                    center + Vector3.up * size.x * 0.16f,
+                    new Vector3(0.18f, 0.16f, size.z + 0.2f), TimberLight);
+            }
         }
 
         private void BuildHarborOfficeSilhouette()
         {
+            if (MeshyCoastAssets.HasOffice) return;
             // A small central watch tower and lower side wings stop the office
             // reading as one large rectangular block from the tactical camera.
             CreatePart("Office West Wing", PrimitiveType.Cube,
@@ -109,6 +132,7 @@ namespace Seaborn.Harbor
 
         private void BuildTradeWarehouseDetail()
         {
+            if (MeshyCoastAssets.HasWarehouse) return;
             // Loading canopy and bays establish function at a glance and break
             // the huge blank warehouse face seen in the accepted HUD capture.
             CreatePart("Trade Loading Awning", PrimitiveType.Cube,
@@ -153,6 +177,7 @@ namespace Seaborn.Harbor
 
         private void BuildShipyardDetail()
         {
+            if (MeshyCoastAssets.HasWorkshop) return; // Authored roof/awning replaces blockout details.
             CreatePart("Shipyard Work Awning", PrimitiveType.Cube,
                 new Vector3(-16f, 3.50f, -7.25f),
                 new Vector3(8.2f, 0.18f, 1.65f), Roof,
@@ -201,13 +226,13 @@ namespace Seaborn.Harbor
         {
             // Repeated low bollards tie the shore wall to the timber piers while
             // keeping the navigation lane and all docking volumes untouched.
-            for (int x = -18; x <= 18; x += 6)
+            for (int x = -6; x <= 6; x += 6)
             {
                 CreatePart($"Quay Bollard {x}", PrimitiveType.Cylinder,
-                    new Vector3(x + 1.45f, 1.92f, -14.75f),
+                    new Vector3(x + 1.45f, 1.56f, -15.45f),
                     new Vector3(0.30f, 0.42f, 0.30f), Timber);
                 CreatePart($"Quay Bollard Cap {x}", PrimitiveType.Cylinder,
-                    new Vector3(x + 1.45f, 2.35f, -14.75f),
+                    new Vector3(x + 1.45f, 1.99f, -15.45f),
                     new Vector3(0.39f, 0.08f, 0.39f), TimberLight);
             }
         }
@@ -215,11 +240,11 @@ namespace Seaborn.Harbor
         private void TuneWorldLabels()
         {
             TuneLabel("TERSANE Label", "TERSANE",
-                new Vector3(-16f, 4.27f, -7.35f), 0.052f);
+                new Vector3(-16f, MeshyCoastAssets.HasWorkshop ? 5.5f : 4.27f, -7.35f), 0.052f);
             TuneLabel("TİCARET Label", "TİCARET",
-                new Vector3(16f, 4.40f, -6.56f), 0.052f);
+                new Vector3(16f, 4.40f, MeshyCoastAssets.HasWarehouse ? -5.8f : -6.56f), 0.052f);
             TuneLabel("LİMAN İDARESİ Label", "LİMAN İDARESİ",
-                new Vector3(0f, 4.52f, -16.94f), 0.046f);
+                new Vector3(0f, 4.52f, MeshyCoastAssets.HasOffice ? -16.2f : -16.94f), 0.046f);
             TuneLabel("AÇIK DENİZ Label", "AÇIK DENİZ",
                 new Vector3(0f, 2.25f, 58f), 0.054f);
         }

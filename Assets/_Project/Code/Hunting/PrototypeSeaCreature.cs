@@ -109,6 +109,9 @@ namespace Seaborn.Hunting
         private Vector3 homePosition;
         private Transform visualRoot;
         private Material material;
+        private float diveUntil;
+        private float diveDepth;
+        private float nextContactEvasion;
 
         private void Awake()
         {
@@ -118,6 +121,44 @@ namespace Seaborn.Hunting
                 transform.position.x * 0.17f +
                 transform.position.z * 0.31f;
             BuildVisual();
+        }
+
+        private void Start()
+        {
+            // Select after the spawner adds the boss component and applies its 1.7 scale.
+            bool isBoss = GetComponent<PrototypeLeviathanBehavior>() != null;
+            if (!isBoss && (IsMovementExternallyControlled || transform.localScale.x >= 1.5f))
+                return;
+            GameObject prefab = Resources.Load<GameObject>(
+                isBoss ? "SeabornStormjawVisual" : "SeabornWhaleVisual");
+            if (prefab == null || visualRoot == null) return;
+            foreach (Transform child in visualRoot)
+            {
+                child.gameObject.SetActive(false);
+                Destroy(child.gameObject);
+            }
+            GameObject instance = Instantiate(prefab, visualRoot, false);
+            instance.name = isBoss ? "Meshy Stormjaw Visual" : "Meshy Whale Visual";
+            foreach (Collider collider in instance.GetComponentsInChildren<Collider>(true))
+            {
+                collider.enabled = false;
+                Destroy(collider);
+            }
+            // Keep the existing root target collider, movement, bobbing and sink flow.
+        }
+
+        private void OnTriggerStay(Collider other)
+        {
+            if (IsHarvested || IsMovementExternallyControlled || Time.time < nextContactEvasion)
+                return;
+            var ship = other.GetComponentInParent<Seaborn.Ship.ShipHealth>();
+            if (ship == null || ship.IsSunk) return;
+            nextContactEvasion = Time.time + 1.5f;
+            diveUntil = Time.time + 1.2f;
+            fleeUntil = Mathf.Max(fleeUntil, Time.time + 2f);
+            Vector3 away = Vector3.ProjectOnPlane(transform.position - ship.transform.position, Vector3.up);
+            if (away.sqrMagnitude < 0.01f) away = ship.transform.right;
+            transform.rotation = Quaternion.LookRotation(away.normalized, Vector3.up);
         }
 
         private void Update()
@@ -178,8 +219,13 @@ namespace Seaborn.Hunting
 
             Vector3 position = transform.position;
             position.y = 0.74f;
+            float mapLimit = Seaborn.World.PrototypeExpeditionRegionDirector.MapEdge - 8f;
+            position.x = Mathf.Clamp(position.x, -mapLimit, mapLimit);
+            position.z = Mathf.Clamp(position.z, -mapLimit, mapLimit);
             transform.position = position;
 
+            diveDepth = Mathf.MoveTowards(diveDepth, Time.time < diveUntil ? 0.85f : 0f,
+                Time.deltaTime * 1.2f);
             if (visualRoot != null)
             {
                 visualRoot.localPosition =
@@ -188,7 +234,7 @@ namespace Seaborn.Hunting
                         Time.time * 1.25f +
                         movementPhase
                     ) *
-                    0.08f;
+                    0.08f - Vector3.up * diveDepth;
                 visualRoot.localRotation =
                     Quaternion.Euler(
                         Mathf.Sin(
@@ -256,6 +302,12 @@ namespace Seaborn.Hunting
                     hunter.GetComponentInChildren<
                         PrototypeHuntCargo>();
 
+                Seaborn.Progression
+                    .PrototypeRegionalLootInventory inventory =
+                    Seaborn.Progression
+                        .PrototypeRegionalLootInventory
+                        .EnsureAttached(hunter.transform);
+                inventory?.AwardHunt(name);
                 if (cargo != null)
                 {
                     cargo.AddCatch(
@@ -264,12 +316,7 @@ namespace Seaborn.Hunting
                     );
                 }
 
-                Seaborn.Progression
-                    .PrototypeRegionalLootInventory inventory =
-                    Seaborn.Progression
-                        .PrototypeRegionalLootInventory
-                        .EnsureAttached(hunter.transform);
-                inventory?.AwardHunt(name);
+
                 Seaborn.Progression
                     .PrototypeDeckExtensionInventory
                     .EnsureAttached(hunter.transform)
@@ -388,6 +435,8 @@ namespace Seaborn.Hunting
             CapsuleCollider targetCollider =
                 gameObject.AddComponent<
                     CapsuleCollider>();
+            // Harpoon sweeps explicitly include triggers; wildlife is not a solid wall.
+            targetCollider.isTrigger = true;
             targetCollider.direction = 2;
             targetCollider.radius = 0.9f;
             targetCollider.height = 4.2f;
@@ -444,6 +493,8 @@ namespace Seaborn.Hunting
         public static void EnsureSpawned(
             Vector3 playerPosition)
         {
+            if (SceneManager.GetActiveScene().name == "PrototypeHarbor") return;
+            if (!Seaborn.World.PrototypePopulationDirector.EnsureCreated().TryInitializeHunts()) return;
             if (UnityEngine.Object.FindFirstObjectByType<
                     PrototypeSeaCreature>() != null)
             {
@@ -452,76 +503,31 @@ namespace Seaborn.Hunting
             string scene =
                 SceneManager.GetActiveScene().name;
 
-            if (scene == "PrototypeWesternReach")
+            // Twenty independent hunt slots spread across a 5 x 4 sea grid.
+            for (int row = 0; row < 4; row++)
             {
-                Spawn(
-                    "Tideback - Smuggler's Wake",
-                    new Vector3(22f, 0.74f, -18f),
-                    310f
-                );
-                Debug.Log(
-                    "Batı Sınırı av profili: seyrek av, " +
-                    "yoğun korsan riski."
-                );
-                return;
-            }
-
-            if (scene == "PrototypeEasternReach")
-            {
-                Vector3[] positions =
+                for (int column = 0; column < 5; column++)
                 {
-                    new(-20f, 0.74f, -15f),
-                    new(-8f, 0.74f, -5f),
-                    new(12f, 0.74f, -12f),
-                    new(22f, 0.74f, 5f),
-                    new(-18f, 0.74f, 18f),
-                    new(8f, 0.74f, 20f)
-                };
-
-                for (int i = 0;
-                     i < positions.Length;
-                     i++)
-                {
-                    Spawn(
-                        $"Tideback - East {i + 1}",
-                        positions[i],
-                        45f + i * 53f
-                    );
+                    int index = row * 5 + column;
+                    Vector3 position = new Vector3(
+                        (row < 2 ? -1f : 1f) * (44f + (row % 2) * 12f),
+                        0.74f,
+                        -36f + column * 12f);
+                    Spawn($"Tideback - {scene} {index + 1}",
+                        position, (45f + index * 53f) % 360f);
                 }
-
-                SpawnLeviathan(
-                    new Vector3(25f, 0.74f, 32f)
-                );
-                Debug.Log(
-                    "Doğu Avları profili: zengin sürüler " +
-                    "ve Stormjaw izi."
-                );
-                return;
             }
-
-            Spawn(
-                "Tideback - Central North",
-                new Vector3(14f, 0.74f, 16f),
-                210f
-            );
-            Spawn(
-                "Tideback - Central East",
-                new Vector3(23f, 0.74f, -4f),
-                285f
-            );
-            Spawn(
-                "Tideback - Central West",
-                new Vector3(-17f, 0.74f, 7f),
-                75f
-            );
-            Debug.Log(
-                "Merkez Sular av profili: dengeli " +
-                "başlangıç karşılaşmaları."
-            );
+            SpawnLeviathan(new Vector3(48f, 0.74f, 56f));
+            Debug.Log($"{scene} av nüfusu: 20 Tideback, 1 Stormjaw.");
         }
 
-        private static void SpawnLeviathan(
-            Vector3 position)
+        private static void SpawnLeviathan(Vector3 position)
+        {
+            SpawnLeviathanAt(position, position);
+        }
+
+        private static void SpawnLeviathanAt(
+            Vector3 position, Vector3 home)
         {
             GameObject creature =
                 new GameObject(
@@ -550,20 +556,24 @@ namespace Seaborn.Hunting
             );
             creature.AddComponent<
                 PrototypeLeviathanBehavior>();
+            Seaborn.World.PrototypePopulationDirector.EnsureCreated()
+                .RegisterHunt(seaCreature, home, 300f, next => SpawnLeviathanAt(next, home));
         }
 
         private static void Spawn(
             string creatureName,
             Vector3 position,
-            float heading)
+            float heading, Vector3? originalHome = null)
         {
+            Vector3 home = originalHome ?? position;
             GameObject creature =
                 new GameObject(creatureName);
             creature.transform.position = position;
             creature.transform.rotation =
                 Quaternion.Euler(0f, heading, 0f);
-            creature.AddComponent<
-                PrototypeSeaCreature>();
+            var target = creature.AddComponent<PrototypeSeaCreature>();
+            Seaborn.World.PrototypePopulationDirector.EnsureCreated()
+                .RegisterHunt(target, home, 60f, next => Spawn(creatureName, next, heading, home));
         }
     }
 }

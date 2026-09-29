@@ -223,14 +223,8 @@ namespace Seaborn.Progression
 
             loadout?.Apply();
 
-            if (equipmentInventory != null &&
-                loadout != null &&
-                equipmentInventory.CanUseShipyard)
-            {
-                equipmentInventory.TryEquipCannons(
-                    loadout.CannonId
-                );
-            }
+            // Keep individual fitted cannons when changing hull. Apply returns any
+            // slots beyond the smaller hull's capacity to the shared depot.
 
             return true;
         }

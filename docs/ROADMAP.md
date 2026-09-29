@@ -490,3 +490,16 @@ Bu kapı, prototip sistemlerinin sayısını artırmadan önce mevcut dikey dili
 - [ ] İstatistik ve toplam borda hasarı karşılaştırması
 - [ ] Uygula, sök, iptal ve kaydet işlemleri
 - [ ] Parça montaj animasyonu ve ses geri bildirimi
+
+
+## Sefer ekonomisi ölçüm turu
+
+- [x] Sefer boyunca gerçek gülle/zıpkın tüketimini kaydetme
+- [x] Haritalar arasında korunan sefer ekonomi kaydı
+- [x] Teslim, diğer Silver ödülleri, malzeme ve kayıp dökümü
+- [x] Mühimmat birim ikmal değeri ve sefer onarım payı ile tahmini net hesaplama
+- [x] Limanda açılan ve tekrar görüntülenebilen sefer özeti
+- [ ] Sefer özeti Unity kabul turu (docs/EXPEDITION_REPORT.md)
+- [ ] 15–25 dakikalık gerçek seferlerden ekonomi denge verisi toplama
+- [ ] Sarf malzemesi ve kurtarma giderlerini sefer muhasebesine ekleme
+

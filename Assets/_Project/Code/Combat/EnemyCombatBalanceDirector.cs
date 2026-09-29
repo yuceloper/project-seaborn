@@ -7,7 +7,9 @@ namespace Seaborn.Combat
     [DisallowMultipleComponent]
     public sealed class EnemyCombatBalanceDirector : MonoBehaviour
     {
-        private const float EnemyBaseHull = 2500f;
+        // Three real cannons per side on the prototype Sloop (six total).
+        // Retain the original 4/5/7 broadside pacing without phantom shots.
+        private const float EnemyBaseHull = 1250f;
 
         private readonly Dictionary<EnemyShipController, EnemyShipArchetype> tuned = new();
         private float nextScanTime;
@@ -95,3 +97,4 @@ namespace Seaborn.Combat
         }
     }
 }
+

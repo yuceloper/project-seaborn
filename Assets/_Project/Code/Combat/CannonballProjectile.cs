@@ -31,6 +31,11 @@ namespace Seaborn.Combat
         private void Awake()
         {
             projectileRigidbody = GetComponent<Rigidbody>();
+            // Damage is resolved by the swept query below. A physical projectile
+            // collider would also push ships and invoke their collision recovery.
+            foreach (Collider projectileCollider in GetComponentsInChildren<Collider>())
+                projectileCollider.enabled = false;
+            projectileRigidbody.detectCollisions = false;
             projectileRigidbody.useGravity = false;
             projectileRigidbody.isKinematic = true;
             projectileRigidbody.interpolation = RigidbodyInterpolation.Interpolate;
@@ -95,7 +100,7 @@ namespace Seaborn.Combat
             if (progress < 1f) return;
 
             PrototypeCombatVfx.PlayWaterSplash(nextPosition);
-            PrototypeCameraShake.Request(0.035f, 0.06f);
+
             StopAndDestroy();
         }
 
@@ -132,7 +137,7 @@ namespace Seaborn.Combat
                 ));
 
                 PrototypeCombatVfx.PlayHullImpact(hit.point, -displacement.normalized);
-                PrototypeCameraShake.Request(0.12f, 0.12f);
+
                 transform.position = hit.point;
                 StopAndDestroy();
                 return true;
@@ -148,3 +153,4 @@ namespace Seaborn.Combat
         }
     }
 }
+

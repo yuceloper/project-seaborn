@@ -78,12 +78,12 @@ namespace Seaborn.Atmosphere
             color.saturation.Override(
                 profile.Saturation);
             color.colorFilter.Override(
-                profile.ColorFilter);
+                Color.Lerp(profile.ColorFilter, Color.white, 0.8f));
 
             WhiteBalance whiteBalance =
                 runtimeProfile.Add<WhiteBalance>(true);
             whiteBalance.temperature.Override(
-                profile.Temperature);
+                profile.Temperature * 0.2f);
             whiteBalance.tint.Override(profile.Tint);
 
             Bloom bloom =

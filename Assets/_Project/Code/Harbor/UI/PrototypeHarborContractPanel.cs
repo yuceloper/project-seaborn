@@ -127,6 +127,9 @@ namespace Seaborn.Harbor.UI
             }
         }
 
+        private Button expeditionButton;
+        private Text expeditionButtonText;
+
         private void BuildInterface()
         {
             Canvas canvas =
@@ -157,7 +160,7 @@ namespace Seaborn.Harbor.UI
             rect.pivot = new Vector2(0.5f, 0.5f);
             rect.anchoredPosition =
                 new Vector2(0f, -48f);
-            rect.sizeDelta = new Vector2(500f, 680f);
+            rect.sizeDelta = new Vector2(500f, 776f);
 
             GameObject accent = CreateBlock(
                 rect,
@@ -205,12 +208,35 @@ namespace Seaborn.Harbor.UI
                 new Vector2(454f, 24f)
             );
 
+            CreateText(rect, "KORSAN AVI  •  +160 SILVER\nKorsan batır → enkazı topla → limana teslim et",
+                13, Cream, new Vector2(22f, -92f), new Vector2(310f, 70f));
+            GameObject expeditionChoice = CreateBlock(rect, "Accept Pirate Bounty", Gold);
+            RectTransform choiceRect = expeditionChoice.GetComponent<RectTransform>();
+            choiceRect.anchorMin = choiceRect.anchorMax = new Vector2(0f, 1f);
+            choiceRect.pivot = new Vector2(0f, 1f);
+            choiceRect.anchoredPosition = new Vector2(348f, -96f);
+            choiceRect.sizeDelta = new Vector2(128f, 54f);
+            expeditionButton = expeditionChoice.AddComponent<Button>();
+            expeditionButton.targetGraphic = expeditionChoice.GetComponent<Image>();
+            expeditionButton.onClick.AddListener(() =>
+            {
+                if (contracts != null && contracts.SelectExpeditionContract("pirate-recovery"))
+                {
+                    statusText.text = "Korsan avı alındı. Kuzey rotasına yelken aç.";
+                    statusText.color = Success;
+                    statusExpiresAt = Time.unscaledTime + 5f;
+                }
+                Refresh();
+            });
+            expeditionButtonText = CreateText(choiceRect, "GÖREVİ AL", 12, Navy,
+                Vector2.zero, new Vector2(128f, 54f), FontStyle.Bold, TextAnchor.MiddleCenter);
+
             dailySummary = CreateText(
                 rect,
                 "GÜNLÜK KONTRATLAR  0/3",
                 14,
                 Gold,
-                new Vector2(22f, -96f),
+                new Vector2(22f, -192f),
                 new Vector2(454f, 24f),
                 FontStyle.Bold
             );
@@ -229,7 +255,7 @@ namespace Seaborn.Harbor.UI
             dailyRoot.pivot =
                 new Vector2(0f, 1f);
             dailyRoot.anchoredPosition =
-                new Vector2(22f, -128f);
+                new Vector2(22f, -224f);
             dailyRoot.sizeDelta =
                 new Vector2(454f, 270f);
 
@@ -238,7 +264,7 @@ namespace Seaborn.Harbor.UI
                 "AYLIK SEYİR DEFTERİ  0/3",
                 14,
                 Gold,
-                new Vector2(22f, -420f),
+                new Vector2(22f, -516f),
                 new Vector2(454f, 24f),
                 FontStyle.Bold
             );
@@ -257,7 +283,7 @@ namespace Seaborn.Harbor.UI
             monthlyRoot.pivot =
                 new Vector2(0f, 1f);
             monthlyRoot.anchoredPosition =
-                new Vector2(22f, -452f);
+                new Vector2(22f, -548f);
             monthlyRoot.sizeDelta =
                 new Vector2(454f, 170f);
 
@@ -266,7 +292,7 @@ namespace Seaborn.Harbor.UI
                 "Günlük görev tamamlanınca diğerini seçebilirsin.  •  E ile ayrıl",
                 12,
                 Muted,
-                new Vector2(22f, -642f),
+                new Vector2(22f, -738f),
                 new Vector2(454f, 22f),
                 FontStyle.Normal,
                 TextAnchor.MiddleCenter
@@ -403,6 +429,10 @@ namespace Seaborn.Harbor.UI
                     "Kontrat panosu hazırlanıyor...";
                 return;
             }
+
+            bool pirateSelected = contracts.SelectedExpeditionContract?.Definition.Id == "pirate-recovery";
+            expeditionButton.interactable = !pirateSelected;
+            expeditionButtonText.text = pirateSelected ? "SEÇİLİ" : "GÖREVİ AL";
 
             dailySummary.text =
                 $"GÜNLÜK KONTRATLAR  " +

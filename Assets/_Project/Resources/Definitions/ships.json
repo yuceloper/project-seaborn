@@ -15,7 +15,7 @@
       "repairInterval": 5.0,
       "defense": 10.0,
       "maneuverMultiplier": 1.15,
-      "cargoCapacity": 180,
+      "cargoCapacity": 320,
       "specialSlots": 1,
       "deckExtensionLimit": 1
     },
@@ -34,7 +34,7 @@
       "repairInterval": 5.0,
       "defense": 15.0,
       "maneuverMultiplier": 1.05,
-      "cargoCapacity": 280,
+      "cargoCapacity": 480,
       "specialSlots": 1,
       "deckExtensionLimit": 2
     },

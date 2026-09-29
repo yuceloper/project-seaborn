@@ -32,12 +32,6 @@ namespace Seaborn.UI
                 ApplyLayout();
             }
 
-            // Keep the lower center quiet during normal sailing. Contextual harbor,
-            // lock and repair prompts remain visible because they do not start with SEYİR.
-            if (helmText != null && helmText.text.StartsWith("SEYİR"))
-            {
-                helmText.text = string.Empty;
-            }
         }
 
         private void ApplyLayout()
@@ -67,7 +61,7 @@ namespace Seaborn.UI
                     float y = rect.anchoredPosition.y;
                     if (y <= -95f)
                     {
-                        text.fontSize = 10;
+                        text.fontSize = 12;
                         text.lineSpacing = 0.84f;
                         Color color = text.color;
                         color.a = 0.88f;
@@ -77,7 +71,7 @@ namespace Seaborn.UI
                     }
                     else if (y > -20f)
                     {
-                        text.fontSize = 10;
+                        text.fontSize = 12;
                         Color color = text.color;
                         color.a = 0.86f;
                         text.color = color;
@@ -88,7 +82,7 @@ namespace Seaborn.UI
                     }
                     else
                     {
-                        text.fontSize = Mathf.Min(text.fontSize, 11);
+                        text.fontSize = Mathf.Max(text.fontSize, 12);
                     }
                 }
             }
@@ -97,7 +91,7 @@ namespace Seaborn.UI
             foreach (Text text in combat.GetComponentsInChildren<Text>(true))
             {
                 if (text.transform.parent != combat) continue;
-                text.fontSize = Mathf.Min(text.fontSize, 11);
+                text.fontSize = Mathf.Max(text.fontSize, 12);
                 Color color = text.color;
                 color.a = 0.84f;
                 text.color = color;
@@ -107,7 +101,7 @@ namespace Seaborn.UI
             helmText = helm.GetComponentInChildren<Text>(true);
             if (helmText != null)
             {
-                helmText.fontSize = 11;
+                helmText.fontSize = 14;
             }
 
             applied = true;

@@ -33,6 +33,7 @@ namespace Seaborn.Harbor.UI
         private Text silverText;
         private Text statusText;
         private Text materialText;
+        private Text goalText;
         private UpgradeRow hull;
         private UpgradeRow cannons;
         private UpgradeRow harpoon;
@@ -43,6 +44,7 @@ namespace Seaborn.Harbor.UI
         {
             public Text Title;
             public Text Effect;
+            public Text Requirements;
             public Button Button;
             public Text ButtonText;
         }
@@ -137,7 +139,7 @@ namespace Seaborn.Harbor.UI
             rect.pivot = new Vector2(0.5f, 0.5f);
             rect.anchoredPosition =
                 new Vector2(0f, -48f);
-            rect.sizeDelta = new Vector2(430f, 398f);
+            rect.sizeDelta = new Vector2(620f, 610f);
             panel.GetComponent<Image>().color = Navy;
 
             CreateAccent(rect);
@@ -154,7 +156,7 @@ namespace Seaborn.Harbor.UI
             silverText = CreateText(
                 rect, font, "0 SILVER",
                 15, Cream, FontStyle.Bold,
-                new Vector2(304f, -20f),
+                new Vector2(494f, -20f),
                 new Vector2(106f, 26f),
                 TextAnchor.UpperRight
             );
@@ -163,26 +165,29 @@ namespace Seaborn.Harbor.UI
                 "Kalıcı gemi donanımını geliştir.",
                 12, Muted, FontStyle.Normal,
                 new Vector2(20f, -52f),
-                new Vector2(390f, 20f)
+                new Vector2(580f, 20f)
             );
             materialText = CreateText(
                 rect, font, "",
                 11, Gold, FontStyle.Normal,
                 new Vector2(20f, -74f),
-                new Vector2(390f, 20f)
+                new Vector2(580f, 20f)
             );
+
+            goalText = CreateText(rect, font, "", 13, Gold, FontStyle.Normal,
+                new Vector2(20f, -102f), new Vector2(580f, 64f));
 
             hull = CreateRow(
                 rect, font, "GÜÇLENDİRİLMİŞ GÖVDE",
-                ShipUpgradeTrack.Hull, -108f
+                ShipUpgradeTrack.Hull, -180f
             );
             cannons = CreateRow(
                 rect, font, "TOP TAKIMI",
-                ShipUpgradeTrack.Cannons, -196f
+                ShipUpgradeTrack.Cannons, -320f
             );
             harpoon = CreateRow(
                 rect, font, "ZIPKIN DONANIMI",
-                ShipUpgradeTrack.HarpoonGear, -284f
+                ShipUpgradeTrack.HarpoonGear, -460f
             );
         }
 
@@ -206,7 +211,7 @@ namespace Seaborn.Harbor.UI
             rect.pivot = new Vector2(0f, 1f);
             rect.anchoredPosition =
                 new Vector2(20f, y);
-            rect.sizeDelta = new Vector2(390f, 76f);
+            rect.sizeDelta = new Vector2(580f, 130f);
             block.GetComponent<Image>().color = NavyLight;
 
             UpgradeRow row = new();
@@ -214,14 +219,17 @@ namespace Seaborn.Harbor.UI
                 rect, font, title,
                 13, Cream, FontStyle.Bold,
                 new Vector2(14f, -9f),
-                new Vector2(230f, 21f)
+                new Vector2(410f, 21f)
             );
             row.Effect = CreateText(
                 rect, font, "",
                 11, Muted, FontStyle.Normal,
                 new Vector2(14f, -37f),
-                new Vector2(235f, 21f)
+                new Vector2(420f, 38f)
             );
+
+            row.Requirements = CreateText(rect, font, "", 11, Gold, FontStyle.Normal,
+                new Vector2(14f, -80f), new Vector2(552f, 42f));
 
             GameObject buttonObject = new(
                 "Upgrade",
@@ -236,7 +244,7 @@ namespace Seaborn.Harbor.UI
             buttonRect.anchorMax = new Vector2(0f, 1f);
             buttonRect.pivot = new Vector2(0f, 1f);
             buttonRect.anchoredPosition =
-                new Vector2(256f, -14f);
+                new Vector2(446f, -14f);
             buttonRect.sizeDelta =
                 new Vector2(120f, 48f);
             Image background =
@@ -291,6 +299,8 @@ namespace Seaborn.Harbor.UI
                     : "Bölgesel malzeme yok";
             }
 
+            goalText.text = equipment.CannonGoalDescription();
+
             RefreshRow(
                 hull, ShipUpgradeTrack.Hull);
             RefreshRow(
@@ -317,11 +327,9 @@ namespace Seaborn.Harbor.UI
             row.Title.text =
                 $"{TrackName(track)}   SV. {level}/" +
                 $"{PrototypeShipEquipment.MaximumLevel}";
-            row.Effect.text =
-                equipment.EffectDescription(track) +
-                "  •  " +
-                equipment.UpgradeRequirementDescription(
-                    track);
+            row.Effect.text = "Şimdi: " + equipment.EffectDescription(track) +
+                (maximum ? "" : "\nSonraki: " + equipment.NextEffectDescription(track));
+            row.Requirements.text = equipment.UpgradeProgressDescription(track);
             row.ButtonText.text = maximum
                 ? "AZAMİ"
                 : $"{cost} SILVER";
@@ -343,7 +351,7 @@ namespace Seaborn.Harbor.UI
             {
                 case ShipUpgradeResult.Completed:
                     ShowStatus(
-                        $"{TrackName(track)} geliştirildi.",
+                        $"{TrackName(track)}: {equipment.EffectDescription(track)}",
                         Success
                     );
                     break;
